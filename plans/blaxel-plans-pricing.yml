@@ -1,0 +1,203 @@
+specification: API Commons Plans
+specificationVersion: '0.1'
+schema: https://raw.githubusercontent.com/api-evangelist/interface-research/main/schema/api-commons.yml#/$defs/Plans
+provider: Blaxel
+providerId: blaxel
+created: '2026-07-01'
+modified: '2026-07-01'
+reconciled: true
+tags:
+- AI
+- Agents
+- Infrastructure
+- Sandboxes
+- MCP
+- Compute
+- Plans
+description: >-
+  Blaxel uses credit-based, usage-metered pricing for its agent infrastructure.
+  Compute (sandboxes, batch jobs, MCP hosting) is billed per GB of RAM per second
+  of active CPU time; storage is billed per GB per month. New accounts start on a
+  free Tier 0 with up to $200 in free credits and no credit card required, and
+  accounts automatically move up through spend tiers (Tier 0-9) that raise
+  concurrency limits as credits are added. A Custom plan is available for
+  dedicated deployments and negotiated terms.
+notes: >-
+  Representative rates as published on the Blaxel pricing page; verify current
+  per-resource rates, tier thresholds, and add-on fees on the pricing page during
+  reconciliation.
+sources:
+- https://blaxel.ai/pricing
+- https://docs.blaxel.ai/
+plans:
+- id: blaxel-free
+  name: Free (Tier 0)
+  type: free
+  description: >-
+    Starter tier for new accounts with up to $200 in free credits, no credit
+    card required, and a capped concurrency (about 10 concurrent sandboxes).
+  entries:
+  - label: Free Credits
+    name: free_credits
+    type: free
+    metric: credits
+    limit: 200
+    timeFrame: onetime
+    geo: global
+    unit: 1
+    price: up to $200 free credits
+    userMultiplied: false
+  - label: Concurrent Sandboxes
+    name: concurrent_sandboxes
+    type: free
+    metric: sandboxes
+    limit: 10
+    timeFrame: concurrent
+    geo: global
+    unit: 1
+    price: included
+    userMultiplied: false
+  elements:
+  - name: Sandboxes
+  - name: Agents Hosting
+  - name: MCP Servers
+  - name: Model Gateway
+- id: blaxel-pay-as-you-go
+  name: Pay-as-you-go
+  type: usage
+  description: >-
+    Credit-based, usage-metered pricing that scales with consumption. Compute is
+    billed per GB RAM per second of active CPU time; storage is billed per GB per
+    month. Spend tiers (Tier 1-9) raise concurrency as credits are added.
+  entries:
+  - label: Sandbox Compute
+    name: sandbox_compute
+    type: usage
+    metric: gb_ram_seconds
+    limit: -1
+    timeFrame: month
+    geo: global
+    unit: 1
+    price: $0.0000115 per GB RAM per second of active CPU
+    userMultiplied: false
+  - label: Batch Jobs Compute
+    name: job_compute
+    type: usage
+    metric: gb_ram_seconds
+    limit: -1
+    timeFrame: month
+    geo: global
+    unit: 1
+    price: $0.000006 per GB RAM per second
+    userMultiplied: false
+  - label: MCP / Function Hosting Compute
+    name: mcp_compute
+    type: usage
+    metric: gb_ram_seconds
+    limit: -1
+    timeFrame: month
+    geo: global
+    unit: 1
+    price: $0.000007 per GB RAM per second
+    userMultiplied: false
+  - label: Snapshot Storage
+    name: snapshot_storage
+    type: usage
+    metric: gb
+    limit: -1
+    timeFrame: month
+    geo: global
+    unit: 1
+    price: $0.20 per GB per month
+    userMultiplied: false
+  - label: Deployment Image Storage
+    name: image_storage
+    type: usage
+    metric: gb
+    limit: -1
+    timeFrame: month
+    geo: global
+    unit: 1
+    price: $0.045 per GB per month
+    userMultiplied: false
+  - label: Spend Tiers (Tier 1-9)
+    name: spend_tiers
+    type: usage
+    metric: credits
+    limit: -1
+    timeFrame: month
+    geo: global
+    unit: 1
+    price: concurrency scales from 50 (Tier 1) to 100,000+ (Tier 9) concurrent sandboxes
+    userMultiplied: false
+  elements:
+  - name: Sandboxes
+  - name: Agents Hosting
+  - name: MCP Servers
+  - name: Batch Jobs
+  - name: Model Gateway
+  - name: Volumes
+- id: blaxel-support-addons
+  name: Support & Compliance Add-ons
+  type: addon
+  description: >-
+    Optional support and compliance add-ons layered on top of usage-based spend.
+  entries:
+  - label: Email Support
+    name: email_support
+    type: recurring
+    metric: subscription
+    limit: -1
+    timeFrame: month
+    geo: global
+    unit: 1
+    price: $800/month + 3% usage fee
+    userMultiplied: false
+  - label: Live Slack Support
+    name: slack_support
+    type: recurring
+    metric: subscription
+    limit: -1
+    timeFrame: month
+    geo: global
+    unit: 1
+    price: $1,600/month + 10% usage fee
+    userMultiplied: false
+  - label: HIPAA Compliance
+    name: hipaa
+    type: recurring
+    metric: subscription
+    limit: -1
+    timeFrame: month
+    geo: global
+    unit: 1
+    price: $250/month
+    userMultiplied: false
+  elements:
+  - name: Support
+  - name: Compliance
+- id: blaxel-custom
+  name: Custom
+  type: enterprise
+  description: >-
+    Dedicated deployments with custom pricing, larger per-sandbox memory (up to
+    256 GB RAM), private network connectivity, and negotiated terms. Contact
+    Blaxel sales.
+  entries:
+  - label: Custom Agreement
+    name: custom
+    type: flat
+    metric: contract
+    limit: -1
+    timeFrame: year
+    geo: global
+    unit: 1
+    price: contact sales
+    userMultiplied: false
+  elements:
+  - name: Dedicated Deployments
+  - name: Private Networking
+  - name: Custom Volume Pricing
+maintainers:
+- FN: Kin Lane
+  email: kin@apievangelist.com

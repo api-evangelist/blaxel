@@ -1,0 +1,225 @@
+aid: blaxel
+url: https://raw.githubusercontent.com/api-evangelist/blaxel/refs/heads/main/apis.yml
+name: Blaxel
+kind: company
+description: Blaxel (formerly Beamlit) is an infrastructure and compute platform built
+  for AI agents. Its control plane API deploys and manages agents, MCP/function servers,
+  serverless code sandboxes, batch jobs, a multi-provider model gateway, deployment
+  policies, integrations, and multi-tenant workspaces. The REST control plane lives
+  at api.blaxel.ai/v0 and authenticates with a Bearer API key or OAuth 2.0.
+image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/apis-json-logo.jpg
+tags:
+- AI
+- Agents
+- Infrastructure
+- Sandboxes
+- MCP
+- Compute
+- Serverless
+created: '2026-07-01'
+modified: '2026-07-01'
+specificationVersion: '0.19'
+apis:
+- aid: blaxel:blaxel-agents-api
+  name: Blaxel Agents API
+  tags:
+  - Agents
+  - Deployments
+  - Serverless
+  image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/apis-json-logo.jpg
+  humanURL: https://docs.blaxel.ai/Agents/Overview
+  baseURL: https://api.blaxel.ai/v0
+  properties:
+  - url: https://docs.blaxel.ai/Agents/Overview
+    type: Documentation
+  - url: https://docs.blaxel.ai/api-reference/agents
+    type: APIReference
+  - url: openapi/blaxel-openapi.yml
+    type: OpenAPI
+  - url: collections/blaxel.postman_collection.json
+    type: PostmanCollection
+  - url: collections/blaxel.opencollection.json
+    type: OpenCollection
+  description: Deploy, list, update, and delete AI agents as serverless auto-scaling
+    HTTP endpoints, with revision history. Framework-agnostic - bring your own code
+    (LangChain, CrewAI, Claude Agent SDK) and Blaxel builds and runs it.
+- aid: blaxel:blaxel-functions-mcp-api
+  name: Blaxel Functions / MCP Servers API
+  tags:
+  - Functions
+  - MCP
+  - Tools
+  image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/apis-json-logo.jpg
+  humanURL: https://docs.blaxel.ai/Functions/Overview
+  baseURL: https://api.blaxel.ai/v0
+  properties:
+  - url: https://docs.blaxel.ai/Functions/Overview
+    type: Documentation
+  - url: https://docs.blaxel.ai/api-reference/functions
+    type: APIReference
+  - url: openapi/blaxel-openapi.yml
+    type: OpenAPI
+  - url: collections/blaxel.postman_collection.json
+    type: PostmanCollection
+  - url: collections/blaxel.opencollection.json
+    type: OpenCollection
+  description: Deploy custom MCP (Model Context Protocol) tool servers as fast-starting
+    serverless endpoints that extend agents' capabilities, with built-in authentication,
+    rate limiting, and observability. Managed as functions with revision history.
+- aid: blaxel:blaxel-models-gateway-api
+  name: Blaxel Models Gateway API
+  tags:
+  - Models
+  - Model Gateway
+  - Inference
+  - Routing
+  image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/apis-json-logo.jpg
+  humanURL: https://docs.blaxel.ai/Models/Overview
+  baseURL: https://api.blaxel.ai/v0
+  properties:
+  - url: https://docs.blaxel.ai/Models/Overview
+    type: Documentation
+  - url: https://docs.blaxel.ai/api-reference/models
+    type: APIReference
+  - url: openapi/blaxel-openapi.yml
+    type: OpenAPI
+  - url: collections/blaxel.postman_collection.json
+    type: PostmanCollection
+  - url: collections/blaxel.opencollection.json
+    type: OpenCollection
+  description: Register and manage model deployments that front an intelligent routing
+    layer to LLM providers, with built-in telemetry, token cost control, and fallback.
+    A single gateway endpoint proxies inference to the configured upstream provider.
+- aid: blaxel:blaxel-sandboxes-api
+  name: Blaxel Sandboxes API
+  tags:
+  - Sandboxes
+  - Compute
+  - Code Execution
+  - MicroVM
+  image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/apis-json-logo.jpg
+  humanURL: https://docs.blaxel.ai/Sandboxes/Overview
+  baseURL: https://api.blaxel.ai/v0
+  properties:
+  - url: https://docs.blaxel.ai/Sandboxes/Overview
+    type: Documentation
+  - url: https://docs.blaxel.ai/api-reference/compute
+    type: APIReference
+  - url: openapi/blaxel-openapi.yml
+    type: OpenAPI
+  - url: collections/blaxel.postman_collection.json
+    type: PostmanCollection
+  - url: collections/blaxel.opencollection.json
+    type: OpenCollection
+  description: Create, start, stop, and delete secure microVM sandboxes that boot from
+    standby in under 25ms, exposing filesystem, process, and code execution for agent
+    runtimes. Includes sandbox previews and scoped preview tokens for shareable URLs.
+- aid: blaxel:blaxel-jobs-api
+  name: Blaxel Jobs API
+  tags:
+  - Jobs
+  - Batch
+  - Async
+  image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/apis-json-logo.jpg
+  humanURL: https://docs.blaxel.ai/Jobs/Overview
+  baseURL: https://api.blaxel.ai/v0
+  properties:
+  - url: https://docs.blaxel.ai/Jobs/Overview
+    type: Documentation
+  - url: https://docs.blaxel.ai/api-reference/jobs
+    type: APIReference
+  - url: openapi/blaxel-openapi.yml
+    type: OpenAPI
+  - url: collections/blaxel.postman_collection.json
+    type: PostmanCollection
+  - url: collections/blaxel.opencollection.json
+    type: OpenCollection
+  description: Define and run asynchronous batch jobs for extended workloads (up to
+    24 hours) of background processing at scale, and manage their executions and revisions.
+- aid: blaxel:blaxel-policies-api
+  name: Blaxel Policies API
+  tags:
+  - Policies
+  - Governance
+  - Deployment
+  image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/apis-json-logo.jpg
+  humanURL: https://docs.blaxel.ai/Model-Governance/Policies
+  baseURL: https://api.blaxel.ai/v0
+  properties:
+  - url: https://docs.blaxel.ai/Model-Governance/Policies
+    type: Documentation
+  - url: https://docs.blaxel.ai/api-reference/policies
+    type: APIReference
+  - url: openapi/blaxel-openapi.yml
+    type: OpenAPI
+  - url: collections/blaxel.postman_collection.json
+    type: PostmanCollection
+  - url: collections/blaxel.opencollection.json
+    type: OpenCollection
+  description: Create and manage deployment policies that constrain where and how workloads
+    run - governing regions, flavors, and provider routing across environments.
+- aid: blaxel:blaxel-integrations-api
+  name: Blaxel Integrations API
+  tags:
+  - Integrations
+  - Connections
+  - Providers
+  image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/apis-json-logo.jpg
+  humanURL: https://docs.blaxel.ai/Integrations/Overview
+  baseURL: https://api.blaxel.ai/v0
+  properties:
+  - url: https://docs.blaxel.ai/Integrations/Overview
+    type: Documentation
+  - url: https://docs.blaxel.ai/api-reference/integrations
+    type: APIReference
+  - url: openapi/blaxel-openapi.yml
+    type: OpenAPI
+  - url: collections/blaxel.postman_collection.json
+    type: PostmanCollection
+  - url: collections/blaxel.opencollection.json
+    type: OpenCollection
+  description: Manage integration connections to external providers (model providers,
+    tool sources, code repositories), list connection-backed models, and read endpoint
+    configurations that agents and the model gateway consume.
+- aid: blaxel:blaxel-workspaces-api
+  name: Blaxel Workspaces API
+  tags:
+  - Workspaces
+  - IAM
+  - Multi-Tenant
+  - Service Accounts
+  image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/apis-json-logo.jpg
+  humanURL: https://docs.blaxel.ai/Security/Workspace-access-control
+  baseURL: https://api.blaxel.ai/v0
+  properties:
+  - url: https://docs.blaxel.ai/Security/Workspace-access-control
+    type: Documentation
+  - url: https://docs.blaxel.ai/api-reference/workspaces
+    type: APIReference
+  - url: openapi/blaxel-openapi.yml
+    type: OpenAPI
+  - url: collections/blaxel.postman_collection.json
+    type: PostmanCollection
+  - url: collections/blaxel.opencollection.json
+    type: OpenCollection
+  description: Create and manage multi-tenant workspaces, invite and manage users and
+    roles, and administer service accounts and their API keys for programmatic access
+    and IAM.
+common:
+- type: GitHubOrganization
+  url: https://github.com/blaxel-ai
+- type: LinkedIn
+  url: https://www.linkedin.com/company/blaxel
+- type: Website
+  url: https://blaxel.ai/
+- type: Documentation
+  url: https://docs.blaxel.ai/
+- type: Plans
+  url: plans/blaxel-plans-pricing.yml
+- type: RateLimits
+  url: rate-limits/blaxel-rate-limits.yml
+- type: FinOps
+  url: finops/blaxel-finops.yml
+maintainers:
+- FN: Kin Lane
+  email: kin@apievangelist.com

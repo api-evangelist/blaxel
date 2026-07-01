@@ -1,0 +1,78 @@
+specification: API Commons Rate Limits
+specificationVersion: '0.1'
+schema: https://raw.githubusercontent.com/api-evangelist/interface-research/main/schema/api-commons.yml#/$defs/RateLimits
+provider: Blaxel
+providerId: blaxel
+created: '2026-07-01'
+modified: '2026-07-01'
+reconciled: false
+tags:
+- AI
+- Agents
+- Infrastructure
+- Sandboxes
+- MCP
+- Compute
+- Rate Limiting
+- Quotas
+- Throttling
+description: >-
+  Blaxel constrains usage primarily through spend-tier concurrency limits rather
+  than fixed per-second request quotas. Each account sits in a tier (Tier 0-9)
+  that caps the number of concurrent sandboxes - roughly 10 on the free Tier 0,
+  50 at Tier 1, 200 at Tier 2, and scaling to 100,000+ at Tier 9. Additional
+  operational limits apply to hosted workloads: synchronous agent invocations
+  run up to about 100 seconds, asynchronous invocations up to about 10 minutes,
+  and batch jobs up to about 24 hours. Control plane REST endpoints may also be
+  throttled to protect the platform. Specific per-endpoint request rates are not
+  reconciled in this artifact.
+notes: >-
+  Verify current tier concurrency thresholds, control-plane request throttles,
+  and workload timeouts in the Blaxel documentation and console during
+  reconciliation; tier limits change as accounts add credits.
+sources:
+- https://blaxel.ai/pricing
+- https://docs.blaxel.ai/
+responseCodes:
+  throttled: 429
+limits:
+- name: Concurrent Sandboxes
+  scope: account
+  metric: sandboxes
+  limit: tier-based (10 on Tier 0 up to 100,000+ on Tier 9)
+  notes: Primary concurrency limit; raises automatically as the account moves up spend tiers.
+- name: Synchronous Agent Invocation Duration
+  scope: deployment
+  metric: seconds
+  limit: ~100 seconds
+  notes: Maximum wall-clock duration for a synchronous agent HTTP request.
+- name: Asynchronous Agent Invocation Duration
+  scope: deployment
+  metric: seconds
+  limit: ~600 seconds
+  notes: Maximum duration for an asynchronous agent invocation.
+- name: Batch Job Duration
+  scope: job
+  metric: seconds
+  limit: ~86400 seconds (24 hours)
+  notes: Maximum runtime for a batch job execution.
+- name: Sandbox Idle TTL
+  scope: sandbox
+  metric: seconds
+  limit: configurable (e.g. ~600 seconds default idle TTL)
+  notes: Idle sandboxes are stopped after their TTL to conserve compute.
+- name: Control Plane Requests
+  scope: account
+  metric: requests
+  limit: see provider documentation
+  notes: REST control plane endpoints may be throttled; honor 429 and Retry-After.
+policies:
+- name: Tiered Concurrency
+  description: Concurrency ceilings raise as accounts add credits and move through Tier 0-9.
+- name: Backoff Strategy
+  description: Clients should implement exponential backoff with jitter and honor Retry-After on 429 responses.
+- name: Idle Reclamation
+  description: Idle sandboxes and hosted workloads scale to zero / stop after their TTL to limit spend.
+maintainers:
+- FN: Kin Lane
+  email: kin@apievangelist.com

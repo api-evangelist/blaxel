@@ -1,0 +1,98 @@
+aid: blaxel
+name: Blaxel
+review:
+  question: Does Blaxel expose a documented public WebSocket API?
+  answer: false
+  date: '2026-07-01'
+  reviewer: API Evangelist
+  asyncapiSpecCreated: false
+  asyncapiScopeNote: |
+    Per API Evangelist scope, HTTP Server-Sent Events (SSE) is in-scope for
+    AsyncAPI modeling. Blaxel's public control plane (api.blaxel.ai/v0) is a
+    request/response REST API and does not document a public WebSocket or a
+    stable public SSE stream surface for the control plane, so no AsyncAPI
+    document was authored at this time. Sandbox runtimes can expose process /
+    log streams and previews, but those are runtime data-plane behaviors on
+    per-sandbox hostnames rather than a documented public event API on the
+    control plane.
+findings:
+  summary: |
+    Blaxel (formerly Beamlit) does not publish a documented public WebSocket
+    API for its control plane. Management of agents, functions/MCP servers,
+    models, sandboxes, jobs, policies, integrations, and workspaces is done via
+    the REST control plane at https://api.blaxel.ai/v0, authenticated with a
+    Bearer API key (Authorization / X-Blaxel-Authorization) or an OAuth 2.0
+    short-lived JWT. Real-time behavior exists at the data plane - agents can be
+    invoked synchronously or asynchronously, and sandboxes expose process,
+    filesystem, preview, and log streaming on per-sandbox endpoints - but there
+    is no documented public control-plane WebSocket (ws:// or wss://) surface.
+  transports:
+    - protocol: REST
+      scheme: https
+      baseURL: https://api.blaxel.ai/v0
+      documented: true
+    - protocol: SSE
+      scheme: https
+      note: Sandbox runtimes and hosted workloads can stream logs / process output over HTTP; not a documented public control-plane event API. Not WebSocket.
+      documented: partial
+    - protocol: WebSocket
+      scheme: wss
+      documented: false
+      note: No public WebSocket endpoint is documented for the Blaxel control plane as of the review date.
+  endpointsConfirmedRest:
+    - GET    https://api.blaxel.ai/v0/agents
+    - POST   https://api.blaxel.ai/v0/agents
+    - GET    https://api.blaxel.ai/v0/agents/{agent_name}
+    - PUT    https://api.blaxel.ai/v0/agents/{agent_name}
+    - DELETE https://api.blaxel.ai/v0/agents/{agent_name}
+    - GET    https://api.blaxel.ai/v0/functions
+    - POST   https://api.blaxel.ai/v0/functions
+    - GET    https://api.blaxel.ai/v0/models
+    - POST   https://api.blaxel.ai/v0/models
+    - GET    https://api.blaxel.ai/v0/sandboxes
+    - POST   https://api.blaxel.ai/v0/sandboxes
+    - POST   https://api.blaxel.ai/v0/sandboxes/{sandbox_name}/start
+    - POST   https://api.blaxel.ai/v0/sandboxes/{sandbox_name}/stop
+    - POST   https://api.blaxel.ai/v0/sandboxes/{sandbox_name}/previews
+    - GET    https://api.blaxel.ai/v0/jobs
+    - POST   https://api.blaxel.ai/v0/jobs
+    - POST   https://api.blaxel.ai/v0/jobs/{job_id}/executions
+    - GET    https://api.blaxel.ai/v0/policies
+    - POST   https://api.blaxel.ai/v0/policies
+    - GET    https://api.blaxel.ai/v0/integrations/connections
+    - GET    https://api.blaxel.ai/v0/integrations/connections/{connection_name}/models
+    - GET    https://api.blaxel.ai/v0/workspaces
+    - POST   https://api.blaxel.ai/v0/workspaces
+    - GET    https://api.blaxel.ai/v0/service_accounts
+    - POST   https://api.blaxel.ai/v0/service_accounts/{client_id}/api_keys
+    - GET    https://api.blaxel.ai/v0/volumes
+    - GET    https://api.blaxel.ai/v0/locations
+sources:
+  - url: https://docs.blaxel.ai/
+    type: Documentation
+    note: Overview describes the platform; control plane is REST at api.blaxel.ai/v0.
+  - url: https://docs.blaxel.ai/api-reference/introduction
+    type: APIReference
+    note: REST base URL, Bearer API key / OAuth 2.0 auth, Blaxel-Version and X-Blaxel-Workspace headers; no WebSocket surface.
+  - url: https://github.com/blaxel-ai/sdk-python
+    type: SDK
+    note: Generated Python client confirms the REST control-plane operations and paths under /v0.
+  - url: https://blaxel.ai/pricing
+    type: Documentation
+    note: Usage-based, credit/tier compute pricing.
+actions:
+  asyncapiPath: null
+  apisYmlUpdated: true
+  reason: |
+    No documented public control-plane WebSocket surface exists, and no stable
+    public SSE control-plane event API is documented, so no AsyncAPI document
+    was authored. The apis.yml catalog was built from the REST control plane
+    surfaces confirmed against the docs and the generated SDK client.
+stateNote: |
+    Blaxel was formerly named Beamlit and rebranded to Blaxel. Residual "Beamlit"
+    naming still appears in some GitHub repositories (e.g. blaxel-ai/bl-controller
+    manages "Beamlit resources"). The active brand, domains (blaxel.ai,
+    docs.blaxel.ai, api.blaxel.ai), and GitHub organization (blaxel-ai) are Blaxel.
+maintainers:
+- FN: Kin Lane
+  email: kin@apievangelist.com

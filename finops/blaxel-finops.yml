@@ -1,0 +1,121 @@
+specification: FinOps Framework
+specificationVersion: '1.0'
+schema: https://www.finops.org/framework/
+provider: Blaxel
+providerId: blaxel
+created: '2026-07-01'
+modified: '2026-07-01'
+reconciled: true
+tags:
+- AI
+- Agents
+- Infrastructure
+- Sandboxes
+- MCP
+- Compute
+- FinOps
+- Cost Management
+- FOCUS
+description: >-
+  FinOps view of Blaxel spend. Blaxel bills credit-based, usage-metered compute
+  per GB of RAM per second of active CPU time - metered separately for sandboxes,
+  batch jobs, and MCP/function hosting - plus per-GB-per-month storage for
+  snapshots and deployment images. Optional support and compliance add-ons carry
+  fixed monthly fees and, for support, a percentage-of-usage surcharge. Spend
+  tiers gate concurrency rather than unit price.
+notes: >-
+  Per-resource rates and tier thresholds are subject to change; verify against
+  the Blaxel pricing page during reconciliation.
+sources:
+- https://blaxel.ai/pricing
+- https://docs.blaxel.ai/
+- https://focus.finops.org/focus-specification/v1-3/
+alignedWith:
+  framework: FinOps Foundation Framework
+  frameworkUrl: https://www.finops.org/framework/
+  dataSpec: FOCUS
+  dataSpecVersion: '1.3'
+  dataSpecUrl: https://focus.finops.org/focus-specification/v1-3/
+publisherName: Blaxel
+serviceCategory: Compute
+billingModel:
+  pricingCategory: Usage-Based
+  billingFrequency: Monthly
+  billingCurrency: USD
+  chargeCategories:
+  - Usage
+  - Purchase
+  - Adjustment
+focusColumns:
+  ServiceName: Blaxel
+  ServiceCategory: Compute
+  ProviderName: Blaxel
+  PublisherName: Blaxel
+  InvoiceIssuerName: Blaxel
+  BillingCurrency: USD
+  ChargeCategory: Usage
+  PricingCategory: Usage-Based
+meters:
+- name: sandbox_compute
+  description: Sandbox active CPU compute billed per GB RAM per second (~$0.0000115/GB-s).
+  unit: gb_ram_seconds
+  aggregation: sum
+  dimensions:
+  - account
+  - workspace
+  - sandbox
+- name: job_compute
+  description: Batch job compute billed per GB RAM per second (~$0.000006/GB-s).
+  unit: gb_ram_seconds
+  aggregation: sum
+  dimensions:
+  - account
+  - workspace
+  - job
+- name: mcp_compute
+  description: MCP / function hosting compute billed per GB RAM per second (~$0.000007/GB-s).
+  unit: gb_ram_seconds
+  aggregation: sum
+  dimensions:
+  - account
+  - workspace
+  - function
+- name: snapshot_storage
+  description: Snapshot storage billed per GB per month (~$0.20/GB-mo).
+  unit: gb_months
+  aggregation: sum
+  dimensions:
+  - account
+  - workspace
+- name: image_storage
+  description: Deployment image storage billed per GB per month (~$0.045/GB-mo).
+  unit: gb_months
+  aggregation: sum
+  dimensions:
+  - account
+  - workspace
+- name: support_subscription
+  description: Fixed monthly support fee plus percentage-of-usage surcharge for Email or Slack support tiers.
+  unit: subscription
+  aggregation: sum
+  dimensions:
+  - account
+  - tier
+- name: compliance_subscription
+  description: Fixed monthly compliance add-on fee (e.g. HIPAA).
+  unit: subscription
+  aggregation: sum
+  dimensions:
+  - account
+principles:
+- name: Visibility
+  description: Pull Blaxel usage exports; inspect per-resource GB-second compute burn across sandboxes, jobs, and MCP hosting.
+- name: Allocation
+  description: Tag workspaces, service accounts, and API keys per workload/team; map to internal cost centers.
+- name: Optimization
+  description: Route non-realtime work to batch jobs (cheaper per GB-s); size sandbox memory to need; lean on short idle TTLs so idle workloads scale to zero; prune unused snapshots and images.
+- name: Accountability
+  description: Assign owners per workspace/project; review credit spend and tier position monthly against budget.
+maintainers:
+- FN: Kin Lane
+  email: kin@apievangelist.com
