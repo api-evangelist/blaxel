@@ -1,0 +1,24 @@
+generated: '2026-07-11'
+method: derived
+source: openapi/blaxel-openapi.yml
+summary:
+  types:
+  - apiKey
+  - http
+  api_key_in:
+  - header
+schemes:
+- name: apiKey
+  type: apiKey
+  in: header
+  parameter: X-Blaxel-Authorization
+  description: API key supplied as "Bearer YOUR-API-KEY".
+  sources:
+  - openapi/blaxel-openapi.yml
+- name: bearerAuth
+  type: http
+  scheme: bearer
+  bearerFormat: JWT
+  description: OAuth 2.0 short-lived JWT access token.
+  sources:
+  - openapi/blaxel-openapi.yml

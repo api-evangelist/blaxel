@@ -206,6 +206,10 @@ apis:
     roles, and administer service accounts and their API keys for programmatic access
     and IAM.
 common:
+- type: DomainSecurity
+  url: security/blaxel-domain-security.yml
+- type: Authentication
+  url: authentication/blaxel-authentication.yml
 - type: GitHubOrganization
   url: https://github.com/blaxel-ai
 - type: LinkedIn
@@ -220,6 +224,8 @@ common:
   url: rate-limits/blaxel-rate-limits.yml
 - type: FinOps
   url: finops/blaxel-finops.yml
+- url: https://blaxel.ai/rss.xml
+  type: Blog
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com
