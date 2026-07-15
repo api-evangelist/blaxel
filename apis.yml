@@ -206,6 +206,8 @@ apis:
     roles, and administer service accounts and their API keys for programmatic access
     and IAM.
 common:
+- type: AgenticAccess
+  url: agentic-access/blaxel-agentic-access.yml
 - type: DomainSecurity
   url: security/blaxel-domain-security.yml
 - type: Authentication
