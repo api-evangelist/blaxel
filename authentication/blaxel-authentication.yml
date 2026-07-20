@@ -12,7 +12,7 @@ schemes:
   type: apiKey
   in: header
   parameter: X-Blaxel-Authorization
-  description: API key supplied as "Bearer YOUR-API-KEY".
+  description: API key supplied as "Bearer [example key]".
   sources:
   - openapi/blaxel-openapi.yml
 - name: bearerAuth
