@@ -1,0 +1,151 @@
+openapi: 3.0.1
+info:
+  title: Blaxel Control Plane Agents Models API
+  description: Representative specification of the Blaxel (formerly Beamlit) control plane REST API. The control plane manages agents, MCP/function servers, models, sandboxes, jobs, policies, integrations, and workspaces. Authenticate with a Bearer API key (Authorization or X-Blaxel-Authorization header) or an OAuth 2.0 short-lived JWT. Requests may include a Blaxel-Version header (YYYY-MM-DD) and, for multi-workspace accounts, an X-Blaxel-Workspace header.
+  termsOfService: https://blaxel.ai/terms-of-service
+  contact:
+    name: Blaxel Support
+    email: support@blaxel.ai
+  version: v0
+servers:
+- url: https://api.blaxel.ai/v0
+security:
+- apiKey: []
+- bearerAuth: []
+tags:
+- name: Models
+paths:
+  /models:
+    get:
+      operationId: listModels
+      tags:
+      - Models
+      summary: List all model deployments in the workspace.
+      responses:
+        '200':
+          description: A list of models.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Model'
+    post:
+      operationId: createModel
+      tags:
+      - Models
+      summary: Create a new model deployment behind the model gateway.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Model'
+      responses:
+        '200':
+          description: The created model.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Model'
+  /models/{model_name}:
+    parameters:
+    - $ref: '#/components/parameters/ModelName'
+    get:
+      operationId: getModel
+      tags:
+      - Models
+      summary: Get a model by name.
+      responses:
+        '200':
+          description: The requested model.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Model'
+    put:
+      operationId: updateModel
+      tags:
+      - Models
+      summary: Update a model by name.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Model'
+      responses:
+        '200':
+          description: The updated model.
+    delete:
+      operationId: deleteModel
+      tags:
+      - Models
+      summary: Delete a model by name.
+      responses:
+        '200':
+          description: The deleted model.
+  /models/{model_name}/revisions:
+    parameters:
+    - $ref: '#/components/parameters/ModelName'
+    get:
+      operationId: listModelRevisions
+      tags:
+      - Models
+      summary: List revisions for a model.
+      responses:
+        '200':
+          description: A list of model revisions.
+components:
+  schemas:
+    Model:
+      type: object
+      properties:
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        spec:
+          type: object
+          properties:
+            runtime:
+              type: object
+            integrationConnections:
+              type: array
+              items:
+                type: string
+    Metadata:
+      type: object
+      properties:
+        name:
+          type: string
+        displayName:
+          type: string
+        workspace:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        labels:
+          type: object
+          additionalProperties:
+            type: string
+  parameters:
+    ModelName:
+      name: model_name
+      in: path
+      required: true
+      schema:
+        type: string
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-Blaxel-Authorization
+      description: API key supplied as "Bearer YOUR-API-KEY".
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: OAuth 2.0 short-lived JWT access token.

@@ -1,0 +1,153 @@
+openapi: 3.0.1
+info:
+  title: Blaxel Control Plane Agents Functions API
+  description: Representative specification of the Blaxel (formerly Beamlit) control plane REST API. The control plane manages agents, MCP/function servers, models, sandboxes, jobs, policies, integrations, and workspaces. Authenticate with a Bearer API key (Authorization or X-Blaxel-Authorization header) or an OAuth 2.0 short-lived JWT. Requests may include a Blaxel-Version header (YYYY-MM-DD) and, for multi-workspace accounts, an X-Blaxel-Workspace header.
+  termsOfService: https://blaxel.ai/terms-of-service
+  contact:
+    name: Blaxel Support
+    email: support@blaxel.ai
+  version: v0
+servers:
+- url: https://api.blaxel.ai/v0
+security:
+- apiKey: []
+- bearerAuth: []
+tags:
+- name: Functions
+paths:
+  /functions:
+    get:
+      operationId: listFunctions
+      tags:
+      - Functions
+      summary: List all functions (MCP servers) in the workspace.
+      responses:
+        '200':
+          description: A list of functions.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Function'
+    post:
+      operationId: createFunction
+      tags:
+      - Functions
+      summary: Create a new function (MCP server).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Function'
+      responses:
+        '200':
+          description: The created function.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Function'
+  /functions/{function_name}:
+    parameters:
+    - $ref: '#/components/parameters/FunctionName'
+    get:
+      operationId: getFunction
+      tags:
+      - Functions
+      summary: Get a function by name.
+      responses:
+        '200':
+          description: The requested function.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Function'
+    put:
+      operationId: updateFunction
+      tags:
+      - Functions
+      summary: Update a function by name.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Function'
+      responses:
+        '200':
+          description: The updated function.
+    delete:
+      operationId: deleteFunction
+      tags:
+      - Functions
+      summary: Delete a function by name.
+      responses:
+        '200':
+          description: The deleted function.
+  /functions/{function_name}/revisions:
+    parameters:
+    - $ref: '#/components/parameters/FunctionName'
+    get:
+      operationId: listFunctionRevisions
+      tags:
+      - Functions
+      summary: List revisions for a function.
+      responses:
+        '200':
+          description: A list of function revisions.
+components:
+  parameters:
+    FunctionName:
+      name: function_name
+      in: path
+      required: true
+      schema:
+        type: string
+  schemas:
+    Metadata:
+      type: object
+      properties:
+        name:
+          type: string
+        displayName:
+          type: string
+        workspace:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        labels:
+          type: object
+          additionalProperties:
+            type: string
+    Function:
+      type: object
+      properties:
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        spec:
+          type: object
+          properties:
+            description:
+              type: string
+            runtime:
+              type: object
+            integrationConnections:
+              type: array
+              items:
+                type: string
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-Blaxel-Authorization
+      description: API key supplied as "Bearer YOUR-API-KEY".
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: OAuth 2.0 short-lived JWT access token.

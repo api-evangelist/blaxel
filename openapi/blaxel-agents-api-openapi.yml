@@ -1,0 +1,157 @@
+openapi: 3.0.1
+info:
+  title: Blaxel Control Plane Agents API
+  description: Representative specification of the Blaxel (formerly Beamlit) control plane REST API. The control plane manages agents, MCP/function servers, models, sandboxes, jobs, policies, integrations, and workspaces. Authenticate with a Bearer API key (Authorization or X-Blaxel-Authorization header) or an OAuth 2.0 short-lived JWT. Requests may include a Blaxel-Version header (YYYY-MM-DD) and, for multi-workspace accounts, an X-Blaxel-Workspace header.
+  termsOfService: https://blaxel.ai/terms-of-service
+  contact:
+    name: Blaxel Support
+    email: support@blaxel.ai
+  version: v0
+servers:
+- url: https://api.blaxel.ai/v0
+security:
+- apiKey: []
+- bearerAuth: []
+tags:
+- name: Agents
+paths:
+  /agents:
+    get:
+      operationId: listAgents
+      tags:
+      - Agents
+      summary: List all agents in the workspace.
+      responses:
+        '200':
+          description: A list of agents.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Agent'
+    post:
+      operationId: createAgent
+      tags:
+      - Agents
+      summary: Create a new agent deployment.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Agent'
+      responses:
+        '200':
+          description: The created agent.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agent'
+  /agents/{agent_name}:
+    parameters:
+    - $ref: '#/components/parameters/AgentName'
+    get:
+      operationId: getAgent
+      tags:
+      - Agents
+      summary: Get an agent by name.
+      responses:
+        '200':
+          description: The requested agent.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agent'
+    put:
+      operationId: updateAgent
+      tags:
+      - Agents
+      summary: Update an agent by name.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Agent'
+      responses:
+        '200':
+          description: The updated agent.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agent'
+    delete:
+      operationId: deleteAgent
+      tags:
+      - Agents
+      summary: Delete an agent by name.
+      responses:
+        '200':
+          description: The deleted agent.
+  /agents/{agent_name}/revisions:
+    parameters:
+    - $ref: '#/components/parameters/AgentName'
+    get:
+      operationId: listAgentRevisions
+      tags:
+      - Agents
+      summary: List revisions for an agent.
+      responses:
+        '200':
+          description: A list of agent revisions.
+components:
+  parameters:
+    AgentName:
+      name: agent_name
+      in: path
+      required: true
+      schema:
+        type: string
+  schemas:
+    Agent:
+      type: object
+      properties:
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        spec:
+          type: object
+          properties:
+            description:
+              type: string
+            runtime:
+              type: object
+            policies:
+              type: array
+              items:
+                type: string
+    Metadata:
+      type: object
+      properties:
+        name:
+          type: string
+        displayName:
+          type: string
+        workspace:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        labels:
+          type: object
+          additionalProperties:
+            type: string
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-Blaxel-Authorization
+      description: API key supplied as "Bearer YOUR-API-KEY".
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: OAuth 2.0 short-lived JWT access token.
