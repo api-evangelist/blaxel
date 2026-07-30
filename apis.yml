@@ -7,7 +7,20 @@ description: Blaxel (formerly Beamlit) is an infrastructure and compute platform
   serverless code sandboxes, batch jobs, a multi-provider model gateway, deployment
   policies, integrations, and multi-tenant workspaces. The REST control plane lives
   at api.blaxel.ai/v0 and authenticates with a Bearer API key or OAuth 2.0.
-image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/apis-json-logo.jpg
+accessModel:
+  pricing: freemium
+  onboarding: open
+  trial: false
+  try_now: true
+  public: true
+  label: Freemium · Open access
+  confidence: high
+  source:
+  - plans
+  - authentication
+  generated: '2026-07-22'
+  method: derived
+image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/icons/blaxel.png
 tags:
 - AI
 - Agents
@@ -22,189 +35,510 @@ specificationVersion: '0.19'
 apis:
 - aid: blaxel:blaxel-agents-api
   name: Blaxel Agents API
-  tags:
-  - Agents
-  - Deployments
-  - Serverless
-  image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/apis-json-logo.jpg
+  description: The Agents API from Blaxel — 3 operation(s) for agents.
   humanURL: https://docs.blaxel.ai/Agents/Overview
   baseURL: https://api.blaxel.ai/v0
+  tags:
+  - Agents
   properties:
-  - url: https://docs.blaxel.ai/Agents/Overview
-    type: Documentation
-  - url: https://docs.blaxel.ai/api-reference/agents
-    type: APIReference
-  - url: openapi/blaxel-openapi.yml
-    type: OpenAPI
-  - url: collections/blaxel.postman_collection.json
-    type: PostmanCollection
-  - url: collections/blaxel.opencollection.json
-    type: OpenCollection
-  description: Deploy, list, update, and delete AI agents as serverless auto-scaling
-    HTTP endpoints, with revision history. Framework-agnostic - bring your own code
-    (LangChain, CrewAI, Claude Agent SDK) and Blaxel builds and runs it.
-- aid: blaxel:blaxel-functions-mcp-api
-  name: Blaxel Functions / MCP Servers API
+  - type: OpenAPI
+    url: openapi/blaxel-agents-api-openapi.yml
+  - type: Documentation
+    url: https://docs.blaxel.ai/Agents/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/agents
+  - type: PostmanCollection
+    url: collections/blaxel.postman_collection.json
+  - type: OpenCollection
+    url: collections/blaxel.opencollection.json
+  - type: Documentation
+    url: https://docs.blaxel.ai/Functions/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/functions
+  - type: Documentation
+    url: https://docs.blaxel.ai/Models/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/models
+  - type: Documentation
+    url: https://docs.blaxel.ai/Sandboxes/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/compute
+  - type: Documentation
+    url: https://docs.blaxel.ai/Jobs/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/jobs
+  - type: Documentation
+    url: https://docs.blaxel.ai/Model-Governance/Policies
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/policies
+  - type: Documentation
+    url: https://docs.blaxel.ai/Integrations/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/integrations
+  - type: Documentation
+    url: https://docs.blaxel.ai/Security/Workspace-access-control
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/workspaces
+- aid: blaxel:blaxel-compute-api
+  name: Blaxel Compute API
+  description: The Compute API from Blaxel — 6 operation(s) for compute.
+  humanURL: https://docs.blaxel.ai/Agents/Overview
+  baseURL: https://api.blaxel.ai/v0
+  tags:
+  - Compute
+  properties:
+  - type: OpenAPI
+    url: openapi/blaxel-compute-api-openapi.yml
+  - type: Documentation
+    url: https://docs.blaxel.ai/Agents/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/agents
+  - type: PostmanCollection
+    url: collections/blaxel.postman_collection.json
+  - type: OpenCollection
+    url: collections/blaxel.opencollection.json
+  - type: Documentation
+    url: https://docs.blaxel.ai/Functions/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/functions
+  - type: Documentation
+    url: https://docs.blaxel.ai/Models/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/models
+  - type: Documentation
+    url: https://docs.blaxel.ai/Sandboxes/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/compute
+  - type: Documentation
+    url: https://docs.blaxel.ai/Jobs/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/jobs
+  - type: Documentation
+    url: https://docs.blaxel.ai/Model-Governance/Policies
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/policies
+  - type: Documentation
+    url: https://docs.blaxel.ai/Integrations/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/integrations
+  - type: Documentation
+    url: https://docs.blaxel.ai/Security/Workspace-access-control
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/workspaces
+- aid: blaxel:blaxel-functions-api
+  name: Blaxel Functions API
+  description: The Functions API from Blaxel — 3 operation(s) for functions.
+  humanURL: https://docs.blaxel.ai/Agents/Overview
+  baseURL: https://api.blaxel.ai/v0
   tags:
   - Functions
-  - MCP
-  - Tools
-  image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/apis-json-logo.jpg
-  humanURL: https://docs.blaxel.ai/Functions/Overview
-  baseURL: https://api.blaxel.ai/v0
   properties:
-  - url: https://docs.blaxel.ai/Functions/Overview
-    type: Documentation
-  - url: https://docs.blaxel.ai/api-reference/functions
-    type: APIReference
-  - url: openapi/blaxel-openapi.yml
-    type: OpenAPI
-  - url: collections/blaxel.postman_collection.json
-    type: PostmanCollection
-  - url: collections/blaxel.opencollection.json
-    type: OpenCollection
-  description: Deploy custom MCP (Model Context Protocol) tool servers as fast-starting
-    serverless endpoints that extend agents' capabilities, with built-in authentication,
-    rate limiting, and observability. Managed as functions with revision history.
-- aid: blaxel:blaxel-models-gateway-api
-  name: Blaxel Models Gateway API
-  tags:
-  - Models
-  - Model Gateway
-  - Inference
-  - Routing
-  image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/apis-json-logo.jpg
-  humanURL: https://docs.blaxel.ai/Models/Overview
-  baseURL: https://api.blaxel.ai/v0
-  properties:
-  - url: https://docs.blaxel.ai/Models/Overview
-    type: Documentation
-  - url: https://docs.blaxel.ai/api-reference/models
-    type: APIReference
-  - url: openapi/blaxel-openapi.yml
-    type: OpenAPI
-  - url: collections/blaxel.postman_collection.json
-    type: PostmanCollection
-  - url: collections/blaxel.opencollection.json
-    type: OpenCollection
-  description: Register and manage model deployments that front an intelligent routing
-    layer to LLM providers, with built-in telemetry, token cost control, and fallback.
-    A single gateway endpoint proxies inference to the configured upstream provider.
-- aid: blaxel:blaxel-sandboxes-api
-  name: Blaxel Sandboxes API
-  tags:
-  - Sandboxes
-  - Compute
-  - Code Execution
-  - MicroVM
-  image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/apis-json-logo.jpg
-  humanURL: https://docs.blaxel.ai/Sandboxes/Overview
-  baseURL: https://api.blaxel.ai/v0
-  properties:
-  - url: https://docs.blaxel.ai/Sandboxes/Overview
-    type: Documentation
-  - url: https://docs.blaxel.ai/api-reference/compute
-    type: APIReference
-  - url: openapi/blaxel-openapi.yml
-    type: OpenAPI
-  - url: collections/blaxel.postman_collection.json
-    type: PostmanCollection
-  - url: collections/blaxel.opencollection.json
-    type: OpenCollection
-  description: Create, start, stop, and delete secure microVM sandboxes that boot from
-    standby in under 25ms, exposing filesystem, process, and code execution for agent
-    runtimes. Includes sandbox previews and scoped preview tokens for shareable URLs.
-- aid: blaxel:blaxel-jobs-api
-  name: Blaxel Jobs API
-  tags:
-  - Jobs
-  - Batch
-  - Async
-  image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/apis-json-logo.jpg
-  humanURL: https://docs.blaxel.ai/Jobs/Overview
-  baseURL: https://api.blaxel.ai/v0
-  properties:
-  - url: https://docs.blaxel.ai/Jobs/Overview
-    type: Documentation
-  - url: https://docs.blaxel.ai/api-reference/jobs
-    type: APIReference
-  - url: openapi/blaxel-openapi.yml
-    type: OpenAPI
-  - url: collections/blaxel.postman_collection.json
-    type: PostmanCollection
-  - url: collections/blaxel.opencollection.json
-    type: OpenCollection
-  description: Define and run asynchronous batch jobs for extended workloads (up to
-    24 hours) of background processing at scale, and manage their executions and revisions.
-- aid: blaxel:blaxel-policies-api
-  name: Blaxel Policies API
-  tags:
-  - Policies
-  - Governance
-  - Deployment
-  image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/apis-json-logo.jpg
-  humanURL: https://docs.blaxel.ai/Model-Governance/Policies
-  baseURL: https://api.blaxel.ai/v0
-  properties:
-  - url: https://docs.blaxel.ai/Model-Governance/Policies
-    type: Documentation
-  - url: https://docs.blaxel.ai/api-reference/policies
-    type: APIReference
-  - url: openapi/blaxel-openapi.yml
-    type: OpenAPI
-  - url: collections/blaxel.postman_collection.json
-    type: PostmanCollection
-  - url: collections/blaxel.opencollection.json
-    type: OpenCollection
-  description: Create and manage deployment policies that constrain where and how workloads
-    run - governing regions, flavors, and provider routing across environments.
+  - type: OpenAPI
+    url: openapi/blaxel-functions-api-openapi.yml
+  - type: Documentation
+    url: https://docs.blaxel.ai/Agents/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/agents
+  - type: PostmanCollection
+    url: collections/blaxel.postman_collection.json
+  - type: OpenCollection
+    url: collections/blaxel.opencollection.json
+  - type: Documentation
+    url: https://docs.blaxel.ai/Functions/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/functions
+  - type: Documentation
+    url: https://docs.blaxel.ai/Models/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/models
+  - type: Documentation
+    url: https://docs.blaxel.ai/Sandboxes/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/compute
+  - type: Documentation
+    url: https://docs.blaxel.ai/Jobs/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/jobs
+  - type: Documentation
+    url: https://docs.blaxel.ai/Model-Governance/Policies
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/policies
+  - type: Documentation
+    url: https://docs.blaxel.ai/Integrations/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/integrations
+  - type: Documentation
+    url: https://docs.blaxel.ai/Security/Workspace-access-control
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/workspaces
 - aid: blaxel:blaxel-integrations-api
   name: Blaxel Integrations API
+  description: The Integrations API from Blaxel — 5 operation(s) for integrations.
+  humanURL: https://docs.blaxel.ai/Agents/Overview
+  baseURL: https://api.blaxel.ai/v0
   tags:
   - Integrations
-  - Connections
-  - Providers
-  image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/apis-json-logo.jpg
-  humanURL: https://docs.blaxel.ai/Integrations/Overview
-  baseURL: https://api.blaxel.ai/v0
   properties:
-  - url: https://docs.blaxel.ai/Integrations/Overview
-    type: Documentation
-  - url: https://docs.blaxel.ai/api-reference/integrations
-    type: APIReference
-  - url: openapi/blaxel-openapi.yml
-    type: OpenAPI
-  - url: collections/blaxel.postman_collection.json
-    type: PostmanCollection
-  - url: collections/blaxel.opencollection.json
-    type: OpenCollection
-  description: Manage integration connections to external providers (model providers,
-    tool sources, code repositories), list connection-backed models, and read endpoint
-    configurations that agents and the model gateway consume.
+  - type: OpenAPI
+    url: openapi/blaxel-integrations-api-openapi.yml
+  - type: Documentation
+    url: https://docs.blaxel.ai/Agents/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/agents
+  - type: PostmanCollection
+    url: collections/blaxel.postman_collection.json
+  - type: OpenCollection
+    url: collections/blaxel.opencollection.json
+  - type: Documentation
+    url: https://docs.blaxel.ai/Functions/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/functions
+  - type: Documentation
+    url: https://docs.blaxel.ai/Models/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/models
+  - type: Documentation
+    url: https://docs.blaxel.ai/Sandboxes/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/compute
+  - type: Documentation
+    url: https://docs.blaxel.ai/Jobs/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/jobs
+  - type: Documentation
+    url: https://docs.blaxel.ai/Model-Governance/Policies
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/policies
+  - type: Documentation
+    url: https://docs.blaxel.ai/Integrations/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/integrations
+  - type: Documentation
+    url: https://docs.blaxel.ai/Security/Workspace-access-control
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/workspaces
+- aid: blaxel:blaxel-jobs-api
+  name: Blaxel Jobs API
+  description: The Jobs API from Blaxel — 4 operation(s) for jobs.
+  humanURL: https://docs.blaxel.ai/Agents/Overview
+  baseURL: https://api.blaxel.ai/v0
+  tags:
+  - Jobs
+  properties:
+  - type: OpenAPI
+    url: openapi/blaxel-jobs-api-openapi.yml
+  - type: Documentation
+    url: https://docs.blaxel.ai/Agents/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/agents
+  - type: PostmanCollection
+    url: collections/blaxel.postman_collection.json
+  - type: OpenCollection
+    url: collections/blaxel.opencollection.json
+  - type: Documentation
+    url: https://docs.blaxel.ai/Functions/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/functions
+  - type: Documentation
+    url: https://docs.blaxel.ai/Models/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/models
+  - type: Documentation
+    url: https://docs.blaxel.ai/Sandboxes/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/compute
+  - type: Documentation
+    url: https://docs.blaxel.ai/Jobs/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/jobs
+  - type: Documentation
+    url: https://docs.blaxel.ai/Model-Governance/Policies
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/policies
+  - type: Documentation
+    url: https://docs.blaxel.ai/Integrations/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/integrations
+  - type: Documentation
+    url: https://docs.blaxel.ai/Security/Workspace-access-control
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/workspaces
+- aid: blaxel:blaxel-locations-api
+  name: Blaxel Locations API
+  description: The Locations API from Blaxel — 1 operation(s) for locations.
+  humanURL: https://docs.blaxel.ai/Agents/Overview
+  baseURL: https://api.blaxel.ai/v0
+  tags:
+  - Locations
+  properties:
+  - type: OpenAPI
+    url: openapi/blaxel-locations-api-openapi.yml
+  - type: Documentation
+    url: https://docs.blaxel.ai/Agents/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/agents
+  - type: PostmanCollection
+    url: collections/blaxel.postman_collection.json
+  - type: OpenCollection
+    url: collections/blaxel.opencollection.json
+  - type: Documentation
+    url: https://docs.blaxel.ai/Functions/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/functions
+  - type: Documentation
+    url: https://docs.blaxel.ai/Models/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/models
+  - type: Documentation
+    url: https://docs.blaxel.ai/Sandboxes/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/compute
+  - type: Documentation
+    url: https://docs.blaxel.ai/Jobs/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/jobs
+  - type: Documentation
+    url: https://docs.blaxel.ai/Model-Governance/Policies
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/policies
+  - type: Documentation
+    url: https://docs.blaxel.ai/Integrations/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/integrations
+  - type: Documentation
+    url: https://docs.blaxel.ai/Security/Workspace-access-control
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/workspaces
+- aid: blaxel:blaxel-models-api
+  name: Blaxel Models API
+  description: The Models API from Blaxel — 3 operation(s) for models.
+  humanURL: https://docs.blaxel.ai/Agents/Overview
+  baseURL: https://api.blaxel.ai/v0
+  tags:
+  - Models
+  properties:
+  - type: OpenAPI
+    url: openapi/blaxel-models-api-openapi.yml
+  - type: Documentation
+    url: https://docs.blaxel.ai/Agents/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/agents
+  - type: PostmanCollection
+    url: collections/blaxel.postman_collection.json
+  - type: OpenCollection
+    url: collections/blaxel.opencollection.json
+  - type: Documentation
+    url: https://docs.blaxel.ai/Functions/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/functions
+  - type: Documentation
+    url: https://docs.blaxel.ai/Models/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/models
+  - type: Documentation
+    url: https://docs.blaxel.ai/Sandboxes/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/compute
+  - type: Documentation
+    url: https://docs.blaxel.ai/Jobs/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/jobs
+  - type: Documentation
+    url: https://docs.blaxel.ai/Model-Governance/Policies
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/policies
+  - type: Documentation
+    url: https://docs.blaxel.ai/Integrations/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/integrations
+  - type: Documentation
+    url: https://docs.blaxel.ai/Security/Workspace-access-control
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/workspaces
+- aid: blaxel:blaxel-policies-api
+  name: Blaxel Policies API
+  description: The Policies API from Blaxel — 2 operation(s) for policies.
+  humanURL: https://docs.blaxel.ai/Agents/Overview
+  baseURL: https://api.blaxel.ai/v0
+  tags:
+  - Policies
+  properties:
+  - type: OpenAPI
+    url: openapi/blaxel-policies-api-openapi.yml
+  - type: Documentation
+    url: https://docs.blaxel.ai/Agents/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/agents
+  - type: PostmanCollection
+    url: collections/blaxel.postman_collection.json
+  - type: OpenCollection
+    url: collections/blaxel.opencollection.json
+  - type: Documentation
+    url: https://docs.blaxel.ai/Functions/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/functions
+  - type: Documentation
+    url: https://docs.blaxel.ai/Models/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/models
+  - type: Documentation
+    url: https://docs.blaxel.ai/Sandboxes/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/compute
+  - type: Documentation
+    url: https://docs.blaxel.ai/Jobs/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/jobs
+  - type: Documentation
+    url: https://docs.blaxel.ai/Model-Governance/Policies
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/policies
+  - type: Documentation
+    url: https://docs.blaxel.ai/Integrations/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/integrations
+  - type: Documentation
+    url: https://docs.blaxel.ai/Security/Workspace-access-control
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/workspaces
+- aid: blaxel:blaxel-service-accounts-api
+  name: Blaxel Service Accounts API
+  description: The Service Accounts API from Blaxel — 2 operation(s) for service accounts.
+  humanURL: https://docs.blaxel.ai/Agents/Overview
+  baseURL: https://api.blaxel.ai/v0
+  tags:
+  - Service Accounts
+  properties:
+  - type: OpenAPI
+    url: openapi/blaxel-service-accounts-api-openapi.yml
+  - type: Documentation
+    url: https://docs.blaxel.ai/Agents/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/agents
+  - type: PostmanCollection
+    url: collections/blaxel.postman_collection.json
+  - type: OpenCollection
+    url: collections/blaxel.opencollection.json
+  - type: Documentation
+    url: https://docs.blaxel.ai/Functions/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/functions
+  - type: Documentation
+    url: https://docs.blaxel.ai/Models/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/models
+  - type: Documentation
+    url: https://docs.blaxel.ai/Sandboxes/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/compute
+  - type: Documentation
+    url: https://docs.blaxel.ai/Jobs/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/jobs
+  - type: Documentation
+    url: https://docs.blaxel.ai/Model-Governance/Policies
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/policies
+  - type: Documentation
+    url: https://docs.blaxel.ai/Integrations/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/integrations
+  - type: Documentation
+    url: https://docs.blaxel.ai/Security/Workspace-access-control
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/workspaces
+- aid: blaxel:blaxel-volumes-api
+  name: Blaxel Volumes API
+  description: The Volumes API from Blaxel — 1 operation(s) for volumes.
+  humanURL: https://docs.blaxel.ai/Agents/Overview
+  baseURL: https://api.blaxel.ai/v0
+  tags:
+  - Volumes
+  properties:
+  - type: OpenAPI
+    url: openapi/blaxel-volumes-api-openapi.yml
+  - type: Documentation
+    url: https://docs.blaxel.ai/Agents/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/agents
+  - type: PostmanCollection
+    url: collections/blaxel.postman_collection.json
+  - type: OpenCollection
+    url: collections/blaxel.opencollection.json
+  - type: Documentation
+    url: https://docs.blaxel.ai/Functions/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/functions
+  - type: Documentation
+    url: https://docs.blaxel.ai/Models/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/models
+  - type: Documentation
+    url: https://docs.blaxel.ai/Sandboxes/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/compute
+  - type: Documentation
+    url: https://docs.blaxel.ai/Jobs/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/jobs
+  - type: Documentation
+    url: https://docs.blaxel.ai/Model-Governance/Policies
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/policies
+  - type: Documentation
+    url: https://docs.blaxel.ai/Integrations/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/integrations
+  - type: Documentation
+    url: https://docs.blaxel.ai/Security/Workspace-access-control
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/workspaces
 - aid: blaxel:blaxel-workspaces-api
   name: Blaxel Workspaces API
+  description: The Workspaces API from Blaxel — 3 operation(s) for workspaces.
+  humanURL: https://docs.blaxel.ai/Agents/Overview
+  baseURL: https://api.blaxel.ai/v0
   tags:
   - Workspaces
-  - IAM
-  - Multi-Tenant
-  - Service Accounts
-  image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/apis-json-logo.jpg
-  humanURL: https://docs.blaxel.ai/Security/Workspace-access-control
-  baseURL: https://api.blaxel.ai/v0
   properties:
-  - url: https://docs.blaxel.ai/Security/Workspace-access-control
-    type: Documentation
-  - url: https://docs.blaxel.ai/api-reference/workspaces
-    type: APIReference
-  - url: openapi/blaxel-openapi.yml
-    type: OpenAPI
-  - url: collections/blaxel.postman_collection.json
-    type: PostmanCollection
-  - url: collections/blaxel.opencollection.json
-    type: OpenCollection
-  description: Create and manage multi-tenant workspaces, invite and manage users and
-    roles, and administer service accounts and their API keys for programmatic access
-    and IAM.
+  - type: OpenAPI
+    url: openapi/blaxel-workspaces-api-openapi.yml
+  - type: Documentation
+    url: https://docs.blaxel.ai/Agents/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/agents
+  - type: PostmanCollection
+    url: collections/blaxel.postman_collection.json
+  - type: OpenCollection
+    url: collections/blaxel.opencollection.json
+  - type: Documentation
+    url: https://docs.blaxel.ai/Functions/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/functions
+  - type: Documentation
+    url: https://docs.blaxel.ai/Models/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/models
+  - type: Documentation
+    url: https://docs.blaxel.ai/Sandboxes/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/compute
+  - type: Documentation
+    url: https://docs.blaxel.ai/Jobs/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/jobs
+  - type: Documentation
+    url: https://docs.blaxel.ai/Model-Governance/Policies
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/policies
+  - type: Documentation
+    url: https://docs.blaxel.ai/Integrations/Overview
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/integrations
+  - type: Documentation
+    url: https://docs.blaxel.ai/Security/Workspace-access-control
+  - type: APIReference
+    url: https://docs.blaxel.ai/api-reference/workspaces
 common:
 - type: AgenticAccess
   url: agentic-access/blaxel-agentic-access.yml
