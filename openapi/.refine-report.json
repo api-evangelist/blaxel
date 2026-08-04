@@ -1,0 +1,34 @@
+{
+  "provider": "blaxel",
+  "sources": [
+    "blaxel-agents-api-openapi.yml",
+    "blaxel-compute-api-openapi.yml",
+    "blaxel-functions-api-openapi.yml",
+    "blaxel-integrations-api-openapi.yml",
+    "blaxel-jobs-api-openapi.yml",
+    "blaxel-locations-api-openapi.yml",
+    "blaxel-models-api-openapi.yml",
+    "blaxel-policies-api-openapi.yml",
+    "blaxel-service-accounts-api-openapi.yml",
+    "blaxel-volumes-api-openapi.yml",
+    "blaxel-workspaces-api-openapi.yml"
+  ],
+  "outputs": [
+    "blaxel-agents-api-openapi.yml",
+    "blaxel-compute-api-openapi.yml",
+    "blaxel-functions-api-openapi.yml",
+    "blaxel-integrations-api-openapi.yml",
+    "blaxel-jobs-api-openapi.yml",
+    "blaxel-locations-api-openapi.yml",
+    "blaxel-models-api-openapi.yml",
+    "blaxel-policies-api-openapi.yml",
+    "blaxel-service-accounts-api-openapi.yml",
+    "blaxel-volumes-api-openapi.yml",
+    "blaxel-workspaces-api-openapi.yml"
+  ],
+  "archived": [],
+  "errors": [],
+  "warnings": [],
+  "notes": [],
+  "skipped": []
+}

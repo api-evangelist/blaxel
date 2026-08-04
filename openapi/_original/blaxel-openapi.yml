@@ -1,0 +1,948 @@
+openapi: 3.0.1
+info:
+  title: Blaxel Control Plane API
+  description: >-
+    Representative specification of the Blaxel (formerly Beamlit) control plane
+    REST API. The control plane manages agents, MCP/function servers, models,
+    sandboxes, jobs, policies, integrations, and workspaces. Authenticate with a
+    Bearer API key (Authorization or X-Blaxel-Authorization header) or an OAuth
+    2.0 short-lived JWT. Requests may include a Blaxel-Version header
+    (YYYY-MM-DD) and, for multi-workspace accounts, an X-Blaxel-Workspace header.
+  termsOfService: https://blaxel.ai/terms-of-service
+  contact:
+    name: Blaxel Support
+    email: support@blaxel.ai
+  version: 'v0'
+servers:
+  - url: https://api.blaxel.ai/v0
+security:
+  - apiKey: []
+  - bearerAuth: []
+tags:
+  - name: Agents
+  - name: Functions
+  - name: Models
+  - name: Compute
+  - name: Jobs
+  - name: Policies
+  - name: Integrations
+  - name: Workspaces
+  - name: Service Accounts
+  - name: Volumes
+  - name: Locations
+paths:
+  /agents:
+    get:
+      operationId: listAgents
+      tags: [Agents]
+      summary: List all agents in the workspace.
+      responses:
+        '200':
+          description: A list of agents.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Agent'
+    post:
+      operationId: createAgent
+      tags: [Agents]
+      summary: Create a new agent deployment.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Agent'
+      responses:
+        '200':
+          description: The created agent.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agent'
+  /agents/{agent_name}:
+    parameters:
+      - $ref: '#/components/parameters/AgentName'
+    get:
+      operationId: getAgent
+      tags: [Agents]
+      summary: Get an agent by name.
+      responses:
+        '200':
+          description: The requested agent.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agent'
+    put:
+      operationId: updateAgent
+      tags: [Agents]
+      summary: Update an agent by name.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Agent'
+      responses:
+        '200':
+          description: The updated agent.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agent'
+    delete:
+      operationId: deleteAgent
+      tags: [Agents]
+      summary: Delete an agent by name.
+      responses:
+        '200':
+          description: The deleted agent.
+  /agents/{agent_name}/revisions:
+    parameters:
+      - $ref: '#/components/parameters/AgentName'
+    get:
+      operationId: listAgentRevisions
+      tags: [Agents]
+      summary: List revisions for an agent.
+      responses:
+        '200':
+          description: A list of agent revisions.
+  /functions:
+    get:
+      operationId: listFunctions
+      tags: [Functions]
+      summary: List all functions (MCP servers) in the workspace.
+      responses:
+        '200':
+          description: A list of functions.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Function'
+    post:
+      operationId: createFunction
+      tags: [Functions]
+      summary: Create a new function (MCP server).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Function'
+      responses:
+        '200':
+          description: The created function.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Function'
+  /functions/{function_name}:
+    parameters:
+      - $ref: '#/components/parameters/FunctionName'
+    get:
+      operationId: getFunction
+      tags: [Functions]
+      summary: Get a function by name.
+      responses:
+        '200':
+          description: The requested function.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Function'
+    put:
+      operationId: updateFunction
+      tags: [Functions]
+      summary: Update a function by name.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Function'
+      responses:
+        '200':
+          description: The updated function.
+    delete:
+      operationId: deleteFunction
+      tags: [Functions]
+      summary: Delete a function by name.
+      responses:
+        '200':
+          description: The deleted function.
+  /functions/{function_name}/revisions:
+    parameters:
+      - $ref: '#/components/parameters/FunctionName'
+    get:
+      operationId: listFunctionRevisions
+      tags: [Functions]
+      summary: List revisions for a function.
+      responses:
+        '200':
+          description: A list of function revisions.
+  /models:
+    get:
+      operationId: listModels
+      tags: [Models]
+      summary: List all model deployments in the workspace.
+      responses:
+        '200':
+          description: A list of models.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Model'
+    post:
+      operationId: createModel
+      tags: [Models]
+      summary: Create a new model deployment behind the model gateway.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Model'
+      responses:
+        '200':
+          description: The created model.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Model'
+  /models/{model_name}:
+    parameters:
+      - $ref: '#/components/parameters/ModelName'
+    get:
+      operationId: getModel
+      tags: [Models]
+      summary: Get a model by name.
+      responses:
+        '200':
+          description: The requested model.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Model'
+    put:
+      operationId: updateModel
+      tags: [Models]
+      summary: Update a model by name.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Model'
+      responses:
+        '200':
+          description: The updated model.
+    delete:
+      operationId: deleteModel
+      tags: [Models]
+      summary: Delete a model by name.
+      responses:
+        '200':
+          description: The deleted model.
+  /models/{model_name}/revisions:
+    parameters:
+      - $ref: '#/components/parameters/ModelName'
+    get:
+      operationId: listModelRevisions
+      tags: [Models]
+      summary: List revisions for a model.
+      responses:
+        '200':
+          description: A list of model revisions.
+  /sandboxes:
+    get:
+      operationId: listSandboxes
+      tags: [Compute]
+      summary: List all sandboxes in the workspace.
+      responses:
+        '200':
+          description: A list of sandboxes.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Sandbox'
+    post:
+      operationId: createSandbox
+      tags: [Compute]
+      summary: Create a new sandbox.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Sandbox'
+      responses:
+        '200':
+          description: The created sandbox.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sandbox'
+  /sandboxes/{sandbox_name}:
+    parameters:
+      - $ref: '#/components/parameters/SandboxName'
+    get:
+      operationId: getSandbox
+      tags: [Compute]
+      summary: Get a sandbox by name.
+      responses:
+        '200':
+          description: The requested sandbox.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sandbox'
+    put:
+      operationId: updateSandbox
+      tags: [Compute]
+      summary: Update a sandbox by name.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Sandbox'
+      responses:
+        '200':
+          description: The updated sandbox.
+    delete:
+      operationId: deleteSandbox
+      tags: [Compute]
+      summary: Delete a sandbox by name.
+      responses:
+        '200':
+          description: The deleted sandbox.
+  /sandboxes/{sandbox_name}/start:
+    parameters:
+      - $ref: '#/components/parameters/SandboxName'
+    post:
+      operationId: startSandbox
+      tags: [Compute]
+      summary: Start a sandbox.
+      responses:
+        '200':
+          description: The started sandbox.
+  /sandboxes/{sandbox_name}/stop:
+    parameters:
+      - $ref: '#/components/parameters/SandboxName'
+    post:
+      operationId: stopSandbox
+      tags: [Compute]
+      summary: Stop a sandbox.
+      responses:
+        '200':
+          description: The stopped sandbox.
+  /sandboxes/{sandbox_name}/previews:
+    parameters:
+      - $ref: '#/components/parameters/SandboxName'
+    get:
+      operationId: listSandboxPreviews
+      tags: [Compute]
+      summary: List previews for a sandbox.
+      responses:
+        '200':
+          description: A list of sandbox previews.
+    post:
+      operationId: createSandboxPreview
+      tags: [Compute]
+      summary: Create a preview for a sandbox.
+      responses:
+        '200':
+          description: The created sandbox preview.
+  /sandboxes/{sandbox_name}/previews/{preview_name}/tokens:
+    parameters:
+      - $ref: '#/components/parameters/SandboxName'
+      - name: preview_name
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: listSandboxPreviewTokens
+      tags: [Compute]
+      summary: List tokens for a sandbox preview.
+      responses:
+        '200':
+          description: A list of preview tokens.
+    post:
+      operationId: createSandboxPreviewToken
+      tags: [Compute]
+      summary: Create a token for a sandbox preview.
+      responses:
+        '200':
+          description: The created preview token.
+  /jobs:
+    get:
+      operationId: listJobs
+      tags: [Jobs]
+      summary: List all jobs in the workspace.
+      responses:
+        '200':
+          description: A list of jobs.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Job'
+    post:
+      operationId: createJob
+      tags: [Jobs]
+      summary: Create a new job.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Job'
+      responses:
+        '200':
+          description: The created job.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job'
+  /jobs/{job_id}:
+    parameters:
+      - name: job_id
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: getJob
+      tags: [Jobs]
+      summary: Get a job by id.
+      responses:
+        '200':
+          description: The requested job.
+    put:
+      operationId: updateJob
+      tags: [Jobs]
+      summary: Update a job by id.
+      responses:
+        '200':
+          description: The updated job.
+    delete:
+      operationId: deleteJob
+      tags: [Jobs]
+      summary: Delete a job by id.
+      responses:
+        '200':
+          description: The deleted job.
+  /jobs/{job_id}/executions:
+    parameters:
+      - name: job_id
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: listJobExecutions
+      tags: [Jobs]
+      summary: List executions for a job.
+      responses:
+        '200':
+          description: A list of job executions.
+    post:
+      operationId: createJobExecution
+      tags: [Jobs]
+      summary: Create (run) a job execution.
+      responses:
+        '200':
+          description: The created job execution.
+  /jobs/{job_id}/executions/{execution_id}:
+    parameters:
+      - name: job_id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: execution_id
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: getJobExecution
+      tags: [Jobs]
+      summary: Get a job execution.
+      responses:
+        '200':
+          description: The requested job execution.
+    delete:
+      operationId: deleteJobExecution
+      tags: [Jobs]
+      summary: Delete a job execution.
+      responses:
+        '200':
+          description: The deleted job execution.
+  /policies:
+    get:
+      operationId: listPolicies
+      tags: [Policies]
+      summary: List all policies in the workspace.
+      responses:
+        '200':
+          description: A list of policies.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Policy'
+    post:
+      operationId: createPolicy
+      tags: [Policies]
+      summary: Create a new policy.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Policy'
+      responses:
+        '200':
+          description: The created policy.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Policy'
+  /policies/{policy_name}:
+    parameters:
+      - name: policy_name
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: getPolicy
+      tags: [Policies]
+      summary: Get a policy by name.
+      responses:
+        '200':
+          description: The requested policy.
+    put:
+      operationId: updatePolicy
+      tags: [Policies]
+      summary: Update a policy by name.
+      responses:
+        '200':
+          description: The updated policy.
+    delete:
+      operationId: deletePolicy
+      tags: [Policies]
+      summary: Delete a policy by name.
+      responses:
+        '200':
+          description: The deleted policy.
+  /integrations/{integration_name}:
+    parameters:
+      - name: integration_name
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: getIntegration
+      tags: [Integrations]
+      summary: Get an integration by name.
+      responses:
+        '200':
+          description: The requested integration.
+  /integrations/connections:
+    get:
+      operationId: listIntegrationConnections
+      tags: [Integrations]
+      summary: List all integration connections in the workspace.
+      responses:
+        '200':
+          description: A list of integration connections.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/IntegrationConnection'
+    post:
+      operationId: createIntegrationConnection
+      tags: [Integrations]
+      summary: Create a new integration connection.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IntegrationConnection'
+      responses:
+        '200':
+          description: The created integration connection.
+  /integrations/connections/{connection_name}:
+    parameters:
+      - $ref: '#/components/parameters/ConnectionName'
+    get:
+      operationId: getIntegrationConnection
+      tags: [Integrations]
+      summary: Get an integration connection by name.
+      responses:
+        '200':
+          description: The requested integration connection.
+    put:
+      operationId: updateIntegrationConnection
+      tags: [Integrations]
+      summary: Update an integration connection by name.
+      responses:
+        '200':
+          description: The updated integration connection.
+    delete:
+      operationId: deleteIntegrationConnection
+      tags: [Integrations]
+      summary: Delete an integration connection by name.
+      responses:
+        '200':
+          description: The deleted integration connection.
+  /integrations/connections/{connection_name}/models:
+    parameters:
+      - $ref: '#/components/parameters/ConnectionName'
+    get:
+      operationId: listIntegrationConnectionModels
+      tags: [Integrations]
+      summary: List models available through an integration connection.
+      responses:
+        '200':
+          description: A list of connection models.
+  /integrations/connections/{connection_name}/endpointConfigurations:
+    parameters:
+      - $ref: '#/components/parameters/ConnectionName'
+    get:
+      operationId: getIntegrationConnectionModelEndpointConfigurations
+      tags: [Integrations]
+      summary: Get endpoint configurations for an integration connection.
+      responses:
+        '200':
+          description: The endpoint configurations.
+  /workspaces:
+    get:
+      operationId: listWorkspaces
+      tags: [Workspaces]
+      summary: List all workspaces the caller belongs to.
+      responses:
+        '200':
+          description: A list of workspaces.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Workspace'
+    post:
+      operationId: createWorkspace
+      tags: [Workspaces]
+      summary: Create a new workspace.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Workspace'
+      responses:
+        '200':
+          description: The created workspace.
+  /workspaces/{workspace_name}:
+    parameters:
+      - name: workspace_name
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: getWorkspace
+      tags: [Workspaces]
+      summary: Get a workspace by name.
+      responses:
+        '200':
+          description: The requested workspace.
+    put:
+      operationId: updateWorkspace
+      tags: [Workspaces]
+      summary: Update a workspace by name.
+      responses:
+        '200':
+          description: The updated workspace.
+    delete:
+      operationId: deleteWorkspace
+      tags: [Workspaces]
+      summary: Delete a workspace by name.
+      responses:
+        '200':
+          description: The deleted workspace.
+  /users:
+    get:
+      operationId: listWorkspaceUsers
+      tags: [Workspaces]
+      summary: List users in the current workspace.
+      responses:
+        '200':
+          description: A list of workspace users.
+    post:
+      operationId: inviteWorkspaceUser
+      tags: [Workspaces]
+      summary: Invite a user to the current workspace.
+      responses:
+        '200':
+          description: The invited user.
+  /service_accounts:
+    get:
+      operationId: getWorkspaceServiceAccounts
+      tags: [Service Accounts]
+      summary: List service accounts in the workspace.
+      responses:
+        '200':
+          description: A list of service accounts.
+    post:
+      operationId: createWorkspaceServiceAccount
+      tags: [Service Accounts]
+      summary: Create a workspace service account.
+      responses:
+        '200':
+          description: The created service account.
+  /service_accounts/{client_id}/api_keys:
+    parameters:
+      - name: client_id
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: listApiKeysForServiceAccount
+      tags: [Service Accounts]
+      summary: List API keys for a service account.
+      responses:
+        '200':
+          description: A list of API keys.
+    post:
+      operationId: createApiKeyForServiceAccount
+      tags: [Service Accounts]
+      summary: Create an API key for a service account.
+      responses:
+        '200':
+          description: The created API key.
+  /volumes:
+    get:
+      operationId: listVolumes
+      tags: [Volumes]
+      summary: List all volumes in the workspace.
+      responses:
+        '200':
+          description: A list of volumes.
+    post:
+      operationId: createVolume
+      tags: [Volumes]
+      summary: Create a new volume.
+      responses:
+        '200':
+          description: The created volume.
+  /locations:
+    get:
+      operationId: listLocations
+      tags: [Locations]
+      summary: List available deployment locations.
+      responses:
+        '200':
+          description: A list of locations.
+components:
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-Blaxel-Authorization
+      description: API key supplied as "Bearer YOUR-API-KEY".
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: OAuth 2.0 short-lived JWT access token.
+  parameters:
+    AgentName:
+      name: agent_name
+      in: path
+      required: true
+      schema:
+        type: string
+    FunctionName:
+      name: function_name
+      in: path
+      required: true
+      schema:
+        type: string
+    ModelName:
+      name: model_name
+      in: path
+      required: true
+      schema:
+        type: string
+    SandboxName:
+      name: sandbox_name
+      in: path
+      required: true
+      schema:
+        type: string
+    ConnectionName:
+      name: connection_name
+      in: path
+      required: true
+      schema:
+        type: string
+  schemas:
+    Metadata:
+      type: object
+      properties:
+        name:
+          type: string
+        displayName:
+          type: string
+        workspace:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        labels:
+          type: object
+          additionalProperties:
+            type: string
+    Agent:
+      type: object
+      properties:
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        spec:
+          type: object
+          properties:
+            description:
+              type: string
+            runtime:
+              type: object
+            policies:
+              type: array
+              items:
+                type: string
+    Function:
+      type: object
+      properties:
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        spec:
+          type: object
+          properties:
+            description:
+              type: string
+            runtime:
+              type: object
+            integrationConnections:
+              type: array
+              items:
+                type: string
+    Model:
+      type: object
+      properties:
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        spec:
+          type: object
+          properties:
+            runtime:
+              type: object
+            integrationConnections:
+              type: array
+              items:
+                type: string
+    Sandbox:
+      type: object
+      properties:
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        spec:
+          type: object
+          properties:
+            runtime:
+              type: object
+            ttl:
+              type: string
+            memory:
+              type: integer
+    Job:
+      type: object
+      properties:
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        spec:
+          type: object
+          properties:
+            runtime:
+              type: object
+            maxConcurrentTasks:
+              type: integer
+            maxRetries:
+              type: integer
+            timeout:
+              type: integer
+    Policy:
+      type: object
+      properties:
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        spec:
+          type: object
+          properties:
+            type:
+              type: string
+            locations:
+              type: array
+              items:
+                type: object
+            flavors:
+              type: array
+              items:
+                type: object
+    IntegrationConnection:
+      type: object
+      properties:
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        spec:
+          type: object
+          properties:
+            integration:
+              type: string
+            config:
+              type: object
+            secret:
+              type: object
+    Workspace:
+      type: object
+      properties:
+        name:
+          type: string
+        displayName:
+          type: string
+        region:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
