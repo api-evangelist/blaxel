@@ -1,0 +1,587 @@
+{
+  "item": [
+    {
+      "id": "6a53496b-4998-4cd7-bcf8-958fd8336cb8",
+      "name": "Models",
+      "description": {
+        "content": "",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "39e72af3-4877-4b07-805b-44851ba91272",
+          "name": "List all model deployments in the workspace.",
+          "request": {
+            "name": "List all model deployments in the workspace.",
+            "description": {},
+            "url": {
+              "path": [
+                "models"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "81220974-02da-4c4e-9050-8f3988581490",
+              "name": "A list of models.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "models"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "X-Blaxel-Authorization",
+                    "value": "<API Key>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "[\n  {\n    \"metadata\": {\n      \"name\": \"string\",\n      \"displayName\": \"string\",\n      \"workspace\": \"string\",\n      \"createdAt\": \"2010-07-25T18:39:48.438Z\",\n      \"updatedAt\": \"2024-02-26T08:00:36.554Z\",\n      \"labels\": {\n        \"key_0\": \"string\",\n        \"key_1\": \"string\"\n      }\n    },\n    \"spec\": {\n      \"runtime\": {},\n      \"integrationConnections\": [\n        \"string\",\n        \"string\"\n      ]\n    }\n  },\n  {\n    \"metadata\": {\n      \"name\": \"string\",\n      \"displayName\": \"string\",\n      \"workspace\": \"string\",\n      \"createdAt\": \"1963-08-14T16:08:03.719Z\",\n      \"updatedAt\": \"1957-10-07T17:39:48.560Z\",\n      \"labels\": {\n        \"key_0\": \"string\",\n        \"key_1\": \"string\",\n        \"key_2\": \"string\"\n      }\n    },\n    \"spec\": {\n      \"runtime\": {},\n      \"integrationConnections\": [\n        \"string\",\n        \"string\"\n      ]\n    }\n  }\n]",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "69ad3b5d-4cef-401d-874a-c42058d10632",
+          "name": "Create a new model deployment behind the model gateway.",
+          "request": {
+            "name": "Create a new model deployment behind the model gateway.",
+            "description": {},
+            "url": {
+              "path": [
+                "models"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": null,
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"metadata\": {\n    \"name\": \"<string>\",\n    \"displayName\": \"<string>\",\n    \"workspace\": \"<string>\",\n    \"createdAt\": \"<dateTime>\",\n    \"updatedAt\": \"<dateTime>\",\n    \"labels\": {\n      \"key_0\": \"<string>\"\n    }\n  },\n  \"spec\": {\n    \"runtime\": \"<object>\",\n    \"integrationConnections\": [\n      \"<string>\",\n      \"<string>\"\n    ]\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "cbb7bf05-4c8d-4182-b49c-548eb3ca0e76",
+              "name": "The created model.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "models"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "X-Blaxel-Authorization",
+                    "value": "<API Key>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"metadata\": {\n    \"name\": \"<string>\",\n    \"displayName\": \"<string>\",\n    \"workspace\": \"<string>\",\n    \"createdAt\": \"<dateTime>\",\n    \"updatedAt\": \"<dateTime>\",\n    \"labels\": {\n      \"key_0\": \"<string>\"\n    }\n  },\n  \"spec\": {\n    \"runtime\": \"<object>\",\n    \"integrationConnections\": [\n      \"<string>\",\n      \"<string>\"\n    ]\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"metadata\": {\n    \"name\": \"<string>\",\n    \"displayName\": \"<string>\",\n    \"workspace\": \"<string>\",\n    \"createdAt\": \"<dateTime>\",\n    \"updatedAt\": \"<dateTime>\",\n    \"labels\": {\n      \"key_0\": \"<string>\"\n    }\n  },\n  \"spec\": {\n    \"runtime\": \"<object>\",\n    \"integrationConnections\": [\n      \"<string>\",\n      \"<string>\"\n    ]\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "0b11b3c6-bcec-4246-bd8d-da25daf014ce",
+          "name": "Get a model by name.",
+          "request": {
+            "name": "Get a model by name.",
+            "description": {},
+            "url": {
+              "path": [
+                "models",
+                ":model_name"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "model_name",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "835228ea-f250-4bce-bee0-4d4a4d91be95",
+              "name": "The requested model.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "models",
+                    ":model_name"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "model_name",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "X-Blaxel-Authorization",
+                    "value": "<API Key>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"metadata\": {\n    \"name\": \"<string>\",\n    \"displayName\": \"<string>\",\n    \"workspace\": \"<string>\",\n    \"createdAt\": \"<dateTime>\",\n    \"updatedAt\": \"<dateTime>\",\n    \"labels\": {\n      \"key_0\": \"<string>\"\n    }\n  },\n  \"spec\": {\n    \"runtime\": \"<object>\",\n    \"integrationConnections\": [\n      \"<string>\",\n      \"<string>\"\n    ]\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "04ac135a-e754-4c3f-b53a-9217912c2c8e",
+          "name": "Update a model by name.",
+          "request": {
+            "name": "Update a model by name.",
+            "description": {},
+            "url": {
+              "path": [
+                "models",
+                ":model_name"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "model_name",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "method": "PUT",
+            "auth": null,
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"metadata\": {\n    \"name\": \"<string>\",\n    \"displayName\": \"<string>\",\n    \"workspace\": \"<string>\",\n    \"createdAt\": \"<dateTime>\",\n    \"updatedAt\": \"<dateTime>\",\n    \"labels\": {\n      \"key_0\": \"<string>\"\n    }\n  },\n  \"spec\": {\n    \"runtime\": \"<object>\",\n    \"integrationConnections\": [\n      \"<string>\",\n      \"<string>\"\n    ]\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "5a39ed32-5f4c-411e-a55f-6f60bb9136ad",
+              "name": "The updated model.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "models",
+                    ":model_name"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "model_name",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "X-Blaxel-Authorization",
+                    "value": "<API Key>"
+                  }
+                ],
+                "method": "PUT",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"metadata\": {\n    \"name\": \"<string>\",\n    \"displayName\": \"<string>\",\n    \"workspace\": \"<string>\",\n    \"createdAt\": \"<dateTime>\",\n    \"updatedAt\": \"<dateTime>\",\n    \"labels\": {\n      \"key_0\": \"<string>\"\n    }\n  },\n  \"spec\": {\n    \"runtime\": \"<object>\",\n    \"integrationConnections\": [\n      \"<string>\",\n      \"<string>\"\n    ]\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "6b723ca3-0f76-446e-a510-95224db02ab2",
+          "name": "Delete a model by name.",
+          "request": {
+            "name": "Delete a model by name.",
+            "description": {},
+            "url": {
+              "path": [
+                "models",
+                ":model_name"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "model_name",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "method": "DELETE",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "aedf5833-2d84-47c4-9ac9-243a0ef95357",
+              "name": "The deleted model.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "models",
+                    ":model_name"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "model_name",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "X-Blaxel-Authorization",
+                    "value": "<API Key>"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "942c680b-7352-41b0-b276-a3d8fdc0e08f",
+          "name": "List revisions for a model.",
+          "request": {
+            "name": "List revisions for a model.",
+            "description": {},
+            "url": {
+              "path": [
+                "models",
+                ":model_name",
+                "revisions"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "model_name",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "1c3e8446-586f-4e94-ab00-2e0263588142",
+              "name": "A list of model revisions.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "models",
+                    ":model_name",
+                    "revisions"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "model_name",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "X-Blaxel-Authorization",
+                    "value": "<API Key>"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "type": "string",
+      "value": "https://api.blaxel.ai/v0",
+      "key": "baseUrl"
+    }
+  ],
+  "auth": {
+    "type": "apikey",
+    "apikey": [
+      {
+        "key": "key",
+        "value": "X-Blaxel-Authorization"
+      },
+      {
+        "key": "value",
+        "value": "{{apiKey}}"
+      },
+      {
+        "key": "in",
+        "value": "header"
+      }
+    ]
+  },
+  "info": {
+    "_postman_id": "e2446267-3463-43f5-8e74-2e67ad909e57",
+    "name": "Blaxel Control Plane Agents Models API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": {
+      "content": "Representative specification of the Blaxel (formerly Beamlit) control plane REST API. The control plane manages agents, MCP/function servers, models, sandboxes, jobs, policies, integrations, and workspaces. Authenticate with a Bearer API key (Authorization or X-Blaxel-Authorization header) or an OAuth 2.0 short-lived JWT. Requests may include a Blaxel-Version header (YYYY-MM-DD) and, for multi-workspace accounts, an X-Blaxel-Workspace header.\n\nContact Support:\n Name: Blaxel Support\n Email: support@blaxel.ai",
+      "type": "text/plain"
+    }
+  }
+}

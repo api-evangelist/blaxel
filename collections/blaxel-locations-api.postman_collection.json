@@ -1,0 +1,114 @@
+{
+  "item": [
+    {
+      "id": "c1898bac-3c0b-4d5e-b761-e52d1d003a5e",
+      "name": "Locations",
+      "description": {
+        "content": "",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "86ffaff1-4bc0-4bbd-84b4-b388adb35757",
+          "name": "List available deployment locations.",
+          "request": {
+            "name": "List available deployment locations.",
+            "description": {},
+            "url": {
+              "path": [
+                "locations"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "0351f4c3-aba5-4358-921b-8bff7b4739e5",
+              "name": "A list of locations.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "locations"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "X-Blaxel-Authorization",
+                    "value": "<API Key>"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "type": "string",
+      "value": "https://api.blaxel.ai/v0",
+      "key": "baseUrl"
+    }
+  ],
+  "auth": {
+    "type": "apikey",
+    "apikey": [
+      {
+        "key": "key",
+        "value": "X-Blaxel-Authorization"
+      },
+      {
+        "key": "value",
+        "value": "{{apiKey}}"
+      },
+      {
+        "key": "in",
+        "value": "header"
+      }
+    ]
+  },
+  "info": {
+    "_postman_id": "e4f47b35-cbf3-47ea-8286-a8af855a9237",
+    "name": "Blaxel Control Plane Agents Locations API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": {
+      "content": "Representative specification of the Blaxel (formerly Beamlit) control plane REST API. The control plane manages agents, MCP/function servers, models, sandboxes, jobs, policies, integrations, and workspaces. Authenticate with a Bearer API key (Authorization or X-Blaxel-Authorization header) or an OAuth 2.0 short-lived JWT. Requests may include a Blaxel-Version header (YYYY-MM-DD) and, for multi-workspace accounts, an X-Blaxel-Workspace header.\n\nContact Support:\n Name: Blaxel Support\n Email: support@blaxel.ai",
+      "type": "text/plain"
+    }
+  }
+}

@@ -1,0 +1,228 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Blaxel Control Plane Agents Compute API",
+    "version": "v0"
+  },
+  "request": {
+    "auth": {
+      "type": "apikey",
+      "key": "X-Blaxel-Authorization",
+      "value": "{{X-Blaxel-Authorization}}",
+      "placement": "header"
+    }
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Compute",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "List all sandboxes in the workspace.",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.blaxel.ai/v0/sandboxes"
+          },
+          "docs": "List all sandboxes in the workspace."
+        },
+        {
+          "info": {
+            "name": "Create a new sandbox.",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.blaxel.ai/v0/sandboxes",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Create a new sandbox."
+        },
+        {
+          "info": {
+            "name": "Get a sandbox by name.",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.blaxel.ai/v0/sandboxes/:sandbox_name",
+            "params": [
+              {
+                "name": "sandbox_name",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Get a sandbox by name."
+        },
+        {
+          "info": {
+            "name": "Update a sandbox by name.",
+            "type": "http"
+          },
+          "http": {
+            "method": "PUT",
+            "url": "https://api.blaxel.ai/v0/sandboxes/:sandbox_name",
+            "params": [
+              {
+                "name": "sandbox_name",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Update a sandbox by name."
+        },
+        {
+          "info": {
+            "name": "Delete a sandbox by name.",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "https://api.blaxel.ai/v0/sandboxes/:sandbox_name",
+            "params": [
+              {
+                "name": "sandbox_name",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Delete a sandbox by name."
+        },
+        {
+          "info": {
+            "name": "Start a sandbox.",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.blaxel.ai/v0/sandboxes/:sandbox_name/start",
+            "params": [
+              {
+                "name": "sandbox_name",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Start a sandbox."
+        },
+        {
+          "info": {
+            "name": "Stop a sandbox.",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.blaxel.ai/v0/sandboxes/:sandbox_name/stop",
+            "params": [
+              {
+                "name": "sandbox_name",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Stop a sandbox."
+        },
+        {
+          "info": {
+            "name": "List previews for a sandbox.",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.blaxel.ai/v0/sandboxes/:sandbox_name/previews",
+            "params": [
+              {
+                "name": "sandbox_name",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "List previews for a sandbox."
+        },
+        {
+          "info": {
+            "name": "Create a preview for a sandbox.",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.blaxel.ai/v0/sandboxes/:sandbox_name/previews",
+            "params": [
+              {
+                "name": "sandbox_name",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Create a preview for a sandbox."
+        },
+        {
+          "info": {
+            "name": "List tokens for a sandbox preview.",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.blaxel.ai/v0/sandboxes/:sandbox_name/previews/:preview_name/tokens",
+            "params": [
+              {
+                "name": "sandbox_name",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "preview_name",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "List tokens for a sandbox preview."
+        },
+        {
+          "info": {
+            "name": "Create a token for a sandbox preview.",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.blaxel.ai/v0/sandboxes/:sandbox_name/previews/:preview_name/tokens",
+            "params": [
+              {
+                "name": "sandbox_name",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "preview_name",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Create a token for a sandbox preview."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

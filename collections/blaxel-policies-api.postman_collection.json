@@ -1,0 +1,469 @@
+{
+  "item": [
+    {
+      "id": "6d66a4b5-2c49-4ba1-ac09-370f19d3fa5b",
+      "name": "Policies",
+      "description": {
+        "content": "",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "7d1898fb-f544-48f4-8b1f-9a1c9afbd0fd",
+          "name": "List all policies in the workspace.",
+          "request": {
+            "name": "List all policies in the workspace.",
+            "description": {},
+            "url": {
+              "path": [
+                "policies"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "cfafc316-c093-4c22-a624-07935fa4b4a3",
+              "name": "A list of policies.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "policies"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "X-Blaxel-Authorization",
+                    "value": "<API Key>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "[\n  {\n    \"metadata\": {\n      \"name\": \"string\",\n      \"displayName\": \"string\",\n      \"workspace\": \"string\",\n      \"createdAt\": \"1956-05-12T00:04:47.790Z\",\n      \"updatedAt\": \"2024-05-08T20:37:31.861Z\",\n      \"labels\": {\n        \"key_0\": \"string\",\n        \"key_1\": \"string\",\n        \"key_2\": \"string\"\n      }\n    },\n    \"spec\": {\n      \"type\": \"string\"\n    }\n  },\n  {\n    \"metadata\": {\n      \"name\": \"string\",\n      \"displayName\": \"string\",\n      \"workspace\": \"string\",\n      \"createdAt\": \"1972-01-08T09:10:13.955Z\",\n      \"updatedAt\": \"1956-03-16T12:51:13.752Z\",\n      \"labels\": {\n        \"key_0\": \"string\",\n        \"key_1\": \"string\"\n      }\n    },\n    \"spec\": {\n      \"type\": \"string\"\n    }\n  }\n]",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "188ff816-ad1a-4355-a406-d0541d1f12c8",
+          "name": "Create a new policy.",
+          "request": {
+            "name": "Create a new policy.",
+            "description": {},
+            "url": {
+              "path": [
+                "policies"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": null,
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"metadata\": {\n    \"name\": \"<string>\",\n    \"displayName\": \"<string>\",\n    \"workspace\": \"<string>\",\n    \"createdAt\": \"<dateTime>\",\n    \"updatedAt\": \"<dateTime>\",\n    \"labels\": {\n      \"key_0\": \"<string>\",\n      \"key_1\": \"<string>\",\n      \"key_2\": \"<string>\"\n    }\n  },\n  \"spec\": {\n    \"type\": \"<string>\",\n    \"locations\": [\n      \"<object>\",\n      \"<object>\"\n    ],\n    \"flavors\": [\n      \"<object>\",\n      \"<object>\"\n    ]\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "62791ac0-ac16-4198-8c66-27b1206f944d",
+              "name": "The created policy.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "policies"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "X-Blaxel-Authorization",
+                    "value": "<API Key>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"metadata\": {\n    \"name\": \"<string>\",\n    \"displayName\": \"<string>\",\n    \"workspace\": \"<string>\",\n    \"createdAt\": \"<dateTime>\",\n    \"updatedAt\": \"<dateTime>\",\n    \"labels\": {\n      \"key_0\": \"<string>\",\n      \"key_1\": \"<string>\",\n      \"key_2\": \"<string>\",\n      \"key_3\": \"<string>\"\n    }\n  },\n  \"spec\": {\n    \"type\": \"<string>\",\n    \"locations\": [\n      \"<object>\",\n      \"<object>\"\n    ],\n    \"flavors\": [\n      \"<object>\",\n      \"<object>\"\n    ]\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"metadata\": {\n    \"name\": \"<string>\",\n    \"displayName\": \"<string>\",\n    \"workspace\": \"<string>\",\n    \"createdAt\": \"<dateTime>\",\n    \"updatedAt\": \"<dateTime>\",\n    \"labels\": {\n      \"key_0\": \"<string>\",\n      \"key_1\": \"<string>\",\n      \"key_2\": \"<string>\",\n      \"key_3\": \"<string>\"\n    }\n  },\n  \"spec\": {\n    \"type\": \"<string>\",\n    \"locations\": [\n      \"<object>\",\n      \"<object>\"\n    ],\n    \"flavors\": [\n      \"<object>\",\n      \"<object>\"\n    ]\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "19cd7693-2557-40a0-bdc1-239e4f318ff6",
+          "name": "Get a policy by name.",
+          "request": {
+            "name": "Get a policy by name.",
+            "description": {},
+            "url": {
+              "path": [
+                "policies",
+                ":policy_name"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "policy_name",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "7bfbb54f-ae38-4515-b278-1354580f90ea",
+              "name": "The requested policy.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "policies",
+                    ":policy_name"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "policy_name",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "X-Blaxel-Authorization",
+                    "value": "<API Key>"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "4b41cf3d-6af9-4b58-ab31-57e023e6d351",
+          "name": "Update a policy by name.",
+          "request": {
+            "name": "Update a policy by name.",
+            "description": {},
+            "url": {
+              "path": [
+                "policies",
+                ":policy_name"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "policy_name",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "method": "PUT",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "f0c89e14-ba19-4e09-91c3-53c7a88adb78",
+              "name": "The updated policy.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "policies",
+                    ":policy_name"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "policy_name",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "X-Blaxel-Authorization",
+                    "value": "<API Key>"
+                  }
+                ],
+                "method": "PUT",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "2c5b5176-83d4-480c-ad3b-25acd6c09a8d",
+          "name": "Delete a policy by name.",
+          "request": {
+            "name": "Delete a policy by name.",
+            "description": {},
+            "url": {
+              "path": [
+                "policies",
+                ":policy_name"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "policy_name",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "method": "DELETE",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "49e124c7-6e86-4048-9920-4d4350d9899d",
+              "name": "The deleted policy.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "policies",
+                    ":policy_name"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "policy_name",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "X-Blaxel-Authorization",
+                    "value": "<API Key>"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "type": "string",
+      "value": "https://api.blaxel.ai/v0",
+      "key": "baseUrl"
+    }
+  ],
+  "auth": {
+    "type": "apikey",
+    "apikey": [
+      {
+        "key": "key",
+        "value": "X-Blaxel-Authorization"
+      },
+      {
+        "key": "value",
+        "value": "{{apiKey}}"
+      },
+      {
+        "key": "in",
+        "value": "header"
+      }
+    ]
+  },
+  "info": {
+    "_postman_id": "925c054b-bd2f-4784-90e1-9af620f3de24",
+    "name": "Blaxel Control Plane Agents Policies API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": {
+      "content": "Representative specification of the Blaxel (formerly Beamlit) control plane REST API. The control plane manages agents, MCP/function servers, models, sandboxes, jobs, policies, integrations, and workspaces. Authenticate with a Bearer API key (Authorization or X-Blaxel-Authorization header) or an OAuth 2.0 short-lived JWT. Requests may include a Blaxel-Version header (YYYY-MM-DD) and, for multi-workspace accounts, an X-Blaxel-Workspace header.\n\nContact Support:\n Name: Blaxel Support\n Email: support@blaxel.ai",
+      "type": "text/plain"
+    }
+  }
+}

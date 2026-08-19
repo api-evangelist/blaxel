@@ -1,0 +1,841 @@
+{
+  "item": [
+    {
+      "id": "9fc37690-a6b5-4233-9a5e-2d6299242dc5",
+      "name": "Jobs",
+      "description": {
+        "content": "",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "fec12120-4b95-4f78-958f-c263fcdbde4a",
+          "name": "List all jobs in the workspace.",
+          "request": {
+            "name": "List all jobs in the workspace.",
+            "description": {},
+            "url": {
+              "path": [
+                "jobs"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "ac2afc58-224b-4a7b-bfcb-a81e094aed9b",
+              "name": "A list of jobs.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "jobs"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "X-Blaxel-Authorization",
+                    "value": "<API Key>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "[\n  {\n    \"metadata\": {\n      \"name\": \"string\",\n      \"displayName\": \"string\",\n      \"workspace\": \"string\",\n      \"createdAt\": \"1994-06-02T20:59:35.075Z\",\n      \"updatedAt\": \"1972-07-09T10:41:10.715Z\",\n      \"labels\": {\n        \"key_0\": \"string\",\n        \"key_1\": \"string\"\n      }\n    },\n    \"spec\": {\n      \"runtime\": {},\n      \"maxConcurrentTasks\": 1547,\n      \"maxRetries\": 9812,\n      \"timeout\": 509\n    }\n  },\n  {\n    \"metadata\": {\n      \"name\": \"string\",\n      \"displayName\": \"string\",\n      \"workspace\": \"string\",\n      \"createdAt\": \"2016-07-07T04:34:12.586Z\",\n      \"updatedAt\": \"1998-03-21T17:59:20.469Z\",\n      \"labels\": {\n        \"key_0\": \"string\"\n      }\n    },\n    \"spec\": {\n      \"runtime\": {},\n      \"maxConcurrentTasks\": 9068,\n      \"maxRetries\": 8689,\n      \"timeout\": 5402\n    }\n  }\n]",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "5bb6c68a-d90f-4989-aa05-c1993d106da6",
+          "name": "Create a new job.",
+          "request": {
+            "name": "Create a new job.",
+            "description": {},
+            "url": {
+              "path": [
+                "jobs"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": null,
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"metadata\": {\n    \"name\": \"<string>\",\n    \"displayName\": \"<string>\",\n    \"workspace\": \"<string>\",\n    \"createdAt\": \"<dateTime>\",\n    \"updatedAt\": \"<dateTime>\",\n    \"labels\": {\n      \"key_0\": \"<string>\",\n      \"key_1\": \"<string>\"\n    }\n  },\n  \"spec\": {\n    \"runtime\": \"<object>\",\n    \"maxConcurrentTasks\": \"<integer>\",\n    \"maxRetries\": \"<integer>\",\n    \"timeout\": \"<integer>\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "605547ea-1f3f-4920-b279-f4f877fc63f8",
+              "name": "The created job.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "jobs"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "X-Blaxel-Authorization",
+                    "value": "<API Key>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"metadata\": {\n    \"name\": \"<string>\",\n    \"displayName\": \"<string>\",\n    \"workspace\": \"<string>\",\n    \"createdAt\": \"<dateTime>\",\n    \"updatedAt\": \"<dateTime>\",\n    \"labels\": {\n      \"key_0\": \"<string>\",\n      \"key_1\": \"<string>\"\n    }\n  },\n  \"spec\": {\n    \"runtime\": \"<object>\",\n    \"maxConcurrentTasks\": \"<integer>\",\n    \"maxRetries\": \"<integer>\",\n    \"timeout\": \"<integer>\"\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"metadata\": {\n    \"name\": \"<string>\",\n    \"displayName\": \"<string>\",\n    \"workspace\": \"<string>\",\n    \"createdAt\": \"<dateTime>\",\n    \"updatedAt\": \"<dateTime>\",\n    \"labels\": {\n      \"key_0\": \"<string>\",\n      \"key_1\": \"<string>\"\n    }\n  },\n  \"spec\": {\n    \"runtime\": \"<object>\",\n    \"maxConcurrentTasks\": \"<integer>\",\n    \"maxRetries\": \"<integer>\",\n    \"timeout\": \"<integer>\"\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "c463bf08-27f4-43c4-9788-187f77b80b38",
+          "name": "Get a job by id.",
+          "request": {
+            "name": "Get a job by id.",
+            "description": {},
+            "url": {
+              "path": [
+                "jobs",
+                ":job_id"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "job_id",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "7dbc732a-f6d1-4976-890b-9cce614a5b5b",
+              "name": "The requested job.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "jobs",
+                    ":job_id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "job_id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "X-Blaxel-Authorization",
+                    "value": "<API Key>"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "556e7786-b120-4d30-8c0f-2958c2021138",
+          "name": "Update a job by id.",
+          "request": {
+            "name": "Update a job by id.",
+            "description": {},
+            "url": {
+              "path": [
+                "jobs",
+                ":job_id"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "job_id",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "method": "PUT",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "a385ebe2-94b1-4550-af9a-7d88c8a7d0c8",
+              "name": "The updated job.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "jobs",
+                    ":job_id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "job_id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "X-Blaxel-Authorization",
+                    "value": "<API Key>"
+                  }
+                ],
+                "method": "PUT",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "05a0e989-8dad-4b83-9e4c-25ee78dcb22b",
+          "name": "Delete a job by id.",
+          "request": {
+            "name": "Delete a job by id.",
+            "description": {},
+            "url": {
+              "path": [
+                "jobs",
+                ":job_id"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "job_id",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "method": "DELETE",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "830a945c-8106-41d1-8d8a-dcbb2275cd2b",
+              "name": "The deleted job.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "jobs",
+                    ":job_id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "job_id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "X-Blaxel-Authorization",
+                    "value": "<API Key>"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "067abcaf-e80b-43b3-b42b-100dab3b8c20",
+          "name": "List executions for a job.",
+          "request": {
+            "name": "List executions for a job.",
+            "description": {},
+            "url": {
+              "path": [
+                "jobs",
+                ":job_id",
+                "executions"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "job_id",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "5a9b60cd-f7ce-4679-b8c4-36f780158103",
+              "name": "A list of job executions.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "jobs",
+                    ":job_id",
+                    "executions"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "job_id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "X-Blaxel-Authorization",
+                    "value": "<API Key>"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "390e0cf2-541a-407f-95c8-db191cb23ce0",
+          "name": "Create (run) a job execution.",
+          "request": {
+            "name": "Create (run) a job execution.",
+            "description": {},
+            "url": {
+              "path": [
+                "jobs",
+                ":job_id",
+                "executions"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "job_id",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "method": "POST",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "0e2ad180-d694-4166-ad39-40c74f3d9977",
+              "name": "The created job execution.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "jobs",
+                    ":job_id",
+                    "executions"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "job_id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "X-Blaxel-Authorization",
+                    "value": "<API Key>"
+                  }
+                ],
+                "method": "POST",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "31e49847-c413-4b4c-ae3e-57af79ce3aa8",
+          "name": "Get a job execution.",
+          "request": {
+            "name": "Get a job execution.",
+            "description": {},
+            "url": {
+              "path": [
+                "jobs",
+                ":job_id",
+                "executions",
+                ":execution_id"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "job_id",
+                  "description": "(Required) "
+                },
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "execution_id",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "072b1026-3403-4b5e-ba9e-88645ff7a7bc",
+              "name": "The requested job execution.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "jobs",
+                    ":job_id",
+                    "executions",
+                    ":execution_id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "job_id",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "execution_id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "X-Blaxel-Authorization",
+                    "value": "<API Key>"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "0d1d7837-b7b1-4943-8b47-26883f7fb5ed",
+          "name": "Delete a job execution.",
+          "request": {
+            "name": "Delete a job execution.",
+            "description": {},
+            "url": {
+              "path": [
+                "jobs",
+                ":job_id",
+                "executions",
+                ":execution_id"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "job_id",
+                  "description": "(Required) "
+                },
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "execution_id",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "method": "DELETE",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "78146426-4d87-4370-aa72-5e5fc669db64",
+              "name": "The deleted job execution.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "jobs",
+                    ":job_id",
+                    "executions",
+                    ":execution_id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "job_id",
+                      "description": "(Required) "
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "execution_id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "X-Blaxel-Authorization",
+                    "value": "<API Key>"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "type": "string",
+      "value": "https://api.blaxel.ai/v0",
+      "key": "baseUrl"
+    }
+  ],
+  "auth": {
+    "type": "apikey",
+    "apikey": [
+      {
+        "key": "key",
+        "value": "X-Blaxel-Authorization"
+      },
+      {
+        "key": "value",
+        "value": "{{apiKey}}"
+      },
+      {
+        "key": "in",
+        "value": "header"
+      }
+    ]
+  },
+  "info": {
+    "_postman_id": "7f9b2f6e-2237-4026-afe1-5476c95f36b6",
+    "name": "Blaxel Control Plane Agents Jobs API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": {
+      "content": "Representative specification of the Blaxel (formerly Beamlit) control plane REST API. The control plane manages agents, MCP/function servers, models, sandboxes, jobs, policies, integrations, and workspaces. Authenticate with a Bearer API key (Authorization or X-Blaxel-Authorization header) or an OAuth 2.0 short-lived JWT. Requests may include a Blaxel-Version header (YYYY-MM-DD) and, for multi-workspace accounts, an X-Blaxel-Workspace header.\n\nContact Support:\n Name: Blaxel Support\n Email: support@blaxel.ai",
+      "type": "text/plain"
+    }
+  }
+}

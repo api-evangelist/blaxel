@@ -1,0 +1,128 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Blaxel Control Plane Agents Models API",
+    "version": "v0"
+  },
+  "request": {
+    "auth": {
+      "type": "apikey",
+      "key": "X-Blaxel-Authorization",
+      "value": "{{X-Blaxel-Authorization}}",
+      "placement": "header"
+    }
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Models",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "List all model deployments in the workspace.",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.blaxel.ai/v0/models"
+          },
+          "docs": "List all model deployments in the workspace."
+        },
+        {
+          "info": {
+            "name": "Create a new model deployment behind the model gateway.",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.blaxel.ai/v0/models",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Create a new model deployment behind the model gateway."
+        },
+        {
+          "info": {
+            "name": "Get a model by name.",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.blaxel.ai/v0/models/:model_name",
+            "params": [
+              {
+                "name": "model_name",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Get a model by name."
+        },
+        {
+          "info": {
+            "name": "Update a model by name.",
+            "type": "http"
+          },
+          "http": {
+            "method": "PUT",
+            "url": "https://api.blaxel.ai/v0/models/:model_name",
+            "params": [
+              {
+                "name": "model_name",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Update a model by name."
+        },
+        {
+          "info": {
+            "name": "Delete a model by name.",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "https://api.blaxel.ai/v0/models/:model_name",
+            "params": [
+              {
+                "name": "model_name",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Delete a model by name."
+        },
+        {
+          "info": {
+            "name": "List revisions for a model.",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.blaxel.ai/v0/models/:model_name/revisions",
+            "params": [
+              {
+                "name": "model_name",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "List revisions for a model."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

@@ -1,0 +1,595 @@
+{
+  "item": [
+    {
+      "id": "44addcc6-aa0d-47cf-8f69-247a92b08e4d",
+      "name": "Agents",
+      "description": {
+        "content": "",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "8cff5723-22ca-4fbe-966a-1fe85aa8f377",
+          "name": "List all agents in the workspace.",
+          "request": {
+            "name": "List all agents in the workspace.",
+            "description": {},
+            "url": {
+              "path": [
+                "agents"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "dae20a2e-05f5-4d91-b5bf-d92bc2fcda85",
+              "name": "A list of agents.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "agents"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "X-Blaxel-Authorization",
+                    "value": "<API Key>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "[\n  {\n    \"metadata\": {\n      \"name\": \"string\",\n      \"displayName\": \"string\",\n      \"workspace\": \"string\",\n      \"createdAt\": \"2014-02-18T22:39:12.434Z\",\n      \"updatedAt\": \"1974-12-17T16:16:52.477Z\",\n      \"labels\": {\n        \"key_0\": \"string\",\n        \"key_1\": \"string\"\n      }\n    },\n    \"spec\": {\n      \"description\": \"string\",\n      \"runtime\": {},\n      \"policies\": [\n        \"string\",\n        \"string\"\n      ]\n    }\n  },\n  {\n    \"metadata\": {\n      \"name\": \"string\",\n      \"displayName\": \"string\",\n      \"workspace\": \"string\",\n      \"createdAt\": \"1977-07-16T11:46:09.732Z\",\n      \"updatedAt\": \"1977-07-03T08:12:23.736Z\",\n      \"labels\": {\n        \"key_0\": \"string\",\n        \"key_1\": \"string\",\n        \"key_2\": \"string\"\n      }\n    },\n    \"spec\": {\n      \"description\": \"string\",\n      \"runtime\": {},\n      \"policies\": [\n        \"string\",\n        \"string\"\n      ]\n    }\n  }\n]",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "cc3f0735-d9c5-4ea5-a405-05ceb9d97ae2",
+          "name": "Create a new agent deployment.",
+          "request": {
+            "name": "Create a new agent deployment.",
+            "description": {},
+            "url": {
+              "path": [
+                "agents"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": null,
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"metadata\": {\n    \"name\": \"<string>\",\n    \"displayName\": \"<string>\",\n    \"workspace\": \"<string>\",\n    \"createdAt\": \"<dateTime>\",\n    \"updatedAt\": \"<dateTime>\",\n    \"labels\": {\n      \"key_0\": \"<string>\"\n    }\n  },\n  \"spec\": {\n    \"description\": \"<string>\",\n    \"runtime\": \"<object>\",\n    \"policies\": [\n      \"<string>\",\n      \"<string>\"\n    ]\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "94461129-350f-4f94-abb1-7ac3930a9073",
+              "name": "The created agent.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "agents"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "X-Blaxel-Authorization",
+                    "value": "<API Key>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"metadata\": {\n    \"name\": \"<string>\",\n    \"displayName\": \"<string>\",\n    \"workspace\": \"<string>\",\n    \"createdAt\": \"<dateTime>\",\n    \"updatedAt\": \"<dateTime>\",\n    \"labels\": {\n      \"key_0\": \"<string>\",\n      \"key_1\": \"<string>\",\n      \"key_2\": \"<string>\",\n      \"key_3\": \"<string>\"\n    }\n  },\n  \"spec\": {\n    \"description\": \"<string>\",\n    \"runtime\": \"<object>\",\n    \"policies\": [\n      \"<string>\",\n      \"<string>\"\n    ]\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"metadata\": {\n    \"name\": \"<string>\",\n    \"displayName\": \"<string>\",\n    \"workspace\": \"<string>\",\n    \"createdAt\": \"<dateTime>\",\n    \"updatedAt\": \"<dateTime>\",\n    \"labels\": {\n      \"key_0\": \"<string>\",\n      \"key_1\": \"<string>\",\n      \"key_2\": \"<string>\",\n      \"key_3\": \"<string>\"\n    }\n  },\n  \"spec\": {\n    \"description\": \"<string>\",\n    \"runtime\": \"<object>\",\n    \"policies\": [\n      \"<string>\",\n      \"<string>\"\n    ]\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "63ef3bc4-de2d-42bb-95fc-7c7eb77136d9",
+          "name": "Get an agent by name.",
+          "request": {
+            "name": "Get an agent by name.",
+            "description": {},
+            "url": {
+              "path": [
+                "agents",
+                ":agent_name"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "agent_name",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "7c8d79f8-417c-424f-8c40-c6b8bc0fca83",
+              "name": "The requested agent.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "agents",
+                    ":agent_name"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "agent_name",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "X-Blaxel-Authorization",
+                    "value": "<API Key>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"metadata\": {\n    \"name\": \"<string>\",\n    \"displayName\": \"<string>\",\n    \"workspace\": \"<string>\",\n    \"createdAt\": \"<dateTime>\",\n    \"updatedAt\": \"<dateTime>\",\n    \"labels\": {\n      \"key_0\": \"<string>\",\n      \"key_1\": \"<string>\",\n      \"key_2\": \"<string>\",\n      \"key_3\": \"<string>\"\n    }\n  },\n  \"spec\": {\n    \"description\": \"<string>\",\n    \"runtime\": \"<object>\",\n    \"policies\": [\n      \"<string>\",\n      \"<string>\"\n    ]\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "72af91ad-45bd-42b3-9675-96b9fc5a82ed",
+          "name": "Update an agent by name.",
+          "request": {
+            "name": "Update an agent by name.",
+            "description": {},
+            "url": {
+              "path": [
+                "agents",
+                ":agent_name"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "agent_name",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "PUT",
+            "auth": null,
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"metadata\": {\n    \"name\": \"<string>\",\n    \"displayName\": \"<string>\",\n    \"workspace\": \"<string>\",\n    \"createdAt\": \"<dateTime>\",\n    \"updatedAt\": \"<dateTime>\",\n    \"labels\": {\n      \"key_0\": \"<string>\"\n    }\n  },\n  \"spec\": {\n    \"description\": \"<string>\",\n    \"runtime\": \"<object>\",\n    \"policies\": [\n      \"<string>\",\n      \"<string>\"\n    ]\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "910ead2f-dfd5-4255-92d4-2a014b23a44d",
+              "name": "The updated agent.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "agents",
+                    ":agent_name"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "agent_name",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "X-Blaxel-Authorization",
+                    "value": "<API Key>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PUT",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"metadata\": {\n    \"name\": \"<string>\",\n    \"displayName\": \"<string>\",\n    \"workspace\": \"<string>\",\n    \"createdAt\": \"<dateTime>\",\n    \"updatedAt\": \"<dateTime>\",\n    \"labels\": {\n      \"key_0\": \"<string>\",\n      \"key_1\": \"<string>\",\n      \"key_2\": \"<string>\",\n      \"key_3\": \"<string>\"\n    }\n  },\n  \"spec\": {\n    \"description\": \"<string>\",\n    \"runtime\": \"<object>\",\n    \"policies\": [\n      \"<string>\",\n      \"<string>\"\n    ]\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"metadata\": {\n    \"name\": \"<string>\",\n    \"displayName\": \"<string>\",\n    \"workspace\": \"<string>\",\n    \"createdAt\": \"<dateTime>\",\n    \"updatedAt\": \"<dateTime>\",\n    \"labels\": {\n      \"key_0\": \"<string>\",\n      \"key_1\": \"<string>\",\n      \"key_2\": \"<string>\",\n      \"key_3\": \"<string>\"\n    }\n  },\n  \"spec\": {\n    \"description\": \"<string>\",\n    \"runtime\": \"<object>\",\n    \"policies\": [\n      \"<string>\",\n      \"<string>\"\n    ]\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "03853c56-8a8b-4155-958c-dac7844f4f22",
+          "name": "Delete an agent by name.",
+          "request": {
+            "name": "Delete an agent by name.",
+            "description": {},
+            "url": {
+              "path": [
+                "agents",
+                ":agent_name"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "agent_name",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "method": "DELETE",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "ccc2afef-ed84-434b-b7f0-3909e5fecbf3",
+              "name": "The deleted agent.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "agents",
+                    ":agent_name"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "agent_name",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "X-Blaxel-Authorization",
+                    "value": "<API Key>"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "dfe13271-9309-4554-a2e4-c587437b307f",
+          "name": "List revisions for an agent.",
+          "request": {
+            "name": "List revisions for an agent.",
+            "description": {},
+            "url": {
+              "path": [
+                "agents",
+                ":agent_name",
+                "revisions"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "agent_name",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "218a731b-6aee-4566-ab14-a7151f318e5d",
+              "name": "A list of agent revisions.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "agents",
+                    ":agent_name",
+                    "revisions"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "agent_name",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: apikey",
+                      "type": "text/plain"
+                    },
+                    "key": "X-Blaxel-Authorization",
+                    "value": "<API Key>"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "type": "string",
+      "value": "https://api.blaxel.ai/v0",
+      "key": "baseUrl"
+    }
+  ],
+  "auth": {
+    "type": "apikey",
+    "apikey": [
+      {
+        "key": "key",
+        "value": "X-Blaxel-Authorization"
+      },
+      {
+        "key": "value",
+        "value": "{{apiKey}}"
+      },
+      {
+        "key": "in",
+        "value": "header"
+      }
+    ]
+  },
+  "info": {
+    "_postman_id": "aa042415-02da-42db-b788-e2c064ca05fa",
+    "name": "Blaxel Control Plane Agents API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": {
+      "content": "Representative specification of the Blaxel (formerly Beamlit) control plane REST API. The control plane manages agents, MCP/function servers, models, sandboxes, jobs, policies, integrations, and workspaces. Authenticate with a Bearer API key (Authorization or X-Blaxel-Authorization header) or an OAuth 2.0 short-lived JWT. Requests may include a Blaxel-Version header (YYYY-MM-DD) and, for multi-workspace accounts, an X-Blaxel-Workspace header.\n\nContact Support:\n Name: Blaxel Support\n Email: support@blaxel.ai",
+      "type": "text/plain"
+    }
+  }
+}

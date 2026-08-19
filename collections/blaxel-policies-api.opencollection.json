@@ -1,0 +1,106 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Blaxel Control Plane Agents Policies API",
+    "version": "v0"
+  },
+  "request": {
+    "auth": {
+      "type": "apikey",
+      "key": "X-Blaxel-Authorization",
+      "value": "{{X-Blaxel-Authorization}}",
+      "placement": "header"
+    }
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Policies",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "List all policies in the workspace.",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.blaxel.ai/v0/policies"
+          },
+          "docs": "List all policies in the workspace."
+        },
+        {
+          "info": {
+            "name": "Create a new policy.",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.blaxel.ai/v0/policies",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Create a new policy."
+        },
+        {
+          "info": {
+            "name": "Get a policy by name.",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.blaxel.ai/v0/policies/:policy_name",
+            "params": [
+              {
+                "name": "policy_name",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Get a policy by name."
+        },
+        {
+          "info": {
+            "name": "Update a policy by name.",
+            "type": "http"
+          },
+          "http": {
+            "method": "PUT",
+            "url": "https://api.blaxel.ai/v0/policies/:policy_name",
+            "params": [
+              {
+                "name": "policy_name",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Update a policy by name."
+        },
+        {
+          "info": {
+            "name": "Delete a policy by name.",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "https://api.blaxel.ai/v0/policies/:policy_name",
+            "params": [
+              {
+                "name": "policy_name",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Delete a policy by name."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

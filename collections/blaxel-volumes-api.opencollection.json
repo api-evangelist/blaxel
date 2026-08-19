@@ -1,0 +1,48 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Blaxel Control Plane Agents Volumes API",
+    "version": "v0"
+  },
+  "request": {
+    "auth": {
+      "type": "apikey",
+      "key": "X-Blaxel-Authorization",
+      "value": "{{X-Blaxel-Authorization}}",
+      "placement": "header"
+    }
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Volumes",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "List all volumes in the workspace.",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.blaxel.ai/v0/volumes"
+          },
+          "docs": "List all volumes in the workspace."
+        },
+        {
+          "info": {
+            "name": "Create a new volume.",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.blaxel.ai/v0/volumes"
+          },
+          "docs": "Create a new volume."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

@@ -1,0 +1,128 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Blaxel Control Plane Agents Functions API",
+    "version": "v0"
+  },
+  "request": {
+    "auth": {
+      "type": "apikey",
+      "key": "X-Blaxel-Authorization",
+      "value": "{{X-Blaxel-Authorization}}",
+      "placement": "header"
+    }
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Functions",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "List all functions (MCP servers) in the workspace.",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.blaxel.ai/v0/functions"
+          },
+          "docs": "List all functions (MCP servers) in the workspace."
+        },
+        {
+          "info": {
+            "name": "Create a new function (MCP server).",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.blaxel.ai/v0/functions",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Create a new function (MCP server)."
+        },
+        {
+          "info": {
+            "name": "Get a function by name.",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.blaxel.ai/v0/functions/:function_name",
+            "params": [
+              {
+                "name": "function_name",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Get a function by name."
+        },
+        {
+          "info": {
+            "name": "Update a function by name.",
+            "type": "http"
+          },
+          "http": {
+            "method": "PUT",
+            "url": "https://api.blaxel.ai/v0/functions/:function_name",
+            "params": [
+              {
+                "name": "function_name",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Update a function by name."
+        },
+        {
+          "info": {
+            "name": "Delete a function by name.",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "https://api.blaxel.ai/v0/functions/:function_name",
+            "params": [
+              {
+                "name": "function_name",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Delete a function by name."
+        },
+        {
+          "info": {
+            "name": "List revisions for a function.",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.blaxel.ai/v0/functions/:function_name/revisions",
+            "params": [
+              {
+                "name": "function_name",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "List revisions for a function."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}
