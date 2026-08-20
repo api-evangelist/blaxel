@@ -22,6 +22,14 @@ accessModel:
   method: derived
 image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/icons/blaxel.png
 tags:
+- Artificial Intelligence
+- Agents
+- Infrastructure
+- Sandboxes
+- MCP
+- Compute
+- Serverless
+tags_raw:
 - AI
 - Agents
 - Infrastructure
@@ -177,6 +185,8 @@ apis:
   humanURL: https://docs.blaxel.ai/Agents/Overview
   baseURL: https://api.blaxel.ai/v0
   tags:
+  - Integration
+  tags_raw:
   - Integrations
   properties:
   - type: OpenAPI
@@ -223,6 +233,8 @@ apis:
   humanURL: https://docs.blaxel.ai/Agents/Overview
   baseURL: https://api.blaxel.ai/v0
   tags:
+  - Job
+  tags_raw:
   - Jobs
   properties:
   - type: OpenAPI
