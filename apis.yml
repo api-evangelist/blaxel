@@ -7,6 +7,18 @@ description: Blaxel (formerly Beamlit) is an infrastructure and compute platform
   serverless code sandboxes, batch jobs, a multi-provider model gateway, deployment
   policies, integrations, and multi-tenant workspaces. The REST control plane lives
   at api.blaxel.ai/v0 and authenticates with a Bearer API key or OAuth 2.0.
+deliveryModel:
+  model: saas
+  open_source: false
+  commercial: true
+  callable_host: true
+  label: Hosted service · you call their endpoint
+  confidence: high
+  source:
+  - openapi
+  - pricing
+  generated: '2026-08-28'
+  method: derived
 accessModel:
   pricing: freemium
   onboarding: open
