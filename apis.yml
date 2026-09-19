@@ -37,7 +37,7 @@ tags:
 - Artificial Intelligence
 - Agents
 - Infrastructure
-- Sandboxes
+- Sandbox
 - MCP
 - Compute
 - Serverless
@@ -293,6 +293,8 @@ apis:
   humanURL: https://docs.blaxel.ai/Agents/Overview
   baseURL: https://api.blaxel.ai/v0
   tags:
+  - Location
+  tags_raw:
   - Locations
   properties:
   - type: OpenAPI
@@ -523,6 +525,8 @@ apis:
   humanURL: https://docs.blaxel.ai/Agents/Overview
   baseURL: https://api.blaxel.ai/v0
   tags:
+  - Workspace
+  tags_raw:
   - Workspaces
   properties:
   - type: OpenAPI
