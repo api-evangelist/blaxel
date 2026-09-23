@@ -1,0 +1,1 @@
+{"resource_name":"Blaxel MCP Server","resource":"https://api.blaxel.ai/v0/mcp","authorization_servers":["https://signin.blaxel.ai"],"bearer_methods_supported":["header"],"scopes_supported":["openid","email","profile","offline_access"]}

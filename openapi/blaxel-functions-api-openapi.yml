@@ -1,6 +1,6 @@
-openapi: 3.0.1
+openapi: 3.2.0
 info:
-  title: Blaxel Control Plane Agents Functions API
+  title: Blaxel Control Plane Functions API
   description: Representative specification of the Blaxel (formerly Beamlit) control plane REST API. The control plane manages agents, MCP/function servers, models, sandboxes, jobs, policies, integrations, and workspaces. Authenticate with a Bearer API key (Authorization or X-Blaxel-Authorization header) or an OAuth 2.0 short-lived JWT. Requests may include a Blaxel-Version header (YYYY-MM-DD) and, for multi-workspace accounts, an X-Blaxel-Workspace header.
   termsOfService: https://blaxel.ai/terms-of-service
   contact:
@@ -20,7 +20,7 @@ paths:
       operationId: listFunctions
       tags:
       - Functions
-      summary: List all functions (MCP servers) in the workspace.
+      summary: List all functions (MCP servers) in the workspace
       responses:
         '200':
           description: A list of functions.
@@ -34,7 +34,7 @@ paths:
       operationId: createFunction
       tags:
       - Functions
-      summary: Create a new function (MCP server).
+      summary: Create a new function (MCP server)
       requestBody:
         required: true
         content:
@@ -55,7 +55,7 @@ paths:
       operationId: getFunction
       tags:
       - Functions
-      summary: Get a function by name.
+      summary: Get a function by name
       responses:
         '200':
           description: The requested function.
@@ -67,7 +67,7 @@ paths:
       operationId: updateFunction
       tags:
       - Functions
-      summary: Update a function by name.
+      summary: Update a function by name
       requestBody:
         required: true
         content:
@@ -81,7 +81,7 @@ paths:
       operationId: deleteFunction
       tags:
       - Functions
-      summary: Delete a function by name.
+      summary: Delete a function by name
       responses:
         '200':
           description: The deleted function.
@@ -92,18 +92,11 @@ paths:
       operationId: listFunctionRevisions
       tags:
       - Functions
-      summary: List revisions for a function.
+      summary: List revisions for a function
       responses:
         '200':
           description: A list of function revisions.
 components:
-  parameters:
-    FunctionName:
-      name: function_name
-      in: path
-      required: true
-      schema:
-        type: string
   schemas:
     Metadata:
       type: object
@@ -140,6 +133,13 @@ components:
               type: array
               items:
                 type: string
+  parameters:
+    FunctionName:
+      name: function_name
+      in: path
+      required: true
+      schema:
+        type: string
   securitySchemes:
     apiKey:
       type: apiKey

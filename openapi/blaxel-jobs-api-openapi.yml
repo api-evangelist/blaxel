@@ -1,6 +1,6 @@
-openapi: 3.0.1
+openapi: 3.2.0
 info:
-  title: Blaxel Control Plane Agents Jobs API
+  title: Blaxel Control Plane Jobs API
   description: Representative specification of the Blaxel (formerly Beamlit) control plane REST API. The control plane manages agents, MCP/function servers, models, sandboxes, jobs, policies, integrations, and workspaces. Authenticate with a Bearer API key (Authorization or X-Blaxel-Authorization header) or an OAuth 2.0 short-lived JWT. Requests may include a Blaxel-Version header (YYYY-MM-DD) and, for multi-workspace accounts, an X-Blaxel-Workspace header.
   termsOfService: https://blaxel.ai/terms-of-service
   contact:
@@ -20,7 +20,7 @@ paths:
       operationId: listJobs
       tags:
       - Jobs
-      summary: List all jobs in the workspace.
+      summary: List all jobs in the workspace
       responses:
         '200':
           description: A list of jobs.
@@ -34,7 +34,7 @@ paths:
       operationId: createJob
       tags:
       - Jobs
-      summary: Create a new job.
+      summary: Create a new job
       requestBody:
         required: true
         content:
@@ -59,7 +59,7 @@ paths:
       operationId: getJob
       tags:
       - Jobs
-      summary: Get a job by id.
+      summary: Get a job by id
       responses:
         '200':
           description: The requested job.
@@ -67,7 +67,7 @@ paths:
       operationId: updateJob
       tags:
       - Jobs
-      summary: Update a job by id.
+      summary: Update a job by id
       responses:
         '200':
           description: The updated job.
@@ -75,7 +75,7 @@ paths:
       operationId: deleteJob
       tags:
       - Jobs
-      summary: Delete a job by id.
+      summary: Delete a job by id
       responses:
         '200':
           description: The deleted job.
@@ -90,7 +90,7 @@ paths:
       operationId: listJobExecutions
       tags:
       - Jobs
-      summary: List executions for a job.
+      summary: List executions for a job
       responses:
         '200':
           description: A list of job executions.
@@ -98,7 +98,7 @@ paths:
       operationId: createJobExecution
       tags:
       - Jobs
-      summary: Create (run) a job execution.
+      summary: Create (run) a job execution
       responses:
         '200':
           description: The created job execution.
@@ -118,7 +118,7 @@ paths:
       operationId: getJobExecution
       tags:
       - Jobs
-      summary: Get a job execution.
+      summary: Get a job execution
       responses:
         '200':
           description: The requested job execution.
@@ -126,28 +126,12 @@ paths:
       operationId: deleteJobExecution
       tags:
       - Jobs
-      summary: Delete a job execution.
+      summary: Delete a job execution
       responses:
         '200':
           description: The deleted job execution.
 components:
   schemas:
-    Job:
-      type: object
-      properties:
-        metadata:
-          $ref: '#/components/schemas/Metadata'
-        spec:
-          type: object
-          properties:
-            runtime:
-              type: object
-            maxConcurrentTasks:
-              type: integer
-            maxRetries:
-              type: integer
-            timeout:
-              type: integer
     Metadata:
       type: object
       properties:
@@ -167,6 +151,22 @@ components:
           type: object
           additionalProperties:
             type: string
+    Job:
+      type: object
+      properties:
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        spec:
+          type: object
+          properties:
+            runtime:
+              type: object
+            maxConcurrentTasks:
+              type: integer
+            maxRetries:
+              type: integer
+            timeout:
+              type: integer
   securitySchemes:
     apiKey:
       type: apiKey

@@ -1,6 +1,6 @@
-openapi: 3.0.1
+openapi: 3.2.0
 info:
-  title: Blaxel Control Plane Agents Volumes API
+  title: Blaxel Control Plane Volumes API
   description: Representative specification of the Blaxel (formerly Beamlit) control plane REST API. The control plane manages agents, MCP/function servers, models, sandboxes, jobs, policies, integrations, and workspaces. Authenticate with a Bearer API key (Authorization or X-Blaxel-Authorization header) or an OAuth 2.0 short-lived JWT. Requests may include a Blaxel-Version header (YYYY-MM-DD) and, for multi-workspace accounts, an X-Blaxel-Workspace header.
   termsOfService: https://blaxel.ai/terms-of-service
   contact:
@@ -20,7 +20,7 @@ paths:
       operationId: listVolumes
       tags:
       - Volumes
-      summary: List all volumes in the workspace.
+      summary: List all volumes in the workspace
       responses:
         '200':
           description: A list of volumes.
@@ -28,7 +28,7 @@ paths:
       operationId: createVolume
       tags:
       - Volumes
-      summary: Create a new volume.
+      summary: Create a new volume
       responses:
         '200':
           description: The created volume.

@@ -1,6 +1,6 @@
-openapi: 3.0.1
+openapi: 3.2.0
 info:
-  title: Blaxel Control Plane Agents Models API
+  title: Blaxel Control Plane Models API
   description: Representative specification of the Blaxel (formerly Beamlit) control plane REST API. The control plane manages agents, MCP/function servers, models, sandboxes, jobs, policies, integrations, and workspaces. Authenticate with a Bearer API key (Authorization or X-Blaxel-Authorization header) or an OAuth 2.0 short-lived JWT. Requests may include a Blaxel-Version header (YYYY-MM-DD) and, for multi-workspace accounts, an X-Blaxel-Workspace header.
   termsOfService: https://blaxel.ai/terms-of-service
   contact:
@@ -20,7 +20,7 @@ paths:
       operationId: listModels
       tags:
       - Models
-      summary: List all model deployments in the workspace.
+      summary: List all model deployments in the workspace
       responses:
         '200':
           description: A list of models.
@@ -34,7 +34,7 @@ paths:
       operationId: createModel
       tags:
       - Models
-      summary: Create a new model deployment behind the model gateway.
+      summary: Create a new model deployment behind the model gateway
       requestBody:
         required: true
         content:
@@ -55,7 +55,7 @@ paths:
       operationId: getModel
       tags:
       - Models
-      summary: Get a model by name.
+      summary: Get a model by name
       responses:
         '200':
           description: The requested model.
@@ -67,7 +67,7 @@ paths:
       operationId: updateModel
       tags:
       - Models
-      summary: Update a model by name.
+      summary: Update a model by name
       requestBody:
         required: true
         content:
@@ -81,7 +81,7 @@ paths:
       operationId: deleteModel
       tags:
       - Models
-      summary: Delete a model by name.
+      summary: Delete a model by name
       responses:
         '200':
           description: The deleted model.
@@ -92,26 +92,12 @@ paths:
       operationId: listModelRevisions
       tags:
       - Models
-      summary: List revisions for a model.
+      summary: List revisions for a model
       responses:
         '200':
           description: A list of model revisions.
 components:
   schemas:
-    Model:
-      type: object
-      properties:
-        metadata:
-          $ref: '#/components/schemas/Metadata'
-        spec:
-          type: object
-          properties:
-            runtime:
-              type: object
-            integrationConnections:
-              type: array
-              items:
-                type: string
     Metadata:
       type: object
       properties:
@@ -131,6 +117,20 @@ components:
           type: object
           additionalProperties:
             type: string
+    Model:
+      type: object
+      properties:
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        spec:
+          type: object
+          properties:
+            runtime:
+              type: object
+            integrationConnections:
+              type: array
+              items:
+                type: string
   parameters:
     ModelName:
       name: model_name

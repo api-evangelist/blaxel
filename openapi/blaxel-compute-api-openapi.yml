@@ -1,6 +1,6 @@
-openapi: 3.0.1
+openapi: 3.2.0
 info:
-  title: Blaxel Control Plane Agents Compute API
+  title: Blaxel Control Plane Compute API
   description: Representative specification of the Blaxel (formerly Beamlit) control plane REST API. The control plane manages agents, MCP/function servers, models, sandboxes, jobs, policies, integrations, and workspaces. Authenticate with a Bearer API key (Authorization or X-Blaxel-Authorization header) or an OAuth 2.0 short-lived JWT. Requests may include a Blaxel-Version header (YYYY-MM-DD) and, for multi-workspace accounts, an X-Blaxel-Workspace header.
   termsOfService: https://blaxel.ai/terms-of-service
   contact:
@@ -20,7 +20,7 @@ paths:
       operationId: listSandboxes
       tags:
       - Compute
-      summary: List all sandboxes in the workspace.
+      summary: List all sandboxes in the workspace
       responses:
         '200':
           description: A list of sandboxes.
@@ -34,7 +34,7 @@ paths:
       operationId: createSandbox
       tags:
       - Compute
-      summary: Create a new sandbox.
+      summary: Create a new sandbox
       requestBody:
         required: true
         content:
@@ -55,7 +55,7 @@ paths:
       operationId: getSandbox
       tags:
       - Compute
-      summary: Get a sandbox by name.
+      summary: Get a sandbox by name
       responses:
         '200':
           description: The requested sandbox.
@@ -67,7 +67,7 @@ paths:
       operationId: updateSandbox
       tags:
       - Compute
-      summary: Update a sandbox by name.
+      summary: Update a sandbox by name
       requestBody:
         required: true
         content:
@@ -81,7 +81,7 @@ paths:
       operationId: deleteSandbox
       tags:
       - Compute
-      summary: Delete a sandbox by name.
+      summary: Delete a sandbox by name
       responses:
         '200':
           description: The deleted sandbox.
@@ -92,7 +92,7 @@ paths:
       operationId: startSandbox
       tags:
       - Compute
-      summary: Start a sandbox.
+      summary: Start a sandbox
       responses:
         '200':
           description: The started sandbox.
@@ -103,7 +103,7 @@ paths:
       operationId: stopSandbox
       tags:
       - Compute
-      summary: Stop a sandbox.
+      summary: Stop a sandbox
       responses:
         '200':
           description: The stopped sandbox.
@@ -114,7 +114,7 @@ paths:
       operationId: listSandboxPreviews
       tags:
       - Compute
-      summary: List previews for a sandbox.
+      summary: List previews for a sandbox
       responses:
         '200':
           description: A list of sandbox previews.
@@ -122,7 +122,7 @@ paths:
       operationId: createSandboxPreview
       tags:
       - Compute
-      summary: Create a preview for a sandbox.
+      summary: Create a preview for a sandbox
       responses:
         '200':
           description: The created sandbox preview.
@@ -138,7 +138,7 @@ paths:
       operationId: listSandboxPreviewTokens
       tags:
       - Compute
-      summary: List tokens for a sandbox preview.
+      summary: List tokens for a sandbox preview
       responses:
         '200':
           description: A list of preview tokens.
@@ -146,7 +146,7 @@ paths:
       operationId: createSandboxPreviewToken
       tags:
       - Compute
-      summary: Create a token for a sandbox preview.
+      summary: Create a token for a sandbox preview
       responses:
         '200':
           description: The created preview token.

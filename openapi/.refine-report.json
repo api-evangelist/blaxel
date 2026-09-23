@@ -1,17 +1,7 @@
 {
   "provider": "blaxel",
   "sources": [
-    "blaxel-agents-api-openapi.yml",
-    "blaxel-compute-api-openapi.yml",
-    "blaxel-functions-api-openapi.yml",
-    "blaxel-integrations-api-openapi.yml",
-    "blaxel-jobs-api-openapi.yml",
-    "blaxel-locations-api-openapi.yml",
-    "blaxel-models-api-openapi.yml",
-    "blaxel-policies-api-openapi.yml",
-    "blaxel-service-accounts-api-openapi.yml",
-    "blaxel-volumes-api-openapi.yml",
-    "blaxel-workspaces-api-openapi.yml"
+    "_original/blaxel-openapi.yml"
   ],
   "outputs": [
     "blaxel-agents-api-openapi.yml",
@@ -29,6 +19,22 @@
   "archived": [],
   "errors": [],
   "warnings": [],
-  "notes": [],
-  "skipped": []
+  "notes": [
+    "sourced from openapi/_original/ (1 archived document(s)); previously refined output at the top level was skipped rather than re-split",
+    "blaxel-openapi.yml: upgraded openapi 3.0.1 -> OpenAPI 3.2.0",
+    "apis.yml register: already-registered"
+  ],
+  "skipped": [
+    "blaxel-agents-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "blaxel-compute-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "blaxel-functions-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "blaxel-integrations-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "blaxel-jobs-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "blaxel-locations-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "blaxel-models-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "blaxel-policies-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "blaxel-service-accounts-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "blaxel-volumes-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "blaxel-workspaces-api-openapi.yml: previously refined output, superseded by openapi/_original/"
+  ]
 }
