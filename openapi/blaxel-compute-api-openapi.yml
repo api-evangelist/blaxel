@@ -152,6 +152,20 @@ paths:
           description: The created preview token.
 components:
   schemas:
+    Sandbox:
+      type: object
+      properties:
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        spec:
+          type: object
+          properties:
+            runtime:
+              type: object
+            ttl:
+              type: string
+            memory:
+              type: integer
     Metadata:
       type: object
       properties:
@@ -171,20 +185,6 @@ components:
           type: object
           additionalProperties:
             type: string
-    Sandbox:
-      type: object
-      properties:
-        metadata:
-          $ref: '#/components/schemas/Metadata'
-        spec:
-          type: object
-          properties:
-            runtime:
-              type: object
-            ttl:
-              type: string
-            memory:
-              type: integer
   parameters:
     SandboxName:
       name: sandbox_name
