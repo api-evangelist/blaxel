@@ -98,6 +98,20 @@ paths:
           description: A list of model revisions.
 components:
   schemas:
+    Model:
+      type: object
+      properties:
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        spec:
+          type: object
+          properties:
+            runtime:
+              type: object
+            integrationConnections:
+              type: array
+              items:
+                type: string
     Metadata:
       type: object
       properties:
@@ -117,20 +131,6 @@ components:
           type: object
           additionalProperties:
             type: string
-    Model:
-      type: object
-      properties:
-        metadata:
-          $ref: '#/components/schemas/Metadata'
-        spec:
-          type: object
-          properties:
-            runtime:
-              type: object
-            integrationConnections:
-              type: array
-              items:
-                type: string
   parameters:
     ModelName:
       name: model_name

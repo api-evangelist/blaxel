@@ -132,6 +132,22 @@ paths:
           description: The deleted job execution.
 components:
   schemas:
+    Job:
+      type: object
+      properties:
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        spec:
+          type: object
+          properties:
+            runtime:
+              type: object
+            maxConcurrentTasks:
+              type: integer
+            maxRetries:
+              type: integer
+            timeout:
+              type: integer
     Metadata:
       type: object
       properties:
@@ -151,22 +167,6 @@ components:
           type: object
           additionalProperties:
             type: string
-    Job:
-      type: object
-      properties:
-        metadata:
-          $ref: '#/components/schemas/Metadata'
-        spec:
-          type: object
-          properties:
-            runtime:
-              type: object
-            maxConcurrentTasks:
-              type: integer
-            maxRetries:
-              type: integer
-            timeout:
-              type: integer
   securitySchemes:
     apiKey:
       type: apiKey

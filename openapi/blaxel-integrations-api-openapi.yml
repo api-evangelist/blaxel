@@ -109,6 +109,13 @@ paths:
         '200':
           description: The endpoint configurations.
 components:
+  parameters:
+    ConnectionName:
+      name: connection_name
+      in: path
+      required: true
+      schema:
+        type: string
   schemas:
     Metadata:
       type: object
@@ -143,13 +150,6 @@ components:
               type: object
             secret:
               type: object
-  parameters:
-    ConnectionName:
-      name: connection_name
-      in: path
-      required: true
-      schema:
-        type: string
   securitySchemes:
     apiKey:
       type: apiKey

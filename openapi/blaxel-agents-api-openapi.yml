@@ -101,7 +101,30 @@ paths:
         '200':
           description: A list of agent revisions.
 components:
+  parameters:
+    AgentName:
+      name: agent_name
+      in: path
+      required: true
+      schema:
+        type: string
   schemas:
+    Agent:
+      type: object
+      properties:
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        spec:
+          type: object
+          properties:
+            description:
+              type: string
+            runtime:
+              type: object
+            policies:
+              type: array
+              items:
+                type: string
     Metadata:
       type: object
       properties:
@@ -121,29 +144,6 @@ components:
           type: object
           additionalProperties:
             type: string
-    Agent:
-      type: object
-      properties:
-        metadata:
-          $ref: '#/components/schemas/Metadata'
-        spec:
-          type: object
-          properties:
-            description:
-              type: string
-            runtime:
-              type: object
-            policies:
-              type: array
-              items:
-                type: string
-  parameters:
-    AgentName:
-      name: agent_name
-      in: path
-      required: true
-      schema:
-        type: string
   securitySchemes:
     apiKey:
       type: apiKey
