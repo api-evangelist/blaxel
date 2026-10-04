@@ -97,6 +97,13 @@ paths:
         '200':
           description: A list of model revisions.
 components:
+  parameters:
+    ModelName:
+      name: model_name
+      in: path
+      required: true
+      schema:
+        type: string
   schemas:
     Model:
       type: object
@@ -131,13 +138,6 @@ components:
           type: object
           additionalProperties:
             type: string
-  parameters:
-    ModelName:
-      name: model_name
-      in: path
-      required: true
-      schema:
-        type: string
   securitySchemes:
     apiKey:
       type: apiKey

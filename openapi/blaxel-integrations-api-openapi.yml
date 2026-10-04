@@ -117,6 +117,20 @@ components:
       schema:
         type: string
   schemas:
+    IntegrationConnection:
+      type: object
+      properties:
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        spec:
+          type: object
+          properties:
+            integration:
+              type: string
+            config:
+              type: object
+            secret:
+              type: object
     Metadata:
       type: object
       properties:
@@ -136,20 +150,6 @@ components:
           type: object
           additionalProperties:
             type: string
-    IntegrationConnection:
-      type: object
-      properties:
-        metadata:
-          $ref: '#/components/schemas/Metadata'
-        spec:
-          type: object
-          properties:
-            integration:
-              type: string
-            config:
-              type: object
-            secret:
-              type: object
   securitySchemes:
     apiKey:
       type: apiKey
