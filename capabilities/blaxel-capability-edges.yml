@@ -1,0 +1,44 @@
+slug: blaxel
+provider: Blaxel
+generated_by: planning/capability-mapping/scripts/classify_capabilities.py
+model: claude-opus-5
+frame:
+- Software & Technology
+min_confidence: 0.7
+capability_model:
+  source: https://github.com/vincentmakes/turbo-ea-capabilities
+  license: CC-BY-4.0
+  attribution: Turbo EA Capabilities by Vincent Verdet — Turbo EA, https://github.com/vincentmakes/turbo-ea-capabilities,
+    CC BY 4.0
+  notice: NOTICE
+edge_count: 3
+edges:
+- tag: Models
+  spec_file: blaxel-models-api-openapi.yml
+  capability_id: BC-610.60
+  capability_id_l1: BC-610
+  capability_name: Artificial Intelligence Management
+  confidence: 0.8
+  evidence: POST /models  createModel  Create a new model deployment behind the model gateway
+  reason: Operations create, update, version (listModelRevisions) and delete ML model deployments behind
+    a model gateway — the AI/ML model lifecycle and MLOps capability.
+- tag: Workspaces
+  spec_file: blaxel-workspaces-api-openapi.yml
+  capability_id: BC-4230.10
+  capability_id_l1: BC-4230
+  capability_name: Tenant Provisioning & Lifecycle
+  confidence: 0.72
+  evidence: POST /workspaces  createWorkspace  Create a new workspace ... POST /users  inviteWorkspaceUser  Invite
+    a user to the current workspace
+  reason: Workspaces are the vendor's multi-tenant unit ('multi-tenant workspaces'); operations create,
+    update and delete tenants and manage their user membership, matching tenant provisioning and lifecycle.
+- tag: Compute
+  spec_file: blaxel-compute-api-openapi.yml
+  capability_id: BC-600.50
+  capability_id_l1: BC-600
+  capability_name: IT Infrastructure Management
+  confidence: 0.7
+  evidence: POST /sandboxes  createSandbox  Create a new sandbox; POST /sandboxes/{sandbox_name}/start  startSandbox
+  reason: Provisioning, starting, stopping and exposing serverless compute sandboxes is management of
+    compute infrastructure. Some chance the intended reading is non-production environment management,
+    so not higher.

@@ -571,6 +571,9 @@ apis:
   - type: APIReference
     url: https://docs.blaxel.ai/api-reference/workspaces
 common:
+- type: CapabilityMap
+  url: capabilities/blaxel-capability-edges.yml
+  name: Blaxel Business Capability Map
 - type: AgenticAccess
   url: agentic-access/blaxel-agentic-access.yml
 - type: DomainSecurity
