@@ -571,6 +571,8 @@ apis:
   - type: APIReference
     url: https://docs.blaxel.ai/api-reference/workspaces
 common:
+- type: Pricing
+  url: https://blaxel.ai/pricing
 - type: CapabilityMap
   url: capabilities/blaxel-capability-edges.yml
   name: Blaxel Business Capability Map
