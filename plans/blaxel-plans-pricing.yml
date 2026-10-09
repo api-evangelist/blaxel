@@ -1,203 +1,234 @@
-specification: API Commons Plans
-specificationVersion: '0.1'
-schema: https://raw.githubusercontent.com/api-evangelist/interface-research/main/schema/api-commons.yml#/$defs/Plans
-provider: Blaxel
-providerId: blaxel
-created: '2026-07-01'
-modified: '2026-07-01'
-reconciled: true
-tags:
-- AI
-- Agents
-- Infrastructure
-- Sandboxes
-- MCP
-- Compute
-- Plans
-description: >-
-  Blaxel uses credit-based, usage-metered pricing for its agent infrastructure.
-  Compute (sandboxes, batch jobs, MCP hosting) is billed per GB of RAM per second
-  of active CPU time; storage is billed per GB per month. New accounts start on a
-  free Tier 0 with up to $200 in free credits and no credit card required, and
-  accounts automatically move up through spend tiers (Tier 0-9) that raise
-  concurrency limits as credits are added. A Custom plan is available for
-  dedicated deployments and negotiated terms.
-notes: >-
-  Representative rates as published on the Blaxel pricing page; verify current
-  per-resource rates, tier thresholds, and add-on fees on the pricing page during
-  reconciliation.
+# Pricing transcribed from the provider's own page — see provenance. Numbers are quoted, not derived.
+generated: '2026-10-07'
+method: searched
+source: https://blaxel.ai/pricing
 sources:
 - https://blaxel.ai/pricing
-- https://docs.blaxel.ai/
+provenance:
+  tool: all/0-working/economics/harvest_pricing.py
+  run: 20261007T112025
+  grounding: every price_text was found verbatim in the fetched page text
+audience: developer-api
+pricing_basis: usage-other
+delivery:
+  delivery: managed+licensed
+  method: page
+  read: '2026-10-07'
+  evidence: Bring-your-own-metal The closest option for self-hosted deployments. Deploy bare metal servers
+    in your own VPC, and privately connect them to Blaxel control plane for the sandbox runtime, so data
+    stays on your hardware during execution.
+  managed_tier: Pay as-you-go
+published: true
+note: Usage-based compute/storage/network rate table plus tier quotas and add-ons; enterprise/custom is
+  quote-based. Bring-your-own-metal mentioned but not priced.
+plan_count: 14
+currency: USD
 plans:
-- id: blaxel-free
-  name: Free (Tier 0)
-  type: free
-  description: >-
-    Starter tier for new accounts with up to $200 in free credits, no credit
-    card required, and a capped concurrency (about 10 concurrent sandboxes).
-  entries:
-  - label: Free Credits
-    name: free_credits
-    type: free
-    metric: credits
-    limit: 200
-    timeFrame: onetime
-    geo: global
-    unit: 1
-    price: up to $200 free credits
-    userMultiplied: false
-  - label: Concurrent Sandboxes
-    name: concurrent_sandboxes
-    type: free
-    metric: sandboxes
-    limit: 10
-    timeFrame: concurrent
-    geo: global
-    unit: 1
-    price: included
-    userMultiplied: false
-  elements:
-  - name: Sandboxes
-  - name: Agents Hosting
-  - name: MCP Servers
-  - name: Model Gateway
-- id: blaxel-pay-as-you-go
-  name: Pay-as-you-go
-  type: usage
-  description: >-
-    Credit-based, usage-metered pricing that scales with consumption. Compute is
-    billed per GB RAM per second of active CPU time; storage is billed per GB per
-    month. Spend tiers (Tier 1-9) raise concurrency as credits are added.
-  entries:
-  - label: Sandbox Compute
-    name: sandbox_compute
-    type: usage
-    metric: gb_ram_seconds
-    limit: -1
-    timeFrame: month
-    geo: global
-    unit: 1
-    price: $0.0000115 per GB RAM per second of active CPU
-    userMultiplied: false
-  - label: Batch Jobs Compute
-    name: job_compute
-    type: usage
-    metric: gb_ram_seconds
-    limit: -1
-    timeFrame: month
-    geo: global
-    unit: 1
-    price: $0.000006 per GB RAM per second
-    userMultiplied: false
-  - label: MCP / Function Hosting Compute
-    name: mcp_compute
-    type: usage
-    metric: gb_ram_seconds
-    limit: -1
-    timeFrame: month
-    geo: global
-    unit: 1
-    price: $0.000007 per GB RAM per second
-    userMultiplied: false
-  - label: Snapshot Storage
-    name: snapshot_storage
-    type: usage
-    metric: gb
-    limit: -1
-    timeFrame: month
-    geo: global
-    unit: 1
-    price: $0.20 per GB per month
-    userMultiplied: false
-  - label: Deployment Image Storage
-    name: image_storage
-    type: usage
-    metric: gb
-    limit: -1
-    timeFrame: month
-    geo: global
-    unit: 1
-    price: $0.045 per GB per month
-    userMultiplied: false
-  - label: Spend Tiers (Tier 1-9)
-    name: spend_tiers
-    type: usage
-    metric: credits
-    limit: -1
-    timeFrame: month
-    geo: global
-    unit: 1
-    price: concurrency scales from 50 (Tier 1) to 100,000+ (Tier 9) concurrent sandboxes
-    userMultiplied: false
-  elements:
-  - name: Sandboxes
-  - name: Agents Hosting
-  - name: MCP Servers
-  - name: Batch Jobs
-  - name: Model Gateway
-  - name: Volumes
-- id: blaxel-support-addons
-  name: Support & Compliance Add-ons
-  type: addon
-  description: >-
-    Optional support and compliance add-ons layered on top of usage-based spend.
-  entries:
-  - label: Email Support
-    name: email_support
-    type: recurring
-    metric: subscription
-    limit: -1
-    timeFrame: month
-    geo: global
-    unit: 1
-    price: $800/month + 3% usage fee
-    userMultiplied: false
-  - label: Live Slack Support
-    name: slack_support
-    type: recurring
-    metric: subscription
-    limit: -1
-    timeFrame: month
-    geo: global
-    unit: 1
-    price: $1,600/month + 10% usage fee
-    userMultiplied: false
-  - label: HIPAA Compliance
-    name: hipaa
-    type: recurring
-    metric: subscription
-    limit: -1
-    timeFrame: month
-    geo: global
-    unit: 1
-    price: $250/month
-    userMultiplied: false
-  elements:
-  - name: Support
-  - name: Compliance
-- id: blaxel-custom
-  name: Custom
-  type: enterprise
-  description: >-
-    Dedicated deployments with custom pricing, larger per-sandbox memory (up to
-    256 GB RAM), private network connectivity, and negotiated terms. Contact
-    Blaxel sales.
-  entries:
-  - label: Custom Agreement
-    name: custom
-    type: flat
-    metric: contract
-    limit: -1
-    timeFrame: year
-    geo: global
-    unit: 1
-    price: contact sales
-    userMultiplied: false
-  elements:
-  - name: Dedicated Deployments
-  - name: Private Networking
-  - name: Custom Volume Pricing
-maintainers:
-- FN: Kin Lane
-  email: kin@apievangelist.com
+- name: Pay as-you-go
+  price_text: $0.00 + USAGE
+  currency: USD
+  period: per-use
+  unit: usage
+  included_quota: Up to $200 in free credits, access to all Blaxel products, tier system up to 100,000+
+    sandboxes, full observability suite, Discord community support
+- name: Custom
+  price_text: Contact us for a quote.
+  period: none
+  included_quota: All features of Pay-as-you-go, plus up to 256 GB RAM per sandbox or job, private network
+    connectivity, bring your own compute, custom SLAs, custom hardware
+- name: Sandboxes – Active CPU
+  price_text: $0.0000115 / GB RAM · second
+  price: 1.15e-05
+  currency: USD
+  period: per-use
+  unit: GB RAM · second
+- name: Sandboxes – Snapshots storage
+  price_text: $0.20 / GB · month
+  price: 0.2
+  currency: USD
+  period: month
+  unit: GB
+- name: Images
+  price_text: $0.045 / GB · month
+  price: 0.045
+  currency: USD
+  period: month
+  unit: GB
+- name: Batch Jobs – Compute runtime
+  price_text: $0.000006 / GB RAM · second
+  price: 6.0e-06
+  currency: USD
+  period: per-use
+  unit: GB RAM · second
+- name: MCP Hosting – Compute runtime
+  price_text: $0.000007 / GB RAM · second
+  price: 7.0e-06
+  currency: USD
+  period: per-use
+  unit: GB RAM · second
+- name: Volumes – Provisioned capacity
+  price_text: $0.12 / GB · month
+  price: 0.12
+  currency: USD
+  period: month
+  unit: GB
+- name: Wildcard domains
+  price_text: $20 / domain · month
+  price: 20
+  currency: USD
+  period: month
+  unit: domain
+- name: Email support add-on
+  price_text: $800 / MONTH + 3% OF USAGE
+  currency: USD
+  period: month
+  included_quota: Private email support with 24-hour response time during business hours
+- name: Dedicated support add-on
+  price_text: $1,600 / MONTH + 10% OF USAGE
+  currency: USD
+  period: month
+  included_quota: Shared Slack channel, architecture workshops, SAML
+- name: HIPAA add-on
+  price_text: $250 / MONTH
+  price: 250
+  currency: USD
+  period: month
+  included_quota: Signed BAA, HIPAA-compliant infrastructure
+- name: Tier 1
+  price_text: $20 / month
+  price: 20
+  currency: USD
+  period: month
+  unit: minimum top-up
+  included_quota: 50 sandbox limit
+- name: Tier 2
+  price_text: $50 / month
+  price: 50
+  currency: USD
+  period: month
+  unit: minimum top-up
+  included_quota: 200 sandbox limit
+rate_limit_statements:
+- Tier 0 Free 10
+- Tier 1 $20 / month 50
+- Tier 2 $50 / month 200
+- Tier 9 Contact us 100,000+
+x-canonical:
+  generated: '2026-10-08'
+  vocabulary: all/0-working/economics/plans-canonical.yml
+  models:
+  - hybrid
+  - subscription
+  units:
+  - data
+  - none
+  - object
+  plans:
+  - name: Pay as-you-go
+    access: other
+    model: unstated
+    model_how: derived
+    units:
+    - none
+    periods:
+    - other
+  - name: Custom
+    access: other
+    model: unstated
+    model_how: derived
+    units: []
+    periods:
+    - none
+  - name: Sandboxes – Active CPU
+    access: other
+    model: hybrid
+    model_how: derived
+    units:
+    - data
+    periods:
+    - other
+  - name: Sandboxes – Snapshots storage
+    access: other
+    model: hybrid
+    model_how: derived
+    units:
+    - data
+    periods:
+    - month
+  - name: Images
+    access: other
+    model: hybrid
+    model_how: derived
+    units:
+    - data
+    periods:
+    - month
+  - name: Batch Jobs – Compute runtime
+    access: other
+    model: hybrid
+    model_how: derived
+    units:
+    - data
+    periods:
+    - other
+  - name: MCP Hosting – Compute runtime
+    access: other
+    model: hybrid
+    model_how: derived
+    units:
+    - data
+    periods:
+    - other
+  - name: Volumes – Provisioned capacity
+    access: other
+    model: hybrid
+    model_how: derived
+    units:
+    - data
+    periods:
+    - month
+  - name: Wildcard domains
+    access: other
+    model: hybrid
+    model_how: derived
+    units:
+    - object
+    periods:
+    - month
+  - name: Email support add-on
+    access: other
+    model: unstated
+    model_how: derived
+    units: []
+    periods:
+    - month
+  - name: Dedicated support add-on
+    access: other
+    model: unstated
+    model_how: derived
+    units: []
+    periods:
+    - month
+  - name: HIPAA add-on
+    access: other
+    model: subscription
+    model_how: derived
+    units: []
+    periods:
+    - month
+  - name: Tier 1
+    access: other
+    model: subscription
+    model_how: derived
+    units:
+    - other
+    periods:
+    - month
+  - name: Tier 2
+    access: other
+    model: subscription
+    model_how: derived
+    units:
+    - other
+    periods:
+    - month
