@@ -98,22 +98,6 @@ paths:
           description: A list of function revisions.
 components:
   schemas:
-    Function:
-      type: object
-      properties:
-        metadata:
-          $ref: '#/components/schemas/Metadata'
-        spec:
-          type: object
-          properties:
-            description:
-              type: string
-            runtime:
-              type: object
-            integrationConnections:
-              type: array
-              items:
-                type: string
     Metadata:
       type: object
       properties:
@@ -133,6 +117,22 @@ components:
           type: object
           additionalProperties:
             type: string
+    Function:
+      type: object
+      properties:
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        spec:
+          type: object
+          properties:
+            description:
+              type: string
+            runtime:
+              type: object
+            integrationConnections:
+              type: array
+              items:
+                type: string
   parameters:
     FunctionName:
       name: function_name
