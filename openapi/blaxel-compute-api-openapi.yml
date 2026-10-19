@@ -1,205 +1,2730 @@
 openapi: 3.2.0
 info:
   title: Blaxel Control Plane Compute API
-  description: Representative specification of the Blaxel (formerly Beamlit) control plane REST API. The control plane manages agents, MCP/function servers, models, sandboxes, jobs, policies, integrations, and workspaces. Authenticate with a Bearer API key (Authorization or X-Blaxel-Authorization header) or an OAuth 2.0 short-lived JWT. Requests may include a Blaxel-Version header (YYYY-MM-DD) and, for multi-workspace accounts, an X-Blaxel-Workspace header.
-  termsOfService: https://blaxel.ai/terms-of-service
-  contact:
-    name: Blaxel Support
-    email: support@blaxel.ai
-  version: v0
+  version: 0.0.1
 servers:
-- url: https://api.blaxel.ai/v0
+- description: Blaxel Control Plane
+  url: https://api.blaxel.ai/v0
+- description: Blaxel Inference
+  url: https://run.blaxel.ai
 security:
-- apiKey: []
-- bearerAuth: []
+- OAuth2:
+  - admin
+- ApiKeyAuth: []
 tags:
 - name: Compute
 paths:
   /sandboxes:
     get:
-      operationId: listSandboxes
-      tags:
-      - Compute
-      summary: List all sandboxes in the workspace
+      description: Returns sandboxes in the workspace. Each sandbox includes its configuration, status, and endpoint URL. Terminated sandboxes are hidden by default; pass `showTerminated=true` to include them. Starting with API version 2026-04-28 the response is wrapped in `{data, meta}` and supports cursor pagination via the `cursor` and `limit` query parameters; older versions keep returning a bare array of all sandboxes.
+      operationId: ListSandboxes
+      parameters:
+      - description: If true, include terminated sandboxes in the response. Defaults to false.
+        in: query
+        name: showTerminated
+        required: false
+        schema:
+          default: false
+          type: boolean
+      - $ref: '#/components/parameters/PaginationCursor'
+      - $ref: '#/components/parameters/PaginationLimit'
+      - $ref: '#/components/parameters/PaginationSort'
+      - $ref: '#/components/parameters/PaginationQuery'
+      - $ref: '#/components/parameters/PaginationAnchor'
+      - description: Comma-separated list of statuses to filter on (e.g. `DEPLOYED,FAILED`). When set it takes precedence over `showTerminated`. Unknown values are rejected with a 400. Bound into the cursor fingerprint.
+        example: DEPLOYED,FAILED
+        in: query
+        name: status
+        required: false
+        schema:
+          type: string
+      - description: Filter sandboxes by external ID. When set, only sandboxes matching this caller-owned identifier are returned.
+        in: query
+        name: externalId
+        required: false
+        schema:
+          type: string
       responses:
         '200':
-          description: A list of sandboxes.
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Sandbox'
-    post:
-      operationId: createSandbox
+                $ref: '#/components/schemas/SandboxList'
+          description: successful operation
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Insufficient permissions to list sandboxes
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - sandboxes:list
+      - ApiKeyAuth: []
+      summary: List sandboxes
       tags:
       - Compute
-      summary: Create a new sandbox
+    post:
+      description: Creates a new sandbox VM for secure AI code execution. Sandboxes automatically scale to zero when idle and resume instantly, preserving memory state including running processes and filesystem.
+      operationId: CreateSandbox
+      parameters:
+      - description: If true, return the existing sandbox instead of a 409 when one with this name is alive. A name held by a FAILED or TERMINATED sandbox is reused, and a deletion or a concurrent creation still in flight is waited for (with backoff) so the response is the sandbox, not a conflict to retry.
+        in: query
+        name: createIfNotExist
+        required: false
+        schema:
+          default: false
+          type: boolean
       requestBody:
-        required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/Sandbox'
-      responses:
-        '200':
-          description: The created sandbox.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Sandbox'
-  /sandboxes/{sandbox_name}:
-    parameters:
-    - $ref: '#/components/parameters/SandboxName'
-    get:
-      operationId: getSandbox
-      tags:
-      - Compute
-      summary: Get a sandbox by name
-      responses:
-        '200':
-          description: The requested sandbox.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Sandbox'
-    put:
-      operationId: updateSandbox
-      tags:
-      - Compute
-      summary: Update a sandbox by name
-      requestBody:
         required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Sandbox'
       responses:
         '200':
-          description: The updated sandbox.
-    delete:
-      operationId: deleteSandbox
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sandbox'
+          description: successful operation
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SandboxError'
+          description: Bad request - Invalid sandbox configuration (e.g., invalid region, image not found)
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SandboxError'
+          description: Unauthorized - Invalid or missing authentication credentials
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SandboxError'
+          description: Forbidden - Insufficient permissions to create sandboxes
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SandboxError'
+          description: Conflict - Sandbox with this name already exists
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SandboxError'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - sandboxes:create
+      - ApiKeyAuth: []
+      summary: Create sandbox
       tags:
       - Compute
-      summary: Delete a sandbox by name
-      responses:
-        '200':
-          description: The deleted sandbox.
-  /sandboxes/{sandbox_name}/start:
+      x-amazon-apigateway-integration:
+        ref: '#/components/x-amazon-apigateway-integrations/albapi-noauth'
+      x-blaxel-authorizer-disabled: true
+  /sandboxes/{sandboxName}:
     parameters:
-    - $ref: '#/components/parameters/SandboxName'
-    post:
-      operationId: startSandbox
-      tags:
-      - Compute
-      summary: Start a sandbox
-      responses:
-        '200':
-          description: The started sandbox.
-  /sandboxes/{sandbox_name}/stop:
-    parameters:
-    - $ref: '#/components/parameters/SandboxName'
-    post:
-      operationId: stopSandbox
-      tags:
-      - Compute
-      summary: Stop a sandbox
-      responses:
-        '200':
-          description: The stopped sandbox.
-  /sandboxes/{sandbox_name}/previews:
-    parameters:
-    - $ref: '#/components/parameters/SandboxName'
-    get:
-      operationId: listSandboxPreviews
-      tags:
-      - Compute
-      summary: List previews for a sandbox
-      responses:
-        '200':
-          description: A list of sandbox previews.
-    post:
-      operationId: createSandboxPreview
-      tags:
-      - Compute
-      summary: Create a preview for a sandbox
-      responses:
-        '200':
-          description: The created sandbox preview.
-  /sandboxes/{sandbox_name}/previews/{preview_name}/tokens:
-    parameters:
-    - $ref: '#/components/parameters/SandboxName'
-    - name: preview_name
+    - description: Unique name identifier of the sandbox
       in: path
+      name: sandboxName
+      required: true
+      schema:
+        type: string
+    delete:
+      description: Permanently deletes a sandbox and all its data. If no volumes are attached, this guarantees zero data retention (ZDR). This action cannot be undone.
+      operationId: DeleteSandbox
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sandbox'
+          description: successful operation
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Insufficient permissions to delete this sandbox
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found - Sandbox does not exist
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - sandboxes:delete
+      - ApiKeyAuth: []
+      summary: Delete sandbox
+      tags:
+      - Compute
+    get:
+      description: Returns detailed information about a sandbox including its configuration, attached volumes, lifecycle policies, and API endpoint URL.
+      operationId: GetSandbox
+      parameters:
+      - description: Show secret values (requires workspace admin role)
+        in: query
+        name: show_secrets
+        required: false
+        schema:
+          type: boolean
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sandbox'
+          description: successful operation
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Insufficient permissions to view this sandbox
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found - Sandbox does not exist
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - sandboxes:get
+      - ApiKeyAuth: []
+      summary: Get sandbox
+      tags:
+      - Compute
+    put:
+      description: Updates a sandbox's configuration. Note that certain changes (like image or memory) may reset the sandbox state. Use lifecycle policies to control automatic cleanup.
+      operationId: UpdateSandbox
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Sandbox'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sandbox'
+          description: successful operation
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad request - Invalid sandbox configuration
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Insufficient permissions to update this sandbox
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found - Sandbox does not exist
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - sandboxes:update
+      - ApiKeyAuth: []
+      summary: Update sandbox
+      tags:
+      - Compute
+  /sandboxes/{sandboxName}/archive:
+    post:
+      description: Archives a sandbox. The changes its filesystem accumulated over its image are exported to the archive store, then the sandbox is shut down while its definition is kept, so it can be recreated later with the same disk. Memory and running processes are not preserved, processes are started again from their configuration when the sandbox is unarchived.
+      operationId: ArchiveSandbox
+      parameters:
+      - description: Name of the sandbox to archive
+        in: path
+        name: sandboxName
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sandbox'
+          description: Sandbox archived successfully
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Insufficient permissions to archive this sandbox
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found - Sandbox does not exist
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Conflict - The sandbox is already archived or is not running
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - sandboxes:update
+      - ApiKeyAuth: []
+      summary: Archive sandbox
+      tags:
+      - Compute
+  /sandboxes/{sandboxName}/fork:
+    post:
+      description: Forks a sandbox into a new sandbox or application. When forking to a sandbox, the target must not already exist (409 if it does). When forking to an application, a new revision is added if the app already exists, or a new application is created. With no snapshotId, a fork to a sandbox copies the source sandbox's live state directly and no snapshot is persisted, while a fork to an application takes a snapshot its revision then references. This is a WIP endpoint — the full implementation depends on the execution plane.
+      operationId: ForkSandbox
+      parameters:
+      - description: Name of the sandbox to fork
+        in: path
+        name: sandboxName
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SandboxForkRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SandboxForkResponse'
+          description: Fork created successfully
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad request - Invalid fork parameters
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found - Source sandbox does not exist
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Conflict - Target sandbox already exists (only for type sandbox)
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - sandboxes:create
+      - ApiKeyAuth: []
+      summary: Fork sandbox
+      tags:
+      - Compute
+  /sandboxes/{sandboxName}/previews:
+    parameters:
+    - description: Name of the Sandbox
+      in: path
+      name: sandboxName
       required: true
       schema:
         type: string
     get:
-      operationId: listSandboxPreviewTokens
-      tags:
-      - Compute
-      summary: List tokens for a sandbox preview
+      description: Returns a list of Sandbox Previews in the workspace.
+      operationId: ListSandboxPreviews
       responses:
         '200':
-          description: A list of preview tokens.
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Preview'
+                type: array
+          description: successful operation
+      security:
+      - OAuth2:
+        - sandboxes:get
+      - ApiKeyAuth: []
+      summary: List Sandbox Previews
+      tags:
+      - Compute
     post:
-      operationId: createSandboxPreviewToken
-      tags:
-      - Compute
-      summary: Create a token for a sandbox preview
+      description: Create a preview
+      operationId: CreateSandboxPreview
+      parameters:
+      - description: Force creation by replacing conflicting previews that use the same custom domain prefix URL
+        in: query
+        name: force
+        required: false
+        schema:
+          type: boolean
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Preview'
+        required: true
       responses:
         '200':
-          description: The created preview token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Preview'
+          description: successful operation
+      security:
+      - OAuth2:
+        - sandboxes:create
+      - ApiKeyAuth: []
+      summary: Create Sandbox Preview
+      tags:
+      - Compute
+  /sandboxes/{sandboxName}/previews/{previewName}:
+    parameters:
+    - description: Name of the Sandbox
+      in: path
+      name: sandboxName
+      required: true
+      schema:
+        type: string
+    - description: Name of the Preview
+      in: path
+      name: previewName
+      required: true
+      schema:
+        type: string
+    delete:
+      description: Deletes a Sandbox Preview by name.
+      operationId: DeleteSandboxPreview
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Preview'
+          description: successful operation
+      security:
+      - OAuth2:
+        - sandboxes:delete
+      - ApiKeyAuth: []
+      summary: Delete Sandbox Preview
+      tags:
+      - Compute
+    get:
+      description: Returns a Sandbox Preview by name.
+      operationId: GetSandboxPreview
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Preview'
+          description: successful operation
+      security:
+      - OAuth2:
+        - sandboxes:get
+      - ApiKeyAuth: []
+      summary: Get Sandbox Preview
+      tags:
+      - Compute
+    put:
+      description: Updates a Sandbox Preview by name.
+      operationId: UpdateSandboxPreview
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Preview'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Preview'
+          description: successful operation
+      security:
+      - OAuth2:
+        - sandboxes:update
+      - ApiKeyAuth: []
+      summary: Update Sandbox Preview
+      tags:
+      - Compute
+  /sandboxes/{sandboxName}/previews/{previewName}/tokens:
+    get:
+      description: Gets tokens for a Sandbox Preview.
+      operationId: ListSandboxPreviewTokens
+      parameters:
+      - description: Name of the Sandbox
+        in: path
+        name: sandboxName
+        required: true
+        schema:
+          type: string
+      - description: Name of the Preview
+        in: path
+        name: previewName
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/PreviewToken'
+                type: array
+          description: successful operation
+      security:
+      - OAuth2:
+        - sandboxes:get
+      - ApiKeyAuth: []
+      summary: Get tokens for Sandbox Preview
+      tags:
+      - Compute
+    post:
+      description: Creates a token for a Sandbox Preview.
+      operationId: CreateSandboxPreviewToken
+      parameters:
+      - description: Name of the Sandbox
+        in: path
+        name: sandboxName
+        required: true
+        schema:
+          type: string
+      - description: Name of the Preview
+        in: path
+        name: previewName
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PreviewToken'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PreviewToken'
+          description: successful operation
+      security:
+      - OAuth2:
+        - sandboxes:update
+      - ApiKeyAuth: []
+      summary: Create token for Sandbox Preview
+      tags:
+      - Compute
+  /sandboxes/{sandboxName}/previews/{previewName}/tokens/{tokenName}:
+    delete:
+      description: Deletes a token for a Sandbox Preview by name.
+      operationId: DeleteSandboxPreviewToken
+      parameters:
+      - description: Name of the Sandbox
+        in: path
+        name: sandboxName
+        required: true
+        schema:
+          type: string
+      - description: Name of the Preview
+        in: path
+        name: previewName
+        required: true
+        schema:
+          type: string
+      - description: Name of the Token
+        in: path
+        name: tokenName
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  message:
+                    description: Success message
+                    type: string
+                type: object
+          description: successful operation
+      security:
+      - OAuth2:
+        - sandboxes:delete
+      - ApiKeyAuth: []
+      summary: Delete token for Sandbox Preview
+      tags:
+      - Compute
+  /sandboxes/{sandboxName}/schedule-executions:
+    parameters:
+    - description: Name of the Sandbox
+      in: path
+      name: sandboxName
+      required: true
+      schema:
+        type: string
+    get:
+      description: Returns the execution history of a Sandbox's schedules (across all schedules of the sandbox), newest first. Cursor-paginated via the `cursor` and `limit` query parameters. Each item records the HTTP status of submitting the scheduled command and the process name for log lookup.
+      operationId: ListSandboxScheduleExecutions
+      parameters:
+      - description: Number of items per page
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 20
+          maximum: 100
+          minimum: 1
+          type: integer
+      - $ref: '#/components/parameters/PaginationCursor'
+      - description: Sort by creation time. Defaults to newest first.
+        in: query
+        name: sort
+        required: false
+        schema:
+          enum:
+          - createdAt:desc
+          - createdAt:asc
+          type: string
+      - $ref: '#/components/parameters/PaginationQuery'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SandboxScheduleExecutionList'
+          description: successful operation
+      security:
+      - OAuth2:
+        - sandboxes:get
+      - ApiKeyAuth: []
+      summary: List Sandbox Schedule Executions
+      tags:
+      - Compute
+  /sandboxes/{sandboxName}/schedules:
+    parameters:
+    - description: Name of the Sandbox
+      in: path
+      name: sandboxName
+      required: true
+      schema:
+        type: string
+    get:
+      description: Returns the schedules configured on a Sandbox. Starting with API version 2026-04-28 the response is wrapped in `{data, meta}` and supports cursor pagination via the `cursor` and `limit` query parameters; older versions return a bare array.
+      operationId: ListSandboxSchedules
+      parameters:
+      - description: Number of items per page
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 20
+          maximum: 100
+          minimum: 1
+          type: integer
+      - $ref: '#/components/parameters/PaginationCursor'
+      - description: Sort by creation time. Defaults to newest first.
+        in: query
+        name: sort
+        required: false
+        schema:
+          enum:
+          - createdAt:desc
+          - createdAt:asc
+          type: string
+      - $ref: '#/components/parameters/PaginationQuery'
+      - description: Filter schedules by timing type. Only cron and at are stored (sleep resolves to at on creation); any other value is ignored.
+        in: query
+        name: type
+        required: false
+        schema:
+          enum:
+          - cron
+          - at
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SandboxScheduleEntryList'
+          description: successful operation
+      security:
+      - OAuth2:
+        - sandboxes:get
+      - ApiKeyAuth: []
+      summary: List Sandbox Schedules
+      tags:
+      - Compute
+    post:
+      description: Adds a schedule to a Sandbox.
+      operationId: CreateSandboxSchedule
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SandboxScheduleEntry'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SandboxScheduleEntry'
+          description: successful operation
+      security:
+      - OAuth2:
+        - sandboxes:create
+      - ApiKeyAuth: []
+      summary: Create Sandbox Schedule
+      tags:
+      - Compute
+  /sandboxes/{sandboxName}/schedules/{scheduleId}:
+    parameters:
+    - description: Name of the Sandbox
+      in: path
+      name: sandboxName
+      required: true
+      schema:
+        type: string
+    - description: Id of the Schedule
+      in: path
+      name: scheduleId
+      required: true
+      schema:
+        type: string
+    delete:
+      description: Deletes a Sandbox Schedule by id.
+      operationId: DeleteSandboxSchedule
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SandboxScheduleEntry'
+          description: successful operation
+      security:
+      - OAuth2:
+        - sandboxes:delete
+      - ApiKeyAuth: []
+      summary: Delete Sandbox Schedule
+      tags:
+      - Compute
+    get:
+      description: Returns a Sandbox Schedule by id.
+      operationId: GetSandboxSchedule
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SandboxScheduleEntry'
+          description: successful operation
+      security:
+      - OAuth2:
+        - sandboxes:get
+      - ApiKeyAuth: []
+      summary: Get Sandbox Schedule
+      tags:
+      - Compute
+    put:
+      description: Updates a Sandbox Schedule by id.
+      operationId: UpdateSandboxSchedule
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SandboxScheduleEntry'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SandboxScheduleEntry'
+          description: successful operation
+      security:
+      - OAuth2:
+        - sandboxes:update
+      - ApiKeyAuth: []
+      summary: Update Sandbox Schedule
+      tags:
+      - Compute
+  /sandboxes/{sandboxName}/snapshots:
+    get:
+      description: Returns a list of snapshots for the specified sandbox.
+      operationId: ListSandboxSnapshots
+      parameters:
+      - description: Name of the sandbox
+        in: path
+        name: sandboxName
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SandboxSnapshots'
+          description: successful operation
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found - Sandbox does not exist
+      security:
+      - OAuth2:
+        - sandboxes:list
+      - ApiKeyAuth: []
+      summary: List sandbox snapshots
+      tags:
+      - Compute
+    post:
+      description: Creates a point-in-time snapshot of a sandbox. Snapshots capture the sandbox state and can be used for forking into new sandboxes or applications. This is a WIP endpoint — the full implementation depends on the execution plane.
+      operationId: CreateSandboxSnapshot
+      parameters:
+      - description: Name of the sandbox to snapshot
+        in: path
+        name: sandboxName
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SandboxSnapshotRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SandboxSnapshot'
+          description: Snapshot created successfully
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found - Sandbox does not exist
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - sandboxes:update
+      - ApiKeyAuth: []
+      summary: Create sandbox snapshot
+      tags:
+      - Compute
+  /sandboxes/{sandboxName}/snapshots/{snapshotId}:
+    delete:
+      description: Deletes a snapshot of a sandbox, addressed by its name among that sandbox's snapshots (or by its ID).
+      operationId: DeleteSandboxSnapshot
+      parameters:
+      - description: Name of the sandbox
+        in: path
+        name: sandboxName
+        required: true
+        schema:
+          type: string
+      - description: Name of the snapshot among the sandbox's snapshots. A snapshot ID is also accepted and resolves within the whole workspace, so it reaches a snapshot whose source sandbox is another one or was deleted.
+        in: path
+        name: snapshotId
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Snapshot deleted successfully
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found - Snapshot does not exist
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - sandboxes:delete
+      - ApiKeyAuth: []
+      summary: Delete sandbox snapshot
+      tags:
+      - Compute
+  /sandboxes/{sandboxName}/snapshots/{snapshotId}/restore:
+    post:
+      description: Restores a sandbox to one of its own snapshots. The running sandbox is torn down and rebuilt from the snapshot under the same name and URLs, so everything it held since the snapshot was taken is lost unless it was itself snapshotted.
+      operationId: RestoreSandboxSnapshot
+      parameters:
+      - description: Name of the sandbox to restore
+        in: path
+        name: sandboxName
+        required: true
+        schema:
+          type: string
+      - description: Name of the snapshot among the sandbox's snapshots. A snapshot ID is also accepted and resolves within the whole workspace, so it reaches a snapshot whose source sandbox is another one or was deleted.
+        in: path
+        name: snapshotId
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SandboxRestoreResponse'
+          description: Sandbox restored successfully
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found - Sandbox or snapshot does not exist
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - sandboxes:update
+      - ApiKeyAuth: []
+      summary: Restore sandbox from snapshot
+      tags:
+      - Compute
+  /sandboxes/{sandboxName}/unarchive:
+    post:
+      description: Recreates an archived sandbox from its archive. The recreated sandbox runs the current generation whatever generation it was archived from, restores the archived filesystem before anything starts, and starts the saved processes again with new process identifiers.
+      operationId: UnarchiveSandbox
+      parameters:
+      - description: Name of the sandbox to unarchive
+        in: path
+        name: sandboxName
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sandbox'
+          description: Sandbox recreated successfully
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Insufficient permissions to unarchive this sandbox
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found - Sandbox does not exist
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Conflict - The sandbox is not archived
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - sandboxes:update
+      - ApiKeyAuth: []
+      summary: Unarchive sandbox
+      tags:
+      - Compute
+  /sandboxes/by-external-id/{externalId}:
+    parameters:
+    - description: Caller-owned external identifier for the sandbox
+      in: path
+      name: externalId
+      required: true
+      schema:
+        type: string
+    get:
+      description: Returns the most recent non-terminated sandbox matching the given external ID. If no active sandbox is found, returns 404.
+      operationId: GetSandboxByExternalId
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sandbox'
+          description: successful operation
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Insufficient permissions to view sandboxes
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found - No active sandbox with this external ID
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - sandboxes:get
+      - ApiKeyAuth: []
+      summary: Get sandbox by external ID
+      tags:
+      - Compute
+  /schedule-executions:
+    get:
+      description: Returns schedule execution submissions across the workspace, newest first by default. Status describes submission acceptance, not process completion. since and until are inclusive RFC 3339 bounds on creation time.
+      operationId: ListScheduleExecutions
+      parameters:
+      - description: Number of items per page
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 20
+          maximum: 100
+          minimum: 1
+          type: integer
+      - $ref: '#/components/parameters/PaginationCursor'
+      - description: Sort by creation time. Defaults to newest first.
+        in: query
+        name: sort
+        required: false
+        schema:
+          enum:
+          - createdAt:desc
+          - createdAt:asc
+          type: string
+      - $ref: '#/components/parameters/PaginationQuery'
+      - description: Filter by process submission acceptance status. Historical rows without status do not match this filter.
+        in: query
+        name: status
+        required: false
+        schema:
+          enum:
+          - succeeded
+          - failed
+          type: string
+      - description: Filter by sandbox name.
+        in: query
+        name: sandbox
+        required: false
+        schema:
+          type: string
+      - description: Filter by schedule id.
+        in: query
+        name: schedule
+        required: false
+        schema:
+          type: string
+      - description: Inclusive beginning of the createdAt window, as RFC 3339.
+        in: query
+        name: since
+        required: false
+        schema:
+          format: date-time
+          type: string
+      - description: Inclusive end of the createdAt window, as RFC 3339.
+        in: query
+        name: until
+        required: false
+        schema:
+          format: date-time
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SandboxScheduleExecutionList'
+          description: successful operation
+      security:
+      - OAuth2:
+        - sandboxes:get
+      - ApiKeyAuth: []
+      summary: List Workspace Schedule Executions
+      tags:
+      - Compute
+  /schedules:
+    get:
+      description: Returns schedule definitions across the workspace, newest first by default.
+      operationId: ListSchedules
+      parameters:
+      - description: Number of items per page
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 20
+          maximum: 100
+          minimum: 1
+          type: integer
+      - $ref: '#/components/parameters/PaginationCursor'
+      - description: Sort by creation time. Defaults to newest first.
+        in: query
+        name: sort
+        required: false
+        schema:
+          enum:
+          - createdAt:desc
+          - createdAt:asc
+          type: string
+      - $ref: '#/components/parameters/PaginationQuery'
+      - description: Filter by sandbox name.
+        in: query
+        name: sandbox
+        required: false
+        schema:
+          type: string
+      - description: Filter schedules by stored timing type. sleep resolves to at before persistence.
+        in: query
+        name: type
+        required: false
+        schema:
+          enum:
+          - cron
+          - at
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SandboxScheduleEntryList'
+          description: successful operation
+      security:
+      - OAuth2:
+        - sandboxes:get
+      - ApiKeyAuth: []
+      summary: List Workspace Schedules
+      tags:
+      - Compute
+  /schedules/metrics:
+    get:
+      description: Returns active sandbox and scheduling metrics for a UTC minute window. since is inclusive and until is exclusive. The default window is the last 24 hours and the maximum is 7 days. Execution status describes submission acceptance, not process completion. Execution totals begin accumulating when metrics collection is enabled and can lag recent firings briefly.
+      operationId: GetSandboxScheduleMetrics
+      parameters:
+      - description: Inclusive beginning of the metrics window, as RFC 3339. Normalized down to a UTC minute, must be within the last 7 days, and defaults to 24 hours before until.
+        in: query
+        name: since
+        required: false
+        schema:
+          format: date-time
+          type: string
+      - description: Exclusive end of the metrics window, as RFC 3339. Normalized down to a UTC minute and defaults to the current minute.
+        in: query
+        name: until
+        required: false
+        schema:
+          format: date-time
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SandboxScheduleMetrics'
+          description: successful operation
+      security:
+      - OAuth2:
+        - sandboxes:get
+      - ApiKeyAuth: []
+      summary: Get Sandbox Scheduling Metrics
+      tags:
+      - Compute
+  /snapshots:
+    get:
+      description: Returns the snapshots of the workspace, newest first by default, including the ones whose source object has been deleted. Starting with API version 2026-04-28 the response is wrapped in `{data, meta}` and supports cursor pagination via the `cursor` and `limit` query parameters; older versions keep returning a bare array.
+      operationId: ListSnapshots
+      parameters:
+      - $ref: '#/components/parameters/PaginationCursor'
+      - $ref: '#/components/parameters/PaginationLimit'
+      - $ref: '#/components/parameters/PaginationSort'
+      - $ref: '#/components/parameters/PaginationQuery'
+      - $ref: '#/components/parameters/PaginationAnchor'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SandboxSnapshotList'
+          description: successful operation
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - sandboxes:list
+      - ApiKeyAuth: []
+      summary: List snapshots
+      tags:
+      - Compute
+    post:
+      description: Captures a snapshot from a source object. The snapshot belongs to the workspace rather than to its source, so it survives the deletion of the object it was captured from, and carries what creating a sandbox or an application from it needs.
+      operationId: CreateSnapshot
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SandboxSnapshotRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SandboxSnapshot'
+          description: Snapshot created successfully
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found - Source object does not exist
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - sandboxes:update
+      - ApiKeyAuth: []
+      summary: Create snapshot
+      tags:
+      - Compute
+  /snapshots/{snapshotName}:
+    delete:
+      description: Deletes a snapshot. There is a single snapshot object, so this removes it for the whole workspace, whether or not the object it was captured from still exists.
+      operationId: DeleteSnapshot
+      parameters:
+      - description: ID of the snapshot
+        in: path
+        name: snapshotName
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Snapshot deleted successfully
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found - Snapshot does not exist
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - sandboxes:delete
+      - ApiKeyAuth: []
+      summary: Delete snapshot
+      tags:
+      - Compute
+    get:
+      description: Returns a snapshot of the workspace by ID.
+      operationId: GetSnapshot
+      parameters:
+      - description: ID of the snapshot
+        in: path
+        name: snapshotName
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SandboxSnapshot'
+          description: successful operation
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found - Snapshot does not exist
+      security:
+      - OAuth2:
+        - sandboxes:get
+      - ApiKeyAuth: []
+      summary: Get snapshot
+      tags:
+      - Compute
+  /snapshots/{snapshotName}/fork:
+    post:
+      description: Creates a new sandbox or application from a snapshot. The snapshot is enough on its own, so this works after the object it was captured from has been deleted.
+      operationId: ForkSnapshot
+      parameters:
+      - description: ID of the snapshot to create the resource from
+        in: path
+        name: snapshotName
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SandboxForkRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SandboxForkResponse'
+          description: Resource created successfully
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found - Snapshot does not exist
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - sandboxes:create
+      - ApiKeyAuth: []
+      summary: Fork snapshot
+      tags:
+      - Compute
 components:
   schemas:
-    Metadata:
+    SandboxScheduleInput:
       type: object
+      description: Process execution configuration for a scheduled sandbox task
+      properties:
+        command:
+          type: string
+          description: Shell command to execute inside the sandbox
+          example: python train.py --epochs 10
+        env:
+          type: object
+          description: Environment variables to set for the process. May contain secrets, so values are encrypted at rest and masked in API responses unless an admin requests show_secrets=true.
+          additionalProperties:
+            type: string
+        keepAlive:
+          type: boolean
+          description: Keep the sandbox alive (disable scale-to-zero) while the process runs. Defaults to true.
+          example: true
+        name:
+          type: string
+          description: Optional name for the process (used to retrieve status/logs)
+          example: training-job
+        timeout:
+          type: integer
+          description: Timeout in seconds for the process. Defaults to 600 (10 minutes). Set to 0 for no timeout.
+          example: 3600
+        workingDir:
+          type: string
+          description: Working directory for the command
+          example: /app
+    PreviewTokenSpec:
+      type: object
+      description: Spec for a Preview Token
+      properties:
+        expired:
+          type: boolean
+          description: Whether the token is expired
+          readOnly: true
+        expiresAt:
+          type: string
+          description: Expiration time of the token
+        token:
+          type: string
+          description: Token
+          readOnly: true
+    FirewallConfig:
+      type: object
+      description: Firewall configuration specifying which network lockdown rulesets to apply. Valid rulesets are "default" (no-op), "proxy" (restrict egress to proxy), and "dedicated-ip" (restrict egress to dedicated IP gateway).
+      properties:
+        rulesets:
+          type: array
+          description: 'List of firewall rulesets to apply. Valid values: "default" (no-op), "proxy" (restrict egress to proxy), "dedicated-ip" (restrict egress to dedicated IP gateway).'
+          items:
+            type: string
+          example: '["proxy", "dedicated-ip"]'
+    PaginationMeta:
+      type: object
+      description: Pagination metadata returned alongside a page of listing results. Always present on listing endpoints starting with API version 2026-04-28.
+      properties:
+        hasMore:
+          type: boolean
+          description: True when more pages are available beyond the current one.
+        nextCursor:
+          type: string
+          description: Opaque cursor to pass back as the `cursor` query param for the next page. Empty when there are no more pages.
+        total:
+          type: integer
+          description: Total number of items in the workspace, ignoring the current page's filters. Lets the UI render "page X of Y" without walking the cursor chain. Computed from the hash-only metadata.workspace GSI count, so search (`q`) does not narrow it.
+        totalIsPartial:
+          type: boolean
+          description: True when `total` is a lower bound rather than a complete count. Counting a very large workspace is bounded so the listing stays fast, and this flag says the real number is higher. Clients must not derive a page count from `total` when this is set — keep paging with `nextCursor` until `hasMore` is false.
+    PreviewToken:
+      type: object
+      description: Token for a Preview
+      properties:
+        metadata:
+          $ref: '#/components/schemas/PreviewTokenMetadata'
+        spec:
+          $ref: '#/components/schemas/PreviewTokenSpec'
+      required:
+      - metadata
+      - spec
+    SandboxForkRequest:
+      type: object
+      description: Request body for forking a sandbox into an application. Creates a new application or adds a canary revision to an existing one.
+      properties:
+        customDomain:
+          type: string
+          description: Custom domain for the application
+        envs:
+          type: array
+          description: Environment variables the fork runs with, on top of the ones the source has. A variable the source already carries takes this value in the fork, one it does not is added, and every other variable of the source is kept.
+          items:
+            $ref: '#/components/schemas/Env'
+        lifecycle:
+          $ref: '#/components/schemas/SandboxLifecycle'
+        port:
+          type: integer
+          description: Port to expose from the sandbox
+          example: 8080
+        prefix:
+          type: string
+          description: URL prefix for the application
+        snapshotId:
+          type: string
+          description: Snapshot ID to fork from. When set, the fork is created from that existing snapshot (and an application revision references it). When omitted, a fork to a sandbox copies the source sandbox's live state directly and no snapshot is persisted; a fork to an application still takes a snapshot, since its revision references one.
+        targetName:
+          type: string
+          description: Name of the target application to create or update
+          example: my-app
+        targetType:
+          type: string
+          description: Target resource type to fork into
+          example: application
+        traffic:
+          type: integer
+          description: Traffic percentage for canary deployment (0-100). When set on an existing target, creates a new revision with this traffic percentage.
+          example: 10
+      required:
+      - targetType
+      - targetName
+    SandboxSpec:
+      type: object
+      description: Configuration for a sandbox including its image, memory, ports, region, and lifecycle policies
+      properties:
+        enabled:
+          type: boolean
+          description: When false, the sandbox is disabled and will not accept connections
+          example: true
+          default: true
+        lifecycle:
+          $ref: '#/components/schemas/SandboxLifecycle'
+        network:
+          $ref: '#/components/schemas/SandboxNetwork'
+        region:
+          type: string
+          description: Region where the sandbox should be created (e.g. us-pdx-1, eu-lon-1). If not specified, defaults to the region closest to the user.
+          example: us-pdx-1
+        runtime:
+          $ref: '#/components/schemas/SandboxRuntime'
+        volumes:
+          $ref: '#/components/schemas/VolumeAttachments'
+        vpc:
+          type: string
+          description: VPC name for the sandbox. Defaults to "default" when absent.
+          example: default
+    SandboxScheduleExecutionStatusMetrics:
+      type: object
+      description: Schedule execution counts grouped by submission acceptance status.
+      properties:
+        failed:
+          type: integer
+          description: Number of process submissions that were not accepted.
+        succeeded:
+          type: integer
+          description: Number of process submissions accepted by the sandbox.
+    SandboxRuntime:
+      type: object
+      description: Runtime configuration defining how the sandbox VM is provisioned and its resource limits
+      properties:
+        envs:
+          type: array
+          description: Environment variables injected into the sandbox. Supports Kubernetes EnvVar format with valueFrom references.
+          items:
+            $ref: '#/components/schemas/Env'
+        expires:
+          type: string
+          description: Absolute expiration timestamp in ISO 8601 format when the sandbox will be deleted
+          example: '2025-12-31T23:59:59Z'
+        extraArgs:
+          type: object
+          description: 'Extra arguments for kernel selection. Supported keys: ''iptables'', ''nfs'' (mk3.0), ''tun'', ''android'' and ''landlock'' (mk3.1). The android variant includes tun and iptables and cannot be combined with nfs. The landlock variant enables the Landlock LSM, includes tun and iptables, and cannot be combined with android or nfs. Android and landlock requests are rejected if routing selects mk3.0. ''kernelExtensions'' (mk3.1, android only for now) switches on the selected kernel''s loadable modules and kernel tracing (eBPF, kprobes, perf); without it they are disabled, even for root. Values: ''enabled'' or ''disabled''. Determines which kernel variant the workload runs on. Immutable after creation.'
+          additionalProperties:
+            type: string
+        image:
+          type: string
+          description: Sandbox image to use. Can be a public Blaxel image (e.g., blaxel/base-image:latest) or a custom template image built with 'bl deploy'.
+          example: blaxel/base-image:latest
+        memory:
+          type: integer
+          description: Memory allocation in megabytes. Also determines CPU allocation (CPU cores = memory in MB / 2048, e.g., 4096MB = 2 CPUs).
+          example: 4096
+        ports:
+          $ref: '#/components/schemas/Ports'
+        standbyGracePeriodSeconds:
+          type: integer
+          description: 'Seconds the sandbox gets after a SIGUSR2 to prepare before it goes to standby (scale to zero). The workload can say it is done earlier by writing to $BLAXEL_STANDBY_READY_FILE. Defaults to 0: no signal, immediate standby.'
+          example: 10
+        terminationGracePeriodSeconds:
+          type: integer
+          description: Duration in seconds the pod needs to terminate gracefully. Defaults to 0 for immediate termination.
+          example: 30
+        ttl:
+          type: string
+          description: 'Max-age from creation: the sandbox is deleted this long after it is created, regardless of activity (not an idle timeout). Units s, m, h, d, w (e.g., ''30m'', ''24h'', ''7d'', ''2w''), minimum ''5m''. For idle-based cleanup, use a lifecycle expiration policy of type ttl-idle.'
+          example: 24h
+    SandboxList:
+      type: object
+      description: Cursor-paginated list of sandboxes. Returned starting with API version 2026-04-28; older API versions return a bare array.
+      properties:
+        data:
+          type: array
+          description: Page of sandboxes. Items use the lite shape (no inline event history) to keep the page payload small, matching the unpaginated response.
+          items:
+            $ref: '#/components/schemas/Sandbox'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+    SandboxSnapshotList:
+      type: object
+      description: Cursor-paginated list of snapshots. Returned starting with API version 2026-04-28; older API versions return a bare array.
+      properties:
+        data:
+          type: array
+          description: Page of snapshots.
+          items:
+            $ref: '#/components/schemas/SandboxSnapshot'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+    Port:
+      type: object
+      description: A port for a resource
       properties:
         name:
           type: string
-        displayName:
+          description: The name of the port
+          example: http
+        protocol:
           type: string
+          description: The protocol of the port
+          enum:
+          - HTTP
+          - TCP
+          - UDP
+          - TLS
+          example: HTTP
+        target:
+          type: integer
+          description: The target port of the port
+          example: 8080
+      required:
+      - target
+    EgressConfig:
+      type: object
+      description: Egress configuration for routing sandbox outbound traffic through a dedicated IP gateway
+      properties:
+        gateway:
+          type: string
+          description: Name of the egress gateway to route traffic through. The gateway must exist in the default VPC.
+          example: egress-ip-gw-1
+        mode:
+          type: string
+          description: Egress mode. Use 'dedicated' for a dedicated egress IP.
+          example: dedicated
+        policies:
+          type: array
+          description: Per-destination egress policies (not yet supported)
+          items:
+            $ref: '#/components/schemas/EgressPolicy'
+    SandboxInfrastructureError:
+      type: object
+      description: Infrastructure failure the compute plane reported for a sandbox
+      properties:
+        code:
+          type: string
+          description: Stable code of the failure pattern
+          example: VM_NETWORK_FAILURE
+        fatal:
+          type: boolean
+          description: Whether the failure was terminal, putting the sandbox in FAILED, as opposed to being cleared by a restart
+        instance:
+          type: string
+          description: Instance the failure was reported for
+        message:
+          type: string
+          description: Reason reported with the failure
+        time:
+          type: string
+          description: Time at which the failure was recorded
+    PreviewTokenMetadata:
+      type: object
+      description: PreviewTokenMetadata
+      properties:
+        name:
+          type: string
+          description: Token name
+        previewName:
+          type: string
+          description: Preview name
+        resourceName:
+          type: string
+          description: Resource name
+        resourceType:
+          type: string
+          description: Resource type
         workspace:
           type: string
+          description: Workspace name
+      required:
+      - name
+    SandboxScheduleExecution:
+      type: object
+      description: One recorded execution of a sandbox schedule. status and statusCode describe whether the scheduler's process submission was accepted; the scheduler does not wait for the process to finish. Stored in the dedicated scheduleexecutions table.
+      properties:
         createdAt:
           type: string
-          format: date-time
-        updatedAt:
+          description: Creation timestamp (read-only).
+          readOnly: true
+        error:
           type: string
-          format: date-time
-        labels:
+          description: Reason the execution failed, naming the resource that could not be reached. Empty when the command was accepted by the sandbox.
+          example: sandbox my-sandbox is not reachable at https://xxx.us-pdx-1.bl.run (HTTP 404)
+        executedAt:
+          type: string
+          description: RFC 3339 time at which the command was submitted.
+          example: '2026-07-01T09:00:00Z'
+        id:
+          type: string
+          description: Unique id of this execution within the schedule.
+          example: '00000000000000000042'
+        processName:
+          type: string
+          description: Name of the process started in the sandbox for this execution, used to look up its logs.
+          example: training-job
+        sandbox:
+          type: string
+          description: Name of the sandbox this execution belongs to.
+          readOnly: true
+        scheduleId:
+          type: string
+          description: Id of the schedule this execution belongs to.
+          example: schedule-0
+        status:
+          type: string
+          description: Whether submitting the process request was accepted. This is not the process completion status.
+          enum:
+          - succeeded
+          - failed
+          readOnly: true
+        statusCode:
+          type: integer
+          description: HTTP status code returned when the scheduled command was submitted to the sandbox (0 if the sandbox could not be reached). 2xx/3xx means the command was accepted.
+          example: 200
+        timeout:
+          type: integer
+          description: Process timeout in seconds for this execution. The UI uses it to scope the log view to [executedAt, executedAt+timeout]. 0 when the schedule set no timeout.
+          example: 600
+    SandboxSnapshotSource:
+      type: object
+      description: The object a snapshot was captured from.
+      properties:
+        deleted:
+          type: boolean
+          description: Whether the source object has since been deleted. The snapshot stays usable, the link is only kept for context.
+          readOnly: true
+        kind:
+          type: string
+          description: Kind of the object the snapshot was captured from. Defaults to sandbox, the only kind that can be captured today.
+          enum:
+          - sandbox
+          example: sandbox
+          default: sandbox
+        name:
+          type: string
+          description: Name of the object the snapshot was captured from
+      required:
+      - name
+    Metadata:
+      type: object
+      description: Common metadata fields shared by all Blaxel resources including name, labels, timestamps, and ownership information
+      allOf:
+      - $ref: '#/components/schemas/TimeFields'
+      - $ref: '#/components/schemas/OwnerFields'
+      - properties:
+          displayName:
+            type: string
+            description: Human-readable name for display in the UI. Can contain spaces and special characters, max 63 characters.
+            example: My Resource
+          externalId:
+            type: string
+            description: Caller-owned identifier for external lookups. Max 64 chars, alphanumeric + dash.
+            example: my-session-123
+          labels:
+            $ref: '#/components/schemas/MetadataLabels'
+          name:
+            type: string
+            description: Unique identifier for the resource within the workspace. Must be lowercase alphanumeric with hyphens, max 49 characters. Immutable after creation.
+            example: my-resource
+          plan:
+            type: string
+            description: Billing plan tier applied to this resource (inherited from workspace account)
+            readOnly: true
+          url:
+            type: string
+            description: Auto-generated endpoint URL for accessing this resource (for agents, functions, models, sandboxes)
+            readOnly: true
+          workspace:
+            type: string
+            description: Name of the workspace this resource belongs to (read-only, set automatically)
+            readOnly: true
+        required:
+        - name
+    SandboxArchive:
+      type: object
+      description: State of the filesystem archive of a sandbox. An archive holds the writable filesystem changes and the process configurations of the sandbox, not its memory, so restoring it produces a sandbox with the same disk state and freshly started processes.
+      properties:
+        createdAt:
+          type: string
+          description: When the archive was created (read-only)
+          readOnly: true
+        generation:
+          type: string
+          description: Infrastructure generation the archive was taken from (read-only)
+          readOnly: true
+          example: mk3.0
+        key:
+          type: string
+          description: Storage key of the archive (read-only)
+          readOnly: true
+          example: my-workspace/my-sandbox.tar
+        restore:
+          $ref: '#/components/schemas/SandboxArchiveRestore'
+        restoreStartedAt:
+          type: string
+          description: When the restore of the archive started, while the sandbox is being unarchived (read-only)
+          readOnly: true
+        size:
+          type: integer
+          description: Size of the archive in bytes (read-only)
+          readOnly: true
+        startedAt:
+          type: string
+          description: When the archive was started, while the filesystem of the sandbox is still being uploaded (read-only)
+          readOnly: true
+    SandboxSnapshotRequest:
+      type: object
+      description: Request body for creating a snapshot. The source object is required at the root endpoint and implied by the path on the nested one.
+      properties:
+        name:
+          type: string
+          description: Display name of the snapshot, unique among the snapshots of the sandbox it is captured from; the same name may be reused on another sandbox. Defaults to the snapshot identifier when absent.
+          example: my-snapshot
+        source:
+          $ref: '#/components/schemas/SandboxSnapshotSource'
+    SandboxForkResponse:
+      type: object
+      description: Response returned after forking a sandbox. Contains either the new sandbox or application depending on the fork type.
+      properties:
+        name:
+          type: string
+          description: Name of the created or updated resource
+        snapshotId:
+          type: string
+          description: The snapshot ID the fork was created from. Set only when the fork went through a snapshot, meaning an explicit snapshotId was supplied or the fork target is an application. Empty when the fork copied the source sandbox's live state directly.
+        type:
+          type: string
+          description: Type of resource that was created (sandbox or application)
+          enum:
+          - sandbox
+          - application
+    PreviewSpec:
+      type: object
+      description: Preview of a Resource
+      properties:
+        customDomain:
+          type: string
+          description: Custom domain bound to this preview
+        expires:
+          type: string
+          description: The expiration date for the preview in ISO 8601 format - 2024-12-31T23:59:59Z
+        port:
+          type: integer
+          description: Port of the preview
+        prefixUrl:
+          type: string
+          description: Prefix URL
+        public:
+          type: boolean
+          description: Whether the preview is public
+        region:
+          type: string
+          description: Region where the preview is deployed, this is readonly
+          readOnly: true
+        requestHeaders:
           type: object
+          description: Those headers will be set in all requests to your preview. This is especially useful to set the Authorization header.
           additionalProperties:
             type: string
+        responseHeaders:
+          type: object
+          description: Those headers will be set in all responses of your preview. This is especially useful to set the CORS headers.
+          additionalProperties:
+            type: string
+        ttl:
+          type: string
+          description: Time to live for the preview (e.g., "1h", "24h", "7d"). After this duration, the preview will be automatically deleted.
+        url:
+          type: string
+          description: URL of the preview
+          readOnly: true
+    CoreEvents:
+      type: array
+      description: Events happening on a resource deployed on Blaxel
+      items:
+        $ref: '#/components/schemas/CoreEvent'
+      readOnly: true
+    OwnerFields:
+      type: object
+      description: Owner fields for Persistence
+      properties:
+        createdBy:
+          type: string
+          description: The user or service account who created the resource
+          readOnly: true
+        updatedBy:
+          type: string
+          description: The user or service account who updated the resource
+          readOnly: true
+    SandboxArchiveRestore:
+      type: object
+      description: Progress of the restore of a sandbox archive. A restore writes the archived filesystem over the image the sandbox booted from, which takes as long as the archive is big; the sandbox answers and its terminal is reachable throughout, but nothing may write to its filesystem until the restore is done.
+      properties:
+        files:
+          type: integer
+          description: Number of files restored so far (read-only)
+          readOnly: true
+        restoredBytes:
+          type: integer
+          description: Bytes of the archive restored so far (read-only)
+          readOnly: true
+        state:
+          type: string
+          description: Phase of the restore (read-only)
+          enum:
+          - downloading
+          - extracting
+          - relaunching
+          - succeeded
+          - failed
+          readOnly: true
+          example: extracting
+        totalBytes:
+          type: integer
+          description: Total size of the archive being restored in bytes, absent when the store did not announce it (read-only)
+          readOnly: true
+    ExpirationPolicy:
+      type: object
+      description: Expiration policy for automatic sandbox cleanup based on time conditions
+      properties:
+        action:
+          type: string
+          description: Action to take when the expiration condition is met
+          enum:
+          - delete
+          example: delete
+        type:
+          type: string
+          description: 'Type of expiration policy: ttl-idle (delete after inactivity), ttl-max-age (delete after total lifetime), or date (delete at specific time)'
+          enum:
+          - ttl-idle
+          - ttl-max-age
+          - date
+          example: ttl-idle
+        value:
+          type: string
+          description: Duration value for TTL policies (e.g., '30m', '24h', '7d'; minimum '60s' for ttl-idle, '5m' for ttl-max-age) or ISO 8601 date for date policies
+          example: 24h
+    CoreEvent:
+      type: object
+      description: Core event
+      properties:
+        canaryRevision:
+          type: string
+          description: Canary revisionID link to the event
+        message:
+          type: string
+          description: Event message
+          example: Deployment successful
+        revision:
+          type: string
+          description: RevisionID link to the event
+          example: rev-abc123
+        status:
+          type: string
+          description: Event status
+          example: DEPLOYED
+        time:
+          type: string
+          description: Event time
+          example: '2025-01-15T10:30:00Z'
+        type:
+          type: string
+          description: Event type
+          example: deployment
+      readOnly: true
+    Ports:
+      type: array
+      description: Set of ports for a resource
+      items:
+        $ref: '#/components/schemas/Port'
+    VolumeAttachments:
+      type: array
+      items:
+        $ref: '#/components/schemas/VolumeAttachment'
+    EgressPolicy:
+      type: object
+      description: Egress policy routing specific destinations through dedicated or shared gateways (not yet supported)
+      properties:
+        destinations:
+          type: array
+          description: Destination domains or IPs this policy applies to
+          items:
+            type: string
+          example: '["api.stripe.com"]'
+        mode:
+          type: string
+          description: Egress mode for these destinations (dedicated or shared)
+          example: dedicated
+        name:
+          type: string
+          description: Name of this egress policy
+          example: payment-apis
+    SandboxScheduleEntry:
+      type: object
+      description: A scheduled task that executes a process inside the sandbox at specified times. Stored in the dedicated schedules table (no longer embedded in the sandbox spec).
+      properties:
+        createdAt:
+          type: string
+          description: Creation timestamp (read-only).
+          readOnly: true
+        id:
+          type: string
+          description: Unique identifier for this schedule within its sandbox. Auto-generated if not provided.
+          example: schedule-0
+        input:
+          $ref: '#/components/schemas/SandboxScheduleInput'
+        maxExecutions:
+          type: integer
+          description: Maximum number of execution records kept for this schedule. Once reached, recording a new execution deletes the oldest. Defaults to 100.
+          example: 100
+        sandbox:
+          type: string
+          description: Name of the sandbox this schedule belongs to.
+          readOnly: true
+        type:
+          type: string
+          description: Type of schedule timing. 'cron' for recurring (5-field expression), 'at' for a specific RFC 3339 datetime, 'sleep' for a duration from now (resolved to 'at' on creation).
+          enum:
+          - cron
+          - at
+          - sleep
+          example: cron
+        value:
+          type: string
+          description: 'Timing value. For ''cron'': a 5-field cron expression (e.g. ''0 8 * * 1-5''). For ''at'': an RFC 3339 datetime (e.g. ''2026-07-01T09:00:00Z''). For ''sleep'': a duration (e.g. ''2h'', ''30m'', ''7d'').'
+          example: 0 8 * * 1-5
+    SandboxScheduleExecutionList:
+      type: object
+      description: Cursor-paginated list of a sandbox's schedule execution history (across all its schedules).
+      properties:
+        data:
+          type: array
+          description: Page of schedule executions.
+          items:
+            $ref: '#/components/schemas/SandboxScheduleExecution'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+    SandboxNetwork:
+      type: object
+      description: Network configuration for a sandbox including subnet, firewall rulesets, domain filtering, egress IP binding, and proxy settings
+      properties:
+        allowedDomains:
+          type: array
+          description: 'Deprecated: use proxy.allowedDomains instead. List of allowed external domains (allowlist). Kept for backward compatibility.'
+          items:
+            type: string
+          example: '["api.stripe.com", "api.openai.com", "*.s3.amazonaws.com"]'
+        egress:
+          $ref: '#/components/schemas/EgressConfig'
+        firewall:
+          $ref: '#/components/schemas/FirewallConfig'
+        forbiddenDomains:
+          type: array
+          description: 'Deprecated: use proxy.forbiddenDomains instead. List of forbidden external domains (denylist). Kept for backward compatibility.'
+          items:
+            type: string
+          example: '["*.malware.com", "evil.example.org"]'
+        proxy:
+          $ref: '#/components/schemas/ProxyConfig'
+        subnet:
+          type: string
+          description: Subnet name for the sandbox. Takes priority over any subnet derived from egress config. Defaults to "default" when absent.
+          example: default
+    SandboxError:
+      type: object
+      description: Error response returned by the CreateSandbox endpoint with extended details about the failure
+      properties:
+        code:
+          type: string
+          description: Error code identifying the kind of error (e.g., INVALID_IMAGE, QUOTA_EXCEEDED)
+          example: INVALID_IMAGE
+        details:
+          type: object
+          description: Additional error details. For INVALID_IMAGE errors, includes requested_image and supported_images array.
+          additionalProperties: true
+        message:
+          type: string
+          description: Human-readable error message describing what went wrong
+          example: Sandbox image blaxel/dev-ts-app:latest is not supported
+        sandbox_name:
+          type: string
+          description: Name of the sandbox that failed to create
+          example: mysandbox
+        status_code:
+          type: integer
+          description: HTTP status code
+          example: 400
+        step:
+          type: string
+          description: Processing step where the error occurred
+          example: validate_and_prepare
+        timestamp:
+          type: string
+          description: ISO 8601 timestamp of when the error occurred
+          example: '2025-12-19T22:36:29.336304095Z'
+        workspace:
+          type: string
+          description: Workspace name where the sandbox creation was attempted
+          example: main
+      required:
+      - code
+      - message
+    PreviewMetadata:
+      type: object
+      description: PreviewMetadata
+      allOf:
+      - $ref: '#/components/schemas/TimeFields'
+      - $ref: '#/components/schemas/OwnerFields'
+      - properties:
+          displayName:
+            type: string
+            description: Model display name
+          name:
+            type: string
+            description: Preview name
+          resourceName:
+            type: string
+            description: Resource name
+          resourceType:
+            type: string
+            description: Resource type
+          workspace:
+            type: string
+            description: Workspace name
+        required:
+        - name
+    Env:
+      type: object
+      description: Environment variable with name and value
+      properties:
+        name:
+          type: string
+          description: Name of the environment variable
+          example: MY_ENV_VAR
+        secret:
+          type: boolean
+          description: Whether the value is a secret
+          example: true
+        value:
+          type: string
+          description: Value of the environment variable
+          example: my-value
+    SandboxRestoreResponse:
+      type: object
+      description: Result of restoring a sandbox to one of its snapshots. The sandbox keeps its name and URLs; everything it held since the snapshot was taken is gone.
+      properties:
+        name:
+          type: string
+          description: Name of the restored sandbox
+        snapshotId:
+          type: string
+          description: Snapshot the sandbox was restored from
+      required:
+      - name
+      - snapshotId
+    SandboxScheduleEntryList:
+      type: object
+      description: Cursor-paginated list of a sandbox's schedule definitions.
+      properties:
+        data:
+          type: array
+          description: Page of schedule definitions.
+          items:
+            $ref: '#/components/schemas/SandboxScheduleEntry'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+    SandboxSnapshot:
+      type: object
+      description: 'A point-in-time snapshot of a sandbox. It is a workspace-level object: it outlives the sandbox it was captured from, and can be restored onto a sandbox or forked into a new sandbox or application on its own.'
+      properties:
+        createdAt:
+          type: string
+          description: When the snapshot was created
+        createdBy:
+          type: string
+          description: Who created the snapshot
+        id:
+          type: string
+          description: Identifier of the snapshot, unique in the workspace. Workspace-level routes address the snapshot by it.
+          readOnly: true
+          example: snap_abc123
+        name:
+          type: string
+          description: Display name of the snapshot, unique among the snapshots of the sandbox it was captured from. Defaults to the identifier.
+          example: my-snapshot
+        sandboxName:
+          type: string
+          description: Name of the source sandbox. Kept for compatibility, read source.name instead.
+        source:
+          $ref: '#/components/schemas/SandboxSnapshotSource'
+        spec:
+          $ref: '#/components/schemas/SandboxSnapshotSpec'
+        status:
+          type: string
+          description: Status of the snapshot (pending, ready, failed)
+          example: ready
+        workspace:
+          type: string
+          description: Workspace owning the snapshot
+      required:
+      - workspace
+      - name
+      - id
+      - createdAt
+      - status
     Sandbox:
       type: object
+      description: Lightweight virtual machine for secure AI code execution. Sandboxes resume from standby in under 25ms and automatically scale to zero after inactivity, preserving memory state including running processes and filesystem.
       properties:
+        archive:
+          $ref: '#/components/schemas/SandboxArchive'
+        errors:
+          type: array
+          description: Infrastructure failures recorded on the sandbox, oldest first (read-only, managed by the system)
+          items:
+            $ref: '#/components/schemas/SandboxInfrastructureError'
+          readOnly: true
+        events:
+          $ref: '#/components/schemas/CoreEvents'
+        expiresIn:
+          type: integer
+          description: Time in seconds until the sandbox is automatically deleted based on TTL and lifecycle policies. Only present for sandboxes with lifecycle configured.
+          readOnly: true
+        lastUsedAt:
+          type: string
+          description: Last time the sandbox was used (read-only, managed by the system)
+          readOnly: true
         metadata:
           $ref: '#/components/schemas/Metadata'
+        nodeGeneration:
+          type: string
+          description: Infrastructure generation this sandbox is deployed on (mk3.0 or mk3.1).
+          readOnly: true
         spec:
+          $ref: '#/components/schemas/SandboxSpec'
+        state:
+          type: string
+          description: Current state of the sandbox (read-only, managed by the system)
+          enum:
+          - RUNNING
+          - STANDBY
+          readOnly: true
+        status:
+          $ref: '#/components/schemas/Status'
+      required:
+      - metadata
+      - spec
+    SandboxSnapshotSpec:
+      type: object
+      description: The configuration a snapshot carries, so a sandbox or an application can be created from it once its source object is gone.
+      properties:
+        generation:
+          type: string
+          description: Infrastructure generation the snapshot was captured on. A snapshot only restores on the generation it came from.
+          enum:
+          - mk2
+          - mk3
+        image:
+          type: string
+          description: Image the source object ran
+        memory:
+          type: integer
+          description: Memory in MB the source object ran with
+        ports:
+          $ref: '#/components/schemas/Ports'
+        region:
+          type: string
+          description: Region holding the snapshot. Restores and forks land in it.
+        volumes:
+          $ref: '#/components/schemas/VolumeAttachments'
+    Preview:
+      type: object
+      description: Preview of a Resource
+      properties:
+        events:
+          $ref: '#/components/schemas/CoreEvents'
+        metadata:
+          $ref: '#/components/schemas/PreviewMetadata'
+        spec:
+          $ref: '#/components/schemas/PreviewSpec'
+        status:
+          $ref: '#/components/schemas/Status'
+      required:
+      - metadata
+      - spec
+    Status:
+      type: string
+      description: Deployment status of a resource deployed on Blaxel
+      enum:
+      - DELETING
+      - TERMINATED
+      - FAILED
+      - DEACTIVATED
+      - DEACTIVATING
+      - UPLOADING
+      - BUILDING
+      - DEPLOYING
+      - DEPLOYED
+      - BUILT
+      - ARCHIVING
+      - ARCHIVED
+      - UNARCHIVING
+      readOnly: true
+    SandboxScheduleMetrics:
+      type: object
+      description: Workspace sandbox scheduling metrics for a UTC minute window. since is inclusive and until is exclusive.
+      properties:
+        executions:
+          type: integer
+          description: Number of schedule execution submissions in the selected window.
+        executionsByStatus:
+          $ref: '#/components/schemas/SandboxScheduleExecutionStatusMetrics'
+        sandboxes:
+          type: integer
+          description: Number of active sandboxes in the workspace.
+        schedules:
+          type: integer
+          description: Number of schedules in the workspace.
+        since:
+          type: string
+          description: Inclusive beginning of the metrics window, normalized to a UTC minute.
+        until:
+          type: string
+          description: Exclusive end of the metrics window, normalized to a UTC minute.
+    MetadataLabels:
+      type: object
+      description: Key-value pairs for organizing and filtering resources. Labels can be used to categorize resources by environment, project, team, or any custom taxonomy.
+      additionalProperties:
+        type: string
+    VolumeAttachment:
+      type: object
+      description: Configuration for attaching a volume to a sandbox at a specific filesystem path. Defaults to a persistent volume; set type to "ephemeral" for disk-backed scratch space created with the sandbox and destroyed when it stops.
+      properties:
+        mountPath:
+          type: string
+          description: Absolute filesystem path where the volume will be mounted inside the sandbox
+          example: /mnt/data
+        name:
+          type: string
+          description: For persistent volumes, the name of the volume resource to attach (must exist in the same workspace and region). For ephemeral volumes, an identifier used to reference the volume internally.
+          example: my-volume
+        readOnly:
+          type: boolean
+          description: If true, the volume is mounted read-only and cannot be modified by the sandbox
+          example: false
+        sizeMb:
+          type: integer
+          description: Storage capacity in megabytes. Required for ephemeral volumes, ignored for persistent volumes.
+          example: 102400
+        type:
+          type: string
+          description: Type of volume. Defaults to "persistent" (an existing volume resource). Use "ephemeral" for temporary disk-backed storage created with the sandbox.
+          enum:
+          - persistent
+          - ephemeral
+          example: persistent
+    ProxyConfig:
+      type: object
+      description: Proxy configuration for routing sandbox HTTP traffic through the platform proxy with MITM inspection and per-destination header/body injection
+      properties:
+        allowedDomains:
+          type: array
+          description: List of allowed external domains (allowlist). When set, only these domains are reachable. Supports wildcards (e.g. *.s3.amazonaws.com).
+          items:
+            type: string
+          example: '["api.stripe.com", "api.openai.com", "*.s3.amazonaws.com"]'
+        bypass:
+          type: array
+          description: Domains that bypass the proxy entirely via the NO_PROXY directive. Traffic to these destinations goes direct, not through the CONNECT tunnel. Supports wildcards. Note that localhost, private ranges (10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16), 169.254.169.254, .local and .internal are always bypassed by default.
+          items:
+            type: string
+          example: '["*.s3.amazonaws.com"]'
+        forbiddenDomains:
+          type: array
+          description: List of forbidden external domains (denylist). When set, all domains except these are reachable. Supports wildcards (e.g. *.malware.com). If both allowedDomains and forbiddenDomains are set, allowedDomains takes precedence.
+          items:
+            type: string
+          example: '["*.malware.com", "evil.example.org"]'
+        routing:
+          type: array
+          description: Per-destination routing rules with header/body injection and secrets. Use destinations ["*"] for global rules that apply to all destinations.
+          items:
+            $ref: '#/components/schemas/ProxyTarget'
+    TimeFields:
+      type: object
+      description: Time fields for Persistence
+      properties:
+        createdAt:
+          type: string
+          description: The date and time when the resource was created
+          readOnly: true
+        updatedAt:
+          type: string
+          description: The date and time when the resource was updated
+          readOnly: true
+    ProxyTarget:
+      type: object
+      description: Routing rule that injects headers and body fields into requests matching the given destinations. Use destinations ["*"] for a global rule that applies to all proxied traffic.
+      properties:
+        body:
           type: object
-          properties:
-            runtime:
-              type: object
-            ttl:
-              type: string
-            memory:
-              type: integer
+          description: Body fields to inject into matching requests. Values may contain {{SECRET:name}} references resolved from this rule's secrets.
+          additionalProperties:
+            type: string
+          example: '{"api_key": "{{SECRET:stripe-key}}"}'
+        destinations:
+          type: array
+          description: Destination domains this rule applies to. Use ["*"] for a global rule that matches all destinations.
+          items:
+            type: string
+          example: '["api.stripe.com"]'
+        headers:
+          type: object
+          description: Headers to inject into matching requests. Values may contain {{SECRET:name}} references resolved from this rule's secrets.
+          additionalProperties:
+            type: string
+          example: '{"Authorization": "Bearer {{SECRET:stripe-key}}"}'
+        secrets:
+          type: object
+          description: 'Named secret values for this routing rule, referenced in headers/body via {{SECRET:name}}. Stored encrypted at rest. Write-only: never returned in API responses.'
+          additionalProperties:
+            type: string
+          example: '{"stripe-key": "sk-live-abc123..."}'
+    SandboxLifecycle:
+      type: object
+      description: Lifecycle configuration controlling automatic sandbox deletion based on idle time, max age, or specific dates
+      properties:
+        expirationPolicies:
+          type: array
+          description: List of expiration policies. Multiple policies can be combined; whichever condition is met first triggers the action.
+          items:
+            $ref: '#/components/schemas/ExpirationPolicy'
+        terminatedRetention:
+          type: string
+          description: Duration to keep the sandbox record after termination for log access (e.g., '1h', '24h', '7d'). Defaults to 5m. Subject to maximum quota limits.
+          example: 24h
+    Error:
+      type: object
+      description: Standard error response returned by the API when a request fails
+      properties:
+        code:
+          type: integer
+          description: HTTP status code of the error
+          example: 409
+        error:
+          type: string
+          description: Error type or code identifying the kind of error
+          example: Resource already exists
+        message:
+          type: string
+          description: Human-readable error message describing what went wrong
+          example: Invalid request body
+      required:
+      - error
+    SandboxSnapshots:
+      type: array
+      items:
+        $ref: '#/components/schemas/SandboxSnapshot'
   parameters:
-    SandboxName:
-      name: sandbox_name
-      in: path
-      required: true
+    PaginationAnchor:
+      description: Start from a known pagination boundary. `end` is only supported for `createdAt` listings (asc or desc) and returns the tail page directly without walking every cursor from the first page.
+      in: query
+      name: anchor
+      required: false
+      schema:
+        enum:
+        - end
+        type: string
+    PaginationQuery:
+      description: Substring search across `metadata.name`, `metadata.displayName` and labels (keys + values). Trimmed and lowercased server-side; queries shorter than 2 characters fall back to the unfiltered listing. Bound into the cursor fingerprint so a cursor opened with one query cannot be reused with another. Only honoured starting on Blaxel-Version 2026-04-28.
+      in: query
+      name: q
+      required: false
+      schema:
+        maxLength: 200
+        type: string
+    PaginationSort:
+      description: Sort spec, formatted as `<key>:<direction>`. Allowed values are `createdAt:desc` (default), `createdAt:asc`, `name:asc`, `name:desc`. The cursor fingerprint is bound to the sort, so a cursor opened with one value cannot be reused with another. Only honoured starting on Blaxel-Version 2026-04-28.
+      in: query
+      name: sort
+      required: false
+      schema:
+        enum:
+        - createdAt:desc
+        - createdAt:asc
+        - name:asc
+        - name:desc
+        type: string
+    PaginationLimit:
+      description: Maximum number of items to return per page. Defaults to 50, clamped to 200.
+      in: query
+      name: limit
+      required: false
+      schema:
+        default: 50
+        maximum: 200
+        minimum: 1
+        type: integer
+    PaginationCursor:
+      description: Opaque cursor returned by a previous response's meta.nextCursor. Only valid for the same query (workspace + filters); the server rejects cursors bound to a different query or older than 24h. Omit on the first page.
+      in: query
+      name: cursor
+      required: false
       schema:
         type: string
+      x-stainless-pagination-property:
+        purpose: next_cursor_param
   securitySchemes:
-    apiKey:
-      type: apiKey
-      in: header
-      name: X-Blaxel-Authorization
-      description: API key supplied as "Bearer YOUR-API-KEY".
-    bearerAuth:
-      type: http
+    ApiKeyAuth:
+      bearerFormat: API Key
+      description: Long-lived API key for programmatic access
       scheme: bearer
-      bearerFormat: JWT
-      description: OAuth 2.0 short-lived JWT access token.
+      type: http
+    OAuth2:
+      description: OAuth2 authentication with JWT tokens
+      flows:
+        authorizationCode:
+          authorizationUrl: /oauth/authorize
+          scopes:
+            admin: Administrative access
+            agents:create: Create agents
+            agents:delete: Delete agents
+            agents:get: Get agent details
+            agents:list: List agents
+            agents:update: Update agents
+            apiKey:list: List API keys
+            apiKey:write: Create and delete API keys
+            applications:create: Create applications
+            applications:delete: Delete applications
+            applications:get: Get application details
+            applications:list: List applications
+            applications:update: Update applications
+            configurations:list: List configurations
+            customdomains:create: Create custom domains
+            customdomains:delete: Delete custom domains
+            customdomains:get: Get custom domain details
+            customdomains:list: List custom domains
+            customdomains:update: Update custom domains
+            functions:create: Create functions
+            functions:delete: Delete functions
+            functions:get: Get function details
+            functions:list: List functions
+            functions:update: Update functions
+            integrations:create: Create integrations
+            integrations:list: List integrations
+            invitations:list: List invitations
+            jobs:create: Create jobs
+            jobs:delete: Delete jobs
+            jobs:get: Get job details
+            jobs:list: List jobs
+            jobs:update: Update jobs
+            locations:list: List locations
+            mcphub:list: List MCP hub resources
+            models:create: Create models
+            models:delete: Delete models
+            models:get: Get model details
+            models:list: List models
+            models:update: Update models
+            policies:create: Create policies
+            policies:delete: Delete policies
+            policies:get: Get policy details
+            policies:list: List policies
+            policies:update: Update policies
+            sandboxes:control: Control sandbox operations
+            sandboxes:create: Create sandboxes
+            sandboxes:delete: Delete sandboxes
+            sandboxes:get: Get sandbox details
+            sandboxes:list: List sandboxes
+            sandboxes:update: Update sandboxes
+            sandboxhub:list: List sandbox hub resources
+            secrets:create: Create secrets
+            secrets:delete: Delete secrets
+            secrets:list: List secrets
+            templates:get: Get template details
+            templates:list: List templates
+            volumeTemplates:create: Create volume templates
+            volumeTemplates:delete: Delete volume templates
+            volumeTemplates:get: Get volume template details
+            volumeTemplates:list: List volume templates
+            volumeTemplates:upsert: Create or update volume templates
+            volumes:create: Create volumes
+            volumes:delete: Delete volumes
+            volumes:get: Get volume details
+            volumes:list: List volumes
+            workspaces:accept: Accept workspace invitation
+            workspaces:create: Create workspaces
+            workspaces:decline: Decline workspace invitation
+            workspaces:delete: Delete workspaces
+            workspaces:get: Get workspace details
+            workspaces:invite: Invite users to workspace
+            workspaces:leave: Leave workspace
+            workspaces:list: List workspaces
+            workspaces:remove: Remove users from workspace
+            workspaces:update: Update workspaces
+          tokenUrl: /oauth/token
+        clientCredentials:
+          scopes:
+            admin: Administrative access
+            agents:create: Create agents
+            agents:delete: Delete agents
+            agents:get: Get agent details
+            agents:list: List agents
+            agents:update: Update agents
+            apiKey:list: List API keys
+            apiKey:write: Create and delete API keys
+            applications:create: Create applications
+            applications:delete: Delete applications
+            applications:get: Get application details
+            applications:list: List applications
+            applications:update: Update applications
+            configurations:list: List configurations
+            customdomains:create: Create custom domains
+            customdomains:delete: Delete custom domains
+            customdomains:get: Get custom domain details
+            customdomains:list: List custom domains
+            customdomains:update: Update custom domains
+            functions:create: Create functions
+            functions:delete: Delete functions
+            functions:get: Get function details
+            functions:list: List functions
+            functions:update: Update functions
+            integrations:create: Create integrations
+            integrations:list: List integrations
+            invitations:list: List invitations
+            jobs:create: Create jobs
+            jobs:delete: Delete jobs
+            jobs:get: Get job details
+            jobs:list: List jobs
+            jobs:update: Update jobs
+            locations:list: List locations
+            mcphub:list: List MCP hub resources
+            models:create: Create models
+            models:delete: Delete models
+            models:get: Get model details
+            models:list: List models
+            models:update: Update models
+            policies:create: Create policies
+            policies:delete: Delete policies
+            policies:get: Get policy details
+            policies:list: List policies
+            policies:update: Update policies
+            sandboxes:control: Control sandbox operations
+            sandboxes:create: Create sandboxes
+            sandboxes:delete: Delete sandboxes
+            sandboxes:get: Get sandbox details
+            sandboxes:list: List sandboxes
+            sandboxes:update: Update sandboxes
+            sandboxhub:list: List sandbox hub resources
+            secrets:create: Create secrets
+            secrets:delete: Delete secrets
+            secrets:list: List secrets
+            templates:get: Get template details
+            templates:list: List templates
+            volumeTemplates:create: Create volume templates
+            volumeTemplates:delete: Delete volume templates
+            volumeTemplates:get: Get volume template details
+            volumeTemplates:list: List volume templates
+            volumeTemplates:upsert: Create or update volume templates
+            volumes:create: Create volumes
+            volumes:delete: Delete volumes
+            volumes:get: Get volume details
+            volumes:list: List volumes
+            workspaces:accept: Accept workspace invitation
+            workspaces:create: Create workspaces
+            workspaces:decline: Decline workspace invitation
+            workspaces:delete: Delete workspaces
+            workspaces:get: Get workspace details
+            workspaces:invite: Invite users to workspace
+            workspaces:leave: Leave workspace
+            workspaces:list: List workspaces
+            workspaces:remove: Remove users from workspace
+            workspaces:update: Update workspaces
+          tokenUrl: /oauth/token
+      type: oauth2

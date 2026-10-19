@@ -1,180 +1,1339 @@
 openapi: 3.2.0
 info:
   title: Blaxel Control Plane Jobs API
-  description: Representative specification of the Blaxel (formerly Beamlit) control plane REST API. The control plane manages agents, MCP/function servers, models, sandboxes, jobs, policies, integrations, and workspaces. Authenticate with a Bearer API key (Authorization or X-Blaxel-Authorization header) or an OAuth 2.0 short-lived JWT. Requests may include a Blaxel-Version header (YYYY-MM-DD) and, for multi-workspace accounts, an X-Blaxel-Workspace header.
-  termsOfService: https://blaxel.ai/terms-of-service
-  contact:
-    name: Blaxel Support
-    email: support@blaxel.ai
-  version: v0
+  version: 0.0.1
 servers:
-- url: https://api.blaxel.ai/v0
+- description: Blaxel Control Plane
+  url: https://api.blaxel.ai/v0
+- description: Blaxel Inference
+  url: https://run.blaxel.ai
 security:
-- apiKey: []
-- bearerAuth: []
+- OAuth2:
+  - admin
+- ApiKeyAuth: []
 tags:
 - name: Jobs
 paths:
   /jobs:
     get:
-      operationId: listJobs
-      tags:
-      - Jobs
-      summary: List all jobs in the workspace
+      description: Returns batch job definitions in the workspace. Each job can be triggered to run multiple parallel tasks with configurable concurrency and retry settings. Starting with API version 2026-04-28 the response is wrapped in `{data, meta}` and supports cursor pagination via the `cursor` and `limit` query parameters; older versions keep returning a bare array with all jobs.
+      operationId: ListJobs
+      parameters:
+      - $ref: '#/components/parameters/PaginationCursor'
+      - $ref: '#/components/parameters/PaginationLimit'
+      - $ref: '#/components/parameters/PaginationSort'
+      - $ref: '#/components/parameters/PaginationQuery'
+      - $ref: '#/components/parameters/PaginationAnchor'
+      - $ref: '#/components/parameters/ExternalIdFilter'
+      - $ref: '#/components/parameters/ListingStatus'
       responses:
         '200':
-          description: A list of jobs.
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Job'
-    post:
-      operationId: createJob
+                $ref: '#/components/schemas/JobList'
+          description: successful operation
+      security:
+      - OAuth2:
+        - jobs:list
+      - ApiKeyAuth: []
+      summary: List batch jobs
       tags:
       - Jobs
-      summary: Create a new job
+    post:
+      description: Creates a new batch job definition for parallel AI task processing. Jobs can be triggered via API or scheduled, and support configurable parallelism, timeouts, and retry logic.
+      operationId: CreateJob
       requestBody:
-        required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/Job'
+        required: true
       responses:
         '200':
-          description: The created job.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Job'
-  /jobs/{job_id}:
+          description: successful operation
+      security:
+      - OAuth2:
+        - jobs:create
+      - ApiKeyAuth: []
+      summary: Create batch job
+      tags:
+      - Jobs
+  /jobs/{jobId}:
     parameters:
-    - name: job_id
+    - description: Unique name identifier of the batch job
       in: path
+      name: jobId
       required: true
       schema:
         type: string
-    get:
-      operationId: getJob
-      tags:
-      - Jobs
-      summary: Get a job by id
+    delete:
+      description: Permanently deletes a batch job definition and cancels any running executions. Historical execution data will be retained for a limited time.
+      operationId: DeleteJob
       responses:
         '200':
-          description: The requested job.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job'
+          description: successful operation
+      security:
+      - OAuth2:
+        - jobs:delete
+      - ApiKeyAuth: []
+      summary: Delete batch job
+      tags:
+      - Jobs
+    get:
+      description: Returns detailed information about a batch job including its runtime configuration, execution history, and deployment status.
+      operationId: GetJob
+      parameters:
+      - description: Show secret values (requires workspace admin role)
+        in: query
+        name: show_secrets
+        required: false
+        schema:
+          type: boolean
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job'
+          description: successful operation
+      security:
+      - OAuth2:
+        - jobs:get
+      - ApiKeyAuth: []
+      summary: Get batch job
+      tags:
+      - Jobs
     put:
-      operationId: updateJob
-      tags:
-      - Jobs
-      summary: Update a job by id
+      description: Updates a batch job's configuration. Changes affect new executions; running executions continue with their original configuration.
+      operationId: UpdateJob
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Job'
+        required: true
       responses:
         '200':
-          description: The updated job.
-    delete:
-      operationId: deleteJob
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job'
+          description: successful operation
+      security:
+      - OAuth2:
+        - jobs:update
+      - ApiKeyAuth: []
+      summary: Update batch job
       tags:
       - Jobs
-      summary: Delete a job by id
-      responses:
-        '200':
-          description: The deleted job.
-  /jobs/{job_id}/executions:
-    parameters:
-    - name: job_id
-      in: path
-      required: true
-      schema:
-        type: string
+  /jobs/{jobId}/executions:
     get:
-      operationId: listJobExecutions
-      tags:
-      - Jobs
-      summary: List executions for a job
+      description: Returns executions for a batch job. Starting with API version 2026-04-28 the response is wrapped in `{data, meta}` and supports cursor pagination via the `cursor` and `limit` query parameters; older versions keep the legacy offset/limit contract and return a bare array.
+      operationId: ListJobExecutions
+      parameters:
+      - description: Name of the job
+        in: path
+        name: jobId
+        required: true
+        schema:
+          type: string
+      - description: Number of items per page
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 20
+          maximum: 100
+          minimum: 1
+          type: integer
+      - description: Page offset (legacy, ignored when Blaxel-Version >= 2026-04-28)
+        in: query
+        name: offset
+        required: false
+        schema:
+          default: 0
+          minimum: 0
+          type: integer
+      - $ref: '#/components/parameters/PaginationCursor'
+      - $ref: '#/components/parameters/PaginationSort'
+      - $ref: '#/components/parameters/PaginationQuery'
       responses:
         '200':
-          description: A list of job executions.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobExecutionList'
+          description: successful operation
+        '400':
+          description: bad request
+        '500':
+          description: internal server error
+      security:
+      - OAuth2:
+        - jobs:list
+      - ApiKeyAuth: []
+      summary: List job executions
+      tags:
+      - Jobs
     post:
-      operationId: createJobExecution
-      tags:
-      - Jobs
-      summary: Create (run) a job execution
+      description: Triggers a new execution of the batch job. Each execution runs multiple tasks in parallel according to the job's configured concurrency. Tasks can be parameterized via the request body.
+      operationId: CreateJobExecution
+      parameters:
+      - description: Name of the job
+        in: path
+        name: jobId
+        required: true
+        schema:
+          type: string
+        x-stainless-param: pathJobId
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateJobExecutionRequest'
+        required: true
       responses:
         '200':
-          description: The created job execution.
-  /jobs/{job_id}/executions/{execution_id}:
-    parameters:
-    - name: job_id
-      in: path
-      required: true
-      schema:
-        type: string
-    - name: execution_id
-      in: path
-      required: true
-      schema:
-        type: string
-    get:
-      operationId: getJobExecution
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateJobExecutionOutput'
+          description: successful operation
+        '400':
+          description: bad request
+        '500':
+          description: internal server error
+      security:
+      - OAuth2:
+        - jobs:create
+      - ApiKeyAuth: []
+      summary: Create job execution
       tags:
       - Jobs
-      summary: Get a job execution
-      responses:
-        '200':
-          description: The requested job execution.
+  /jobs/{jobId}/executions/{executionId}:
     delete:
-      operationId: deleteJobExecution
-      tags:
-      - Jobs
-      summary: Delete a job execution
+      description: Cancels a running job execution. Tasks already in progress will complete, but no new tasks will be started. The execution status changes to 'cancelling' then 'cancelled'.
+      operationId: DeleteJobExecution
+      parameters:
+      - description: Name of the job
+        in: path
+        name: jobId
+        required: true
+        schema:
+          type: string
+      - description: Id of the execution
+        in: path
+        name: executionId
+        required: true
+        schema:
+          type: string
       responses:
         '200':
-          description: The deleted job execution.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobExecution'
+          description: successful operation
+        '400':
+          description: bad request
+        '404':
+          description: execution not found
+        '500':
+          description: internal server error
+      security:
+      - OAuth2:
+        - jobs:delete
+      - ApiKeyAuth: []
+      summary: Cancel job execution
+      tags:
+      - Jobs
+    get:
+      description: Returns detailed information about a specific job execution including status, task statistics (success/failure/running counts), and timing information.
+      operationId: GetJobExecution
+      parameters:
+      - description: Name of the job
+        in: path
+        name: jobId
+        required: true
+        schema:
+          type: string
+      - description: Id of the execution
+        in: path
+        name: executionId
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobExecution'
+          description: successful operation
+        '400':
+          description: bad request
+        '404':
+          description: execution not found
+        '500':
+          description: internal server error
+      security:
+      - OAuth2:
+        - jobs:get
+      - ApiKeyAuth: []
+      summary: Get job execution
+      tags:
+      - Jobs
+  /jobs/{jobId}/executions/{executionId}/tasks:
+    get:
+      description: Returns one cursor-paginated page of an execution's tasks. Tasks are derived from event history each request; only the in-memory slicing is paginated, the events scan still fetches the whole event log behind the scenes. Available starting with API version 2026-04-28.
+      operationId: ListJobExecutionTasks
+      parameters:
+      - description: Name of the job
+        in: path
+        name: jobId
+        required: true
+        schema:
+          type: string
+      - description: Execution id
+        in: path
+        name: executionId
+        required: true
+        schema:
+          type: string
+      - $ref: '#/components/parameters/PaginationCursor'
+      - $ref: '#/components/parameters/PaginationLimit'
+      - $ref: '#/components/parameters/PaginationSort'
+      - $ref: '#/components/parameters/PaginationQuery'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobExecutionTaskList'
+          description: successful operation
+        '400':
+          description: bad request
+        '404':
+          description: job or execution not found
+        '500':
+          description: internal server error
+      security:
+      - OAuth2:
+        - jobs:get
+      - ApiKeyAuth: []
+      summary: List execution tasks
+      tags:
+      - Jobs
+  /jobs/{jobId}/revisions:
+    get:
+      description: Returns revisions for a job by name.
+      operationId: ListJobRevisions
+      parameters:
+      - description: Name of the job
+        in: path
+        name: jobId
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/RevisionMetadata'
+                type: array
+          description: successful operation
+      security:
+      - OAuth2:
+        - jobs:list
+      - ApiKeyAuth: []
+      summary: List job revisions
+      tags:
+      - Jobs
 components:
   schemas:
-    Metadata:
+    CreateJobExecutionRequest:
       type: object
+      description: Request to create a job execution
+      properties:
+        allowQueue:
+          type: boolean
+          description: When false, capacity is checked synchronously and the request is rejected immediately with a 429 error if the execution cannot start right now, instead of being queued and retried in the background. No execution is created on rejection. Defaults to true (queue and retry).
+        env:
+          type: object
+          description: Environment variable overrides (optional, will merge with job's environment variables)
+          additionalProperties:
+            type: string
+          example: '{"MY_VAR": "custom_value", "BATCH_SIZE": "100"}'
+        executionId:
+          type: string
+          description: Execution ID (optional, will be generated if not provided)
+        id:
+          type: string
+          description: Unique message ID
+        jobId:
+          type: string
+          description: Job ID
+          example: data-processing-job
+        memory:
+          type: integer
+          description: Memory override in megabytes (optional, must be lower than or equal to job's configured memory)
+          example: 2048
+        tasks:
+          type: array
+          description: Array of task parameters for parallel execution
+          items:
+            type: object
+        workspaceId:
+          type: string
+          description: Workspace ID
+    PaginationMeta:
+      type: object
+      description: Pagination metadata returned alongside a page of listing results. Always present on listing endpoints starting with API version 2026-04-28.
+      properties:
+        hasMore:
+          type: boolean
+          description: True when more pages are available beyond the current one.
+        nextCursor:
+          type: string
+          description: Opaque cursor to pass back as the `cursor` query param for the next page. Empty when there are no more pages.
+        total:
+          type: integer
+          description: Total number of items in the workspace, ignoring the current page's filters. Lets the UI render "page X of Y" without walking the cursor chain. Computed from the hash-only metadata.workspace GSI count, so search (`q`) does not narrow it.
+        totalIsPartial:
+          type: boolean
+          description: True when `total` is a lower bound rather than a complete count. Counting a very large workspace is bounded so the listing stays fast, and this flag says the real number is higher. Clients must not derive a page count from `total` when this is set — keep paging with `nextCursor` until `hasMore` is false.
+    JobVolume:
+      type: object
+      description: Ephemeral volume for a job. Temporary disk-backed storage that is created when the job starts and destroyed when it completes.
+      properties:
+        mountPath:
+          type: string
+          description: Absolute filesystem path where the volume will be mounted inside the container
+          example: /mnt/data
+        name:
+          type: string
+          description: Identifier for the volume, used to reference it internally
+          example: scratch
+        readOnly:
+          type: boolean
+          description: If true, the volume is mounted read-only
+          example: false
+        sizeMb:
+          type: integer
+          description: Storage capacity in megabytes
+          example: 102400
+        type:
+          type: string
+          description: Type of volume. Currently only "ephemeral" is supported.
+          enum:
+          - ephemeral
+          example: ephemeral
+      required:
+      - name
+      - mountPath
+      - type
+      - sizeMb
+    JobExecutionStatus:
+      type: string
+      description: Job execution status
+      enum:
+      - queued
+      - pending
+      - running
+      - cancelling
+      - cancelled
+      - failed
+      - succeeded
+      - timeout
+    RevisionMetadata:
+      type: object
+      description: Revision metadata
+      properties:
+        active:
+          type: boolean
+          description: Is the revision active
+        canary:
+          type: boolean
+          description: Is the revision canary
+        createdAt:
+          type: string
+          description: Revision created at
+          readOnly: true
+        createdBy:
+          type: string
+          description: Revision created by
+          readOnly: true
+        id:
+          type: string
+          description: Revision ID
+          readOnly: true
+        previousActive:
+          type: boolean
+          description: Is the revision previous active
+        status:
+          type: string
+          description: Status of the revision
+          readOnly: true
+        trafficPercent:
+          type: integer
+          description: Percent of traffic to the revision
+    Port:
+      type: object
+      description: A port for a resource
       properties:
         name:
           type: string
-        displayName:
+          description: The name of the port
+          example: http
+        protocol:
           type: string
-        workspace:
+          description: The protocol of the port
+          enum:
+          - HTTP
+          - TCP
+          - UDP
+          - TLS
+          example: HTTP
+        target:
+          type: integer
+          description: The target port of the port
+          example: 8080
+      required:
+      - target
+    JobExecutionTaskCondition:
+      type: object
+      description: Job execution task condition
+      properties:
+        executionReason:
           type: string
+          description: Execution reason
+        message:
+          type: string
+          description: Condition message
+        reason:
+          type: string
+          description: Condition reason
+        severity:
+          type: string
+          description: Condition severity
+        state:
+          type: string
+          description: Condition state
+        type:
+          type: string
+          description: Condition type
+    JobVolumes:
+      type: array
+      items:
+        $ref: '#/components/schemas/JobVolume'
+    Trigger:
+      type: object
+      description: Trigger configuration
+      properties:
+        configuration:
+          $ref: '#/components/schemas/TriggerConfiguration'
+        enabled:
+          type: boolean
+          description: 'Enable or disable the trigger (default: true)'
+          example: true
+        id:
+          type: string
+          description: Identifier of the trigger. Optional — the server auto-generates a unique id when one is not provided, and disambiguates duplicates within a resource.
+          example: trigger-1
+        type:
+          type: string
+          description: The type of trigger, can be http or http-async
+          enum:
+          - http
+          - http-async
+          - cron
+          example: http
+    JobSpec:
+      type: object
+      description: Configuration for a batch job including execution parameters, parallelism settings, and deployment region
+      properties:
+        enabled:
+          type: boolean
+          description: When false, the job is disabled and new executions cannot be triggered
+          example: true
+          default: true
+        githubRunner:
+          $ref: '#/components/schemas/GithubRunnerConfig'
+        policies:
+          $ref: '#/components/schemas/PoliciesList'
+        region:
+          type: string
+          description: Region where the job should be created (e.g. us-was-1, eu-lon-1)
+          example: us-was-1
+        revision:
+          $ref: '#/components/schemas/RevisionConfiguration'
+        runtime:
+          $ref: '#/components/schemas/JobRuntime'
+        triggers:
+          $ref: '#/components/schemas/Triggers'
+        volumes:
+          $ref: '#/components/schemas/JobVolumes'
+    Metadata:
+      type: object
+      description: Common metadata fields shared by all Blaxel resources including name, labels, timestamps, and ownership information
+      allOf:
+      - $ref: '#/components/schemas/TimeFields'
+      - $ref: '#/components/schemas/OwnerFields'
+      - properties:
+          displayName:
+            type: string
+            description: Human-readable name for display in the UI. Can contain spaces and special characters, max 63 characters.
+            example: My Resource
+          externalId:
+            type: string
+            description: Caller-owned identifier for external lookups. Max 64 chars, alphanumeric + dash.
+            example: my-session-123
+          labels:
+            $ref: '#/components/schemas/MetadataLabels'
+          name:
+            type: string
+            description: Unique identifier for the resource within the workspace. Must be lowercase alphanumeric with hyphens, max 49 characters. Immutable after creation.
+            example: my-resource
+          plan:
+            type: string
+            description: Billing plan tier applied to this resource (inherited from workspace account)
+            readOnly: true
+          url:
+            type: string
+            description: Auto-generated endpoint URL for accessing this resource (for agents, functions, models, sandboxes)
+            readOnly: true
+          workspace:
+            type: string
+            description: Name of the workspace this resource belongs to (read-only, set automatically)
+            readOnly: true
+        required:
+        - name
+    PoliciesList:
+      type: array
+      items:
+        type: string
+        description: Policy name
+    JobExecutionTask:
+      type: object
+      description: Job execution task
+      properties:
+        conditions:
+          type: array
+          description: Task conditions
+          items:
+            $ref: '#/components/schemas/JobExecutionTaskCondition'
+        metadata:
+          $ref: '#/components/schemas/JobExecutionTaskMetadata'
+        spec:
+          $ref: '#/components/schemas/JobExecutionTaskSpec'
+        status:
+          $ref: '#/components/schemas/JobExecutionTaskStatus'
+    JobExecutionTaskSpec:
+      type: object
+      description: Job execution task specification
+      properties:
+        maxRetries:
+          type: integer
+          description: Maximum number of retries
+          example: 3
+        timeout:
+          type: string
+          description: Task timeout duration
+          example: 30m
+    JobExecutionTaskStatus:
+      type: string
+      description: Job execution task status
+      enum:
+      - unspecified
+      - pending
+      - reconciling
+      - failed
+      - succeeded
+      - running
+      - cancelled
+    JobExecutionMetadata:
+      type: object
+      description: Job execution metadata
+      properties:
+        cluster:
+          type: string
+          description: Cluster ID
+        completedAt:
+          type: string
+          description: Completion timestamp
         createdAt:
           type: string
-          format: date-time
+          description: Creation timestamp
+        deletedAt:
+          type: string
+          description: Deletion timestamp
+        expiredAt:
+          type: string
+          description: Expiration timestamp
+        id:
+          type: string
+          description: Execution ID
+          example: exec-abc123
+        job:
+          type: string
+          description: Job name
+          example: data-processing-job
+        startedAt:
+          type: string
+          description: Start timestamp
         updatedAt:
           type: string
-          format: date-time
-        labels:
-          type: object
-          additionalProperties:
+          description: Last update timestamp
+        workspace:
+          type: string
+          description: Workspace ID
+          example: my-workspace
+      readOnly: true
+    JobRuntime:
+      type: object
+      description: Runtime configuration defining how batch job tasks are executed with parallelism and retry settings
+      properties:
+        diskPercent:
+          type: integer
+          description: Percentage of VM RAM allocated for disk storage (tmpfs overlay). Valid range 10-95, default 50. Only applies to mk3.1 (microVM) generation.
+          example: 80
+        envs:
+          type: array
+          description: Environment variables injected into job tasks. Supports Kubernetes EnvVar format with valueFrom references.
+          items:
+            $ref: '#/components/schemas/Env'
+        generation:
+          type: string
+          description: Infrastructure generation. Jobs always run on mk3 (microVMs); any value sent on input is ignored.
+          enum:
+          - mk2
+          - mk3
+          example: mk3
+        image:
+          type: string
+          description: Container image built by Blaxel when deploying with 'bl deploy'. This field is auto-populated during deployment.
+        maxRetries:
+          type: integer
+          description: Number of automatic retry attempts for failed tasks before marking as failed
+          example: 3
+        memory:
+          type: integer
+          description: Memory allocation in megabytes. Also determines CPU allocation (CPU cores = memory in MB / 2048, e.g., 4096MB = 2 CPUs).
+          example: 2048
+        ports:
+          $ref: '#/components/schemas/Ports'
+        timeout:
+          type: integer
+          description: Maximum execution time in seconds before a task is terminated
+          example: 3600
+    OwnerFields:
+      type: object
+      description: Owner fields for Persistence
+      properties:
+        createdBy:
+          type: string
+          description: The user or service account who created the resource
+          readOnly: true
+        updatedBy:
+          type: string
+          description: The user or service account who updated the resource
+          readOnly: true
+    CoreEvents:
+      type: array
+      description: Events happening on a resource deployed on Blaxel
+      items:
+        $ref: '#/components/schemas/CoreEvent'
+      readOnly: true
+    RevisionConfiguration:
+      type: object
+      description: Revision configuration
+      properties:
+        active:
+          type: string
+          description: Active revision id
+          example: rev-abc123
+        canary:
+          type: string
+          description: Canary revision id
+        canaryPercent:
+          type: integer
+          description: Canary revision percent
+          example: 10
+        stickySessionTtl:
+          type: integer
+          description: Sticky session TTL in seconds (0 = disabled)
+          example: 0
+        traffic:
+          type: integer
+          description: Traffic percentage
+          example: 100
+    CreateJobExecutionOutput:
+      type: object
+      description: Response returned when a job execution is successfully created. Contains identifiers and the tasks that will be executed.
+      properties:
+        executionId:
+          type: string
+          description: Unique identifier for the created execution. Use this ID to track execution status, retrieve logs, or cancel the execution.
+          example: exec-abc123
+        id:
+          type: string
+          description: Unique identifier for this request, used for idempotency and tracking. Auto-generated if not provided in the request.
+          example: 550e8400-e29b-41d4-a716-446655440000
+        jobId:
+          type: string
+          description: Name of the job that this execution belongs to
+          example: data-processing-job
+        tasks:
+          type: array
+          description: Array of task configurations that will be executed in parallel according to the job's concurrency settings. Each task can have custom parameters.
+          items:
+            type: object
+        workspaceId:
+          type: string
+          description: Name of the workspace where the job execution was created
+          example: my-workspace
+    CoreEvent:
+      type: object
+      description: Core event
+      properties:
+        canaryRevision:
+          type: string
+          description: Canary revisionID link to the event
+        message:
+          type: string
+          description: Event message
+          example: Deployment successful
+        revision:
+          type: string
+          description: RevisionID link to the event
+          example: rev-abc123
+        status:
+          type: string
+          description: Event status
+          example: DEPLOYED
+        time:
+          type: string
+          description: Event time
+          example: '2025-01-15T10:30:00Z'
+        type:
+          type: string
+          description: Event type
+          example: deployment
+      readOnly: true
+    Ports:
+      type: array
+      description: Set of ports for a resource
+      items:
+        $ref: '#/components/schemas/Port'
+    GithubRunnerConfig:
+      type: object
+      description: Configuration for running GitHub Actions workflow jobs on Blaxel infrastructure. When repositories are configured, the job acts as a self-hosted GitHub Actions runner. Workflow jobs use runs-on with the Blaxel job name to target a specific runner.
+      properties:
+        repositories:
+          type: array
+          description: Repositories in owner/repo format that this runner is associated with. The runner will pick up workflow jobs from any of these repositories. If non-empty, the runner is considered enabled.
+          items:
             type: string
+          example: '["my-org/repo-a", "my-org/repo-b"]'
+    JobExecutionTaskList:
+      type: object
+      description: Cursor-paginated list of an execution's tasks. Tasks are derived from event history; pagination slices the in-memory list and the cursor is a base64-JSON offset bound to (workspace, job, execution).
+      properties:
+        data:
+          type: array
+          description: Page of execution tasks.
+          items:
+            $ref: '#/components/schemas/JobExecutionTask'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+    JobExecutionList:
+      type: object
+      description: Cursor-paginated list of job executions. Returned starting with API version 2026-04-28; older API versions keep the legacy offset-based contract and return a bare array.
+      properties:
+        data:
+          type: array
+          description: Page of job executions.
+          items:
+            $ref: '#/components/schemas/JobExecution'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+    JobList:
+      type: object
+      description: Cursor-paginated list of batch jobs. Returned starting with API version 2026-04-28; older API versions return a bare array.
+      properties:
+        data:
+          type: array
+          description: Page of jobs.
+          items:
+            $ref: '#/components/schemas/Job'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+    Triggers:
+      type: array
+      description: Triggers to use your agent
+      items:
+        $ref: '#/components/schemas/Trigger'
+    JobExecution:
+      type: object
+      description: Job execution
+      properties:
+        metadata:
+          $ref: '#/components/schemas/JobExecutionMetadata'
+        spec:
+          $ref: '#/components/schemas/JobExecutionSpec'
+        stats:
+          $ref: '#/components/schemas/JobExecutionStats'
+        status:
+          $ref: '#/components/schemas/JobExecutionStatus'
+        tasks:
+          type: array
+          description: List of execution tasks
+          items:
+            $ref: '#/components/schemas/JobExecutionTask'
+      required:
+      - metadata
+      - spec
     Job:
       type: object
+      description: Batch processing job definition for running parallel AI tasks. Jobs can execute multiple tasks concurrently with configurable parallelism, retries, and timeouts.
       properties:
+        events:
+          $ref: '#/components/schemas/CoreEvents'
         metadata:
           $ref: '#/components/schemas/Metadata'
         spec:
+          $ref: '#/components/schemas/JobSpec'
+        status:
+          $ref: '#/components/schemas/Status'
+      required:
+      - metadata
+      - spec
+    Env:
+      type: object
+      description: Environment variable with name and value
+      properties:
+        name:
+          type: string
+          description: Name of the environment variable
+          example: MY_ENV_VAR
+        secret:
+          type: boolean
+          description: Whether the value is a secret
+          example: true
+        value:
+          type: string
+          description: Value of the environment variable
+          example: my-value
+    Status:
+      type: string
+      description: Deployment status of a resource deployed on Blaxel
+      enum:
+      - DELETING
+      - TERMINATED
+      - FAILED
+      - DEACTIVATED
+      - DEACTIVATING
+      - UPLOADING
+      - BUILDING
+      - DEPLOYING
+      - DEPLOYED
+      - BUILT
+      - ARCHIVING
+      - ARCHIVED
+      - UNARCHIVING
+      readOnly: true
+    JobExecutionTaskMetadata:
+      type: object
+      description: Job execution task metadata
+      properties:
+        completedAt:
+          type: string
+          description: Completion timestamp
+          readOnly: true
+        createdAt:
+          type: string
+          description: Creation timestamp
+          readOnly: true
+        name:
+          type: string
+          description: Task name
+          example: task-0
+        scheduledAt:
+          type: string
+          description: Scheduled timestamp
+          readOnly: true
+        startedAt:
+          type: string
+          description: Start timestamp
+          readOnly: true
+        updatedAt:
+          type: string
+          description: Last update timestamp
+          readOnly: true
+    MetadataLabels:
+      type: object
+      description: Key-value pairs for organizing and filtering resources. Labels can be used to categorize resources by environment, project, team, or any custom taxonomy.
+      additionalProperties:
+        type: string
+    TriggerConfiguration:
+      type: object
+      description: Trigger configuration
+      properties:
+        authenticationType:
+          type: string
+          description: The authentication type of the trigger
+          example: blaxel
+        callbackSecret:
+          type: string
+          description: The callback secret for async triggers (auto-generated, encrypted)
+          readOnly: true
+        callbackUrl:
+          type: string
+          description: The callback URL for async triggers (optional)
+          example: https://myapp.com/webhook
+        path:
+          type: string
+          description: The path of the trigger
+          example: /invoke
+        retry:
+          type: integer
+          description: The retry of the trigger
+          example: 3
+        schedule:
+          type: string
+          description: The schedule of the trigger, cron expression * * * * *
+          example: 0 * * * *
+        tasks:
+          type: array
+          description: The tasks configuration of the cronjob
+          items:
+            $ref: '#/components/schemas/TriggerConfigurationTask'
+        tasksRef:
+          type: string
+          description: Where this trigger's task list is stored (server-managed)
+          readOnly: true
+        timeout:
+          type: integer
+          description: The timeout in seconds for async triggers (max 900s, MK3 only)
+          example: 300
+    TriggerConfigurationTask:
+      type: object
+      description: The tasks configuration of the cronjob
+    JobExecutionSpec:
+      type: object
+      description: Job execution specification
+      properties:
+        envOverride:
           type: object
-          properties:
-            runtime:
-              type: object
-            maxConcurrentTasks:
-              type: integer
-            maxRetries:
-              type: integer
-            timeout:
-              type: integer
+          description: Environment variable overrides (if provided for this execution, values are masked with ***)
+          example: '{"MY_VAR": "***", "BATCH_SIZE": "***"}'
+        memoryOverride:
+          type: integer
+          description: Memory override in megabytes (if provided for this execution)
+          example: 2048
+        parallelism:
+          type: integer
+          description: Number of parallel tasks
+          example: 5
+        taskCount:
+          type: integer
+          description: Number of tasks of this execution
+          example: 12
+        tasks:
+          type: array
+          description: List of execution tasks
+          items:
+            $ref: '#/components/schemas/JobExecutionTask'
+        tasksRef:
+          type: string
+          description: Where this execution's task list is stored (server-managed)
+          readOnly: true
+        timeout:
+          type: integer
+          description: Job timeout in seconds (captured at execution creation time)
+          example: 3600
+    TimeFields:
+      type: object
+      description: Time fields for Persistence
+      properties:
+        createdAt:
+          type: string
+          description: The date and time when the resource was created
+          readOnly: true
+        updatedAt:
+          type: string
+          description: The date and time when the resource was updated
+          readOnly: true
+    JobExecutionStats:
+      type: object
+      description: Job execution statistics
+      properties:
+        cancelled:
+          type: integer
+          description: Number of cancelled tasks
+          example: 0
+        failure:
+          type: integer
+          description: Number of failed tasks
+          example: 1
+        retried:
+          type: integer
+          description: Number of retried tasks
+          example: 2
+        running:
+          type: integer
+          description: Number of running tasks
+          example: 1
+        success:
+          type: integer
+          description: Number of successful tasks
+          example: 8
+        total:
+          type: integer
+          description: Total number of tasks
+          example: 10
+      readOnly: true
+  parameters:
+    PaginationAnchor:
+      description: Start from a known pagination boundary. `end` is only supported for `createdAt` listings (asc or desc) and returns the tail page directly without walking every cursor from the first page.
+      in: query
+      name: anchor
+      required: false
+      schema:
+        enum:
+        - end
+        type: string
+    PaginationQuery:
+      description: Substring search across `metadata.name`, `metadata.displayName` and labels (keys + values). Trimmed and lowercased server-side; queries shorter than 2 characters fall back to the unfiltered listing. Bound into the cursor fingerprint so a cursor opened with one query cannot be reused with another. Only honoured starting on Blaxel-Version 2026-04-28.
+      in: query
+      name: q
+      required: false
+      schema:
+        maxLength: 200
+        type: string
+    ListingStatus:
+      description: Comma-separated list of statuses to filter on (e.g. `DEPLOYED,FAILED`). Values are case-insensitive; unknown values are rejected with a 400. Selecting every status is equivalent to omitting the parameter. Bound into the cursor fingerprint so a cursor opened with one selection cannot be reused with another. Filtering itself requires the 2026-04-28 Blaxel-Version (the paginated listing); on earlier versions the value is still validated but the listing is unfiltered, except for sandboxes where it is applied on every version.
+      example: DEPLOYED,FAILED
+      in: query
+      name: status
+      required: false
+      schema:
+        type: string
+    PaginationSort:
+      description: Sort spec, formatted as `<key>:<direction>`. Allowed values are `createdAt:desc` (default), `createdAt:asc`, `name:asc`, `name:desc`. The cursor fingerprint is bound to the sort, so a cursor opened with one value cannot be reused with another. Only honoured starting on Blaxel-Version 2026-04-28.
+      in: query
+      name: sort
+      required: false
+      schema:
+        enum:
+        - createdAt:desc
+        - createdAt:asc
+        - name:asc
+        - name:desc
+        type: string
+    PaginationLimit:
+      description: Maximum number of items to return per page. Defaults to 50, clamped to 200.
+      in: query
+      name: limit
+      required: false
+      schema:
+        default: 50
+        maximum: 200
+        minimum: 1
+        type: integer
+    ExternalIdFilter:
+      description: Filter resources by metadata.externalId. When set, only resources matching this caller-owned external ID are returned.
+      in: query
+      name: externalId
+      required: false
+      schema:
+        maxLength: 64
+        pattern: ^[a-zA-Z0-9-]*$
+        type: string
+    PaginationCursor:
+      description: Opaque cursor returned by a previous response's meta.nextCursor. Only valid for the same query (workspace + filters); the server rejects cursors bound to a different query or older than 24h. Omit on the first page.
+      in: query
+      name: cursor
+      required: false
+      schema:
+        type: string
+      x-stainless-pagination-property:
+        purpose: next_cursor_param
   securitySchemes:
-    apiKey:
-      type: apiKey
-      in: header
-      name: X-Blaxel-Authorization
-      description: API key supplied as "Bearer YOUR-API-KEY".
-    bearerAuth:
-      type: http
+    ApiKeyAuth:
+      bearerFormat: API Key
+      description: Long-lived API key for programmatic access
       scheme: bearer
-      bearerFormat: JWT
-      description: OAuth 2.0 short-lived JWT access token.
+      type: http
+    OAuth2:
+      description: OAuth2 authentication with JWT tokens
+      flows:
+        authorizationCode:
+          authorizationUrl: /oauth/authorize
+          scopes:
+            admin: Administrative access
+            agents:create: Create agents
+            agents:delete: Delete agents
+            agents:get: Get agent details
+            agents:list: List agents
+            agents:update: Update agents
+            apiKey:list: List API keys
+            apiKey:write: Create and delete API keys
+            applications:create: Create applications
+            applications:delete: Delete applications
+            applications:get: Get application details
+            applications:list: List applications
+            applications:update: Update applications
+            configurations:list: List configurations
+            customdomains:create: Create custom domains
+            customdomains:delete: Delete custom domains
+            customdomains:get: Get custom domain details
+            customdomains:list: List custom domains
+            customdomains:update: Update custom domains
+            functions:create: Create functions
+            functions:delete: Delete functions
+            functions:get: Get function details
+            functions:list: List functions
+            functions:update: Update functions
+            integrations:create: Create integrations
+            integrations:list: List integrations
+            invitations:list: List invitations
+            jobs:create: Create jobs
+            jobs:delete: Delete jobs
+            jobs:get: Get job details
+            jobs:list: List jobs
+            jobs:update: Update jobs
+            locations:list: List locations
+            mcphub:list: List MCP hub resources
+            models:create: Create models
+            models:delete: Delete models
+            models:get: Get model details
+            models:list: List models
+            models:update: Update models
+            policies:create: Create policies
+            policies:delete: Delete policies
+            policies:get: Get policy details
+            policies:list: List policies
+            policies:update: Update policies
+            sandboxes:control: Control sandbox operations
+            sandboxes:create: Create sandboxes
+            sandboxes:delete: Delete sandboxes
+            sandboxes:get: Get sandbox details
+            sandboxes:list: List sandboxes
+            sandboxes:update: Update sandboxes
+            sandboxhub:list: List sandbox hub resources
+            secrets:create: Create secrets
+            secrets:delete: Delete secrets
+            secrets:list: List secrets
+            templates:get: Get template details
+            templates:list: List templates
+            volumeTemplates:create: Create volume templates
+            volumeTemplates:delete: Delete volume templates
+            volumeTemplates:get: Get volume template details
+            volumeTemplates:list: List volume templates
+            volumeTemplates:upsert: Create or update volume templates
+            volumes:create: Create volumes
+            volumes:delete: Delete volumes
+            volumes:get: Get volume details
+            volumes:list: List volumes
+            workspaces:accept: Accept workspace invitation
+            workspaces:create: Create workspaces
+            workspaces:decline: Decline workspace invitation
+            workspaces:delete: Delete workspaces
+            workspaces:get: Get workspace details
+            workspaces:invite: Invite users to workspace
+            workspaces:leave: Leave workspace
+            workspaces:list: List workspaces
+            workspaces:remove: Remove users from workspace
+            workspaces:update: Update workspaces
+          tokenUrl: /oauth/token
+        clientCredentials:
+          scopes:
+            admin: Administrative access
+            agents:create: Create agents
+            agents:delete: Delete agents
+            agents:get: Get agent details
+            agents:list: List agents
+            agents:update: Update agents
+            apiKey:list: List API keys
+            apiKey:write: Create and delete API keys
+            applications:create: Create applications
+            applications:delete: Delete applications
+            applications:get: Get application details
+            applications:list: List applications
+            applications:update: Update applications
+            configurations:list: List configurations
+            customdomains:create: Create custom domains
+            customdomains:delete: Delete custom domains
+            customdomains:get: Get custom domain details
+            customdomains:list: List custom domains
+            customdomains:update: Update custom domains
+            functions:create: Create functions
+            functions:delete: Delete functions
+            functions:get: Get function details
+            functions:list: List functions
+            functions:update: Update functions
+            integrations:create: Create integrations
+            integrations:list: List integrations
+            invitations:list: List invitations
+            jobs:create: Create jobs
+            jobs:delete: Delete jobs
+            jobs:get: Get job details
+            jobs:list: List jobs
+            jobs:update: Update jobs
+            locations:list: List locations
+            mcphub:list: List MCP hub resources
+            models:create: Create models
+            models:delete: Delete models
+            models:get: Get model details
+            models:list: List models
+            models:update: Update models
+            policies:create: Create policies
+            policies:delete: Delete policies
+            policies:get: Get policy details
+            policies:list: List policies
+            policies:update: Update policies
+            sandboxes:control: Control sandbox operations
+            sandboxes:create: Create sandboxes
+            sandboxes:delete: Delete sandboxes
+            sandboxes:get: Get sandbox details
+            sandboxes:list: List sandboxes
+            sandboxes:update: Update sandboxes
+            sandboxhub:list: List sandbox hub resources
+            secrets:create: Create secrets
+            secrets:delete: Delete secrets
+            secrets:list: List secrets
+            templates:get: Get template details
+            templates:list: List templates
+            volumeTemplates:create: Create volume templates
+            volumeTemplates:delete: Delete volume templates
+            volumeTemplates:get: Get volume template details
+            volumeTemplates:list: List volume templates
+            volumeTemplates:upsert: Create or update volume templates
+            volumes:create: Create volumes
+            volumes:delete: Delete volumes
+            volumes:get: Get volume details
+            volumes:list: List volumes
+            workspaces:accept: Accept workspace invitation
+            workspaces:create: Create workspaces
+            workspaces:decline: Decline workspace invitation
+            workspaces:delete: Delete workspaces
+            workspaces:get: Get workspace details
+            workspaces:invite: Invite users to workspace
+            workspaces:leave: Leave workspace
+            workspaces:list: List workspaces
+            workspaces:remove: Remove users from workspace
+            workspaces:update: Update workspaces
+          tokenUrl: /oauth/token
+      type: oauth2

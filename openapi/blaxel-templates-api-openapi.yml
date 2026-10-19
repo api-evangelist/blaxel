@@ -1,0 +1,305 @@
+openapi: 3.2.0
+info:
+  title: Blaxel Control Plane Templates API
+  version: 0.0.1
+servers:
+- description: Blaxel Control Plane
+  url: https://api.blaxel.ai/v0
+- description: Blaxel Inference
+  url: https://run.blaxel.ai
+security:
+- OAuth2:
+  - admin
+- ApiKeyAuth: []
+tags:
+- name: Templates
+paths:
+  /templates:
+    get:
+      description: Returns all deployment templates available for creating agents, functions, and other resources with pre-configured settings and code.
+      operationId: ListTemplates
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Template'
+                type: array
+          description: successful operation
+      security:
+      - OAuth2:
+        - templates:list
+      - ApiKeyAuth: []
+      summary: List deployment templates
+      tags:
+      - Templates
+  /templates/{templateName}:
+    get:
+      description: Returns detailed information about a deployment template including its configuration, source code reference, and available parameters.
+      operationId: GetTemplate
+      parameters:
+      - description: Name of the template
+        in: path
+        name: templateName
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Template'
+          description: successful operation
+      security:
+      - OAuth2:
+        - templates:get
+      - ApiKeyAuth: []
+      summary: Get template
+      tags:
+      - Templates
+components:
+  schemas:
+    Template:
+      type: object
+      description: Blaxel template
+      properties:
+        defaultBranch:
+          type: string
+          description: Default branch of the template
+          example: main
+        description:
+          type: string
+          description: Description of the template
+          example: A starter template for building LangChain agents
+        downloadCount:
+          type: integer
+          description: Number of downloads/clones of the repository
+          example: 1200
+        forksCount:
+          type: integer
+          description: Number of forks the repository has
+          example: 45
+        icon:
+          type: string
+          description: URL to the template's icon
+        iconDark:
+          type: string
+          description: URL to the template's icon in dark mode
+        name:
+          type: string
+          description: Name of the template
+          example: langchain-agent
+        sha:
+          type: string
+          description: SHA of the variable
+        starCount:
+          type: integer
+          description: Number of stars the repository has
+          example: 150
+        topics:
+          type: array
+          description: Topic of the template
+          items:
+            type: string
+        url:
+          type: string
+          description: URL of the template
+          example: https://github.com/blaxel-ai/template-langchain-agent
+        variables:
+          type: array
+          description: Variables of the template
+          items:
+            $ref: '#/components/schemas/TemplateVariable'
+    TemplateVariable:
+      type: object
+      description: Blaxel template variable
+      properties:
+        description:
+          type: string
+          description: Description of the variable
+          example: OpenAI API key for the agent
+        integration:
+          type: string
+          description: Integration of the variable
+          example: openai
+        name:
+          type: string
+          description: Name of the variable
+          example: OPENAI_API_KEY
+        path:
+          type: string
+          description: Path of the variable
+          example: .env
+        secret:
+          type: boolean
+          description: Whether the variable is secret
+          example: true
+  securitySchemes:
+    ApiKeyAuth:
+      bearerFormat: API Key
+      description: Long-lived API key for programmatic access
+      scheme: bearer
+      type: http
+    OAuth2:
+      description: OAuth2 authentication with JWT tokens
+      flows:
+        authorizationCode:
+          authorizationUrl: /oauth/authorize
+          scopes:
+            admin: Administrative access
+            agents:create: Create agents
+            agents:delete: Delete agents
+            agents:get: Get agent details
+            agents:list: List agents
+            agents:update: Update agents
+            apiKey:list: List API keys
+            apiKey:write: Create and delete API keys
+            applications:create: Create applications
+            applications:delete: Delete applications
+            applications:get: Get application details
+            applications:list: List applications
+            applications:update: Update applications
+            configurations:list: List configurations
+            customdomains:create: Create custom domains
+            customdomains:delete: Delete custom domains
+            customdomains:get: Get custom domain details
+            customdomains:list: List custom domains
+            customdomains:update: Update custom domains
+            functions:create: Create functions
+            functions:delete: Delete functions
+            functions:get: Get function details
+            functions:list: List functions
+            functions:update: Update functions
+            integrations:create: Create integrations
+            integrations:list: List integrations
+            invitations:list: List invitations
+            jobs:create: Create jobs
+            jobs:delete: Delete jobs
+            jobs:get: Get job details
+            jobs:list: List jobs
+            jobs:update: Update jobs
+            locations:list: List locations
+            mcphub:list: List MCP hub resources
+            models:create: Create models
+            models:delete: Delete models
+            models:get: Get model details
+            models:list: List models
+            models:update: Update models
+            policies:create: Create policies
+            policies:delete: Delete policies
+            policies:get: Get policy details
+            policies:list: List policies
+            policies:update: Update policies
+            sandboxes:control: Control sandbox operations
+            sandboxes:create: Create sandboxes
+            sandboxes:delete: Delete sandboxes
+            sandboxes:get: Get sandbox details
+            sandboxes:list: List sandboxes
+            sandboxes:update: Update sandboxes
+            sandboxhub:list: List sandbox hub resources
+            secrets:create: Create secrets
+            secrets:delete: Delete secrets
+            secrets:list: List secrets
+            templates:get: Get template details
+            templates:list: List templates
+            volumeTemplates:create: Create volume templates
+            volumeTemplates:delete: Delete volume templates
+            volumeTemplates:get: Get volume template details
+            volumeTemplates:list: List volume templates
+            volumeTemplates:upsert: Create or update volume templates
+            volumes:create: Create volumes
+            volumes:delete: Delete volumes
+            volumes:get: Get volume details
+            volumes:list: List volumes
+            workspaces:accept: Accept workspace invitation
+            workspaces:create: Create workspaces
+            workspaces:decline: Decline workspace invitation
+            workspaces:delete: Delete workspaces
+            workspaces:get: Get workspace details
+            workspaces:invite: Invite users to workspace
+            workspaces:leave: Leave workspace
+            workspaces:list: List workspaces
+            workspaces:remove: Remove users from workspace
+            workspaces:update: Update workspaces
+          tokenUrl: /oauth/token
+        clientCredentials:
+          scopes:
+            admin: Administrative access
+            agents:create: Create agents
+            agents:delete: Delete agents
+            agents:get: Get agent details
+            agents:list: List agents
+            agents:update: Update agents
+            apiKey:list: List API keys
+            apiKey:write: Create and delete API keys
+            applications:create: Create applications
+            applications:delete: Delete applications
+            applications:get: Get application details
+            applications:list: List applications
+            applications:update: Update applications
+            configurations:list: List configurations
+            customdomains:create: Create custom domains
+            customdomains:delete: Delete custom domains
+            customdomains:get: Get custom domain details
+            customdomains:list: List custom domains
+            customdomains:update: Update custom domains
+            functions:create: Create functions
+            functions:delete: Delete functions
+            functions:get: Get function details
+            functions:list: List functions
+            functions:update: Update functions
+            integrations:create: Create integrations
+            integrations:list: List integrations
+            invitations:list: List invitations
+            jobs:create: Create jobs
+            jobs:delete: Delete jobs
+            jobs:get: Get job details
+            jobs:list: List jobs
+            jobs:update: Update jobs
+            locations:list: List locations
+            mcphub:list: List MCP hub resources
+            models:create: Create models
+            models:delete: Delete models
+            models:get: Get model details
+            models:list: List models
+            models:update: Update models
+            policies:create: Create policies
+            policies:delete: Delete policies
+            policies:get: Get policy details
+            policies:list: List policies
+            policies:update: Update policies
+            sandboxes:control: Control sandbox operations
+            sandboxes:create: Create sandboxes
+            sandboxes:delete: Delete sandboxes
+            sandboxes:get: Get sandbox details
+            sandboxes:list: List sandboxes
+            sandboxes:update: Update sandboxes
+            sandboxhub:list: List sandbox hub resources
+            secrets:create: Create secrets
+            secrets:delete: Delete secrets
+            secrets:list: List secrets
+            templates:get: Get template details
+            templates:list: List templates
+            volumeTemplates:create: Create volume templates
+            volumeTemplates:delete: Delete volume templates
+            volumeTemplates:get: Get volume template details
+            volumeTemplates:list: List volume templates
+            volumeTemplates:upsert: Create or update volume templates
+            volumes:create: Create volumes
+            volumes:delete: Delete volumes
+            volumes:get: Get volume details
+            volumes:list: List volumes
+            workspaces:accept: Accept workspace invitation
+            workspaces:create: Create workspaces
+            workspaces:decline: Decline workspace invitation
+            workspaces:delete: Delete workspaces
+            workspaces:get: Get workspace details
+            workspaces:invite: Invite users to workspace
+            workspaces:leave: Leave workspace
+            workspaces:list: List workspaces
+            workspaces:remove: Remove users from workspace
+            workspaces:update: Update workspaces
+          tokenUrl: /oauth/token
+      type: oauth2

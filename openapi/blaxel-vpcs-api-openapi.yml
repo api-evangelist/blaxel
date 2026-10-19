@@ -1,0 +1,770 @@
+openapi: 3.2.0
+info:
+  title: Blaxel Control Plane Vpcs API
+  version: 0.0.1
+servers:
+- description: Blaxel Control Plane
+  url: https://api.blaxel.ai/v0
+- description: Blaxel Inference
+  url: https://run.blaxel.ai
+security:
+- OAuth2:
+  - admin
+- ApiKeyAuth: []
+tags:
+- name: VPCs
+paths:
+  /egressgateways:
+    get:
+      operationId: ListAllEgressGateways
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/EgressGateway'
+                type: array
+          description: successful operation
+      security:
+      - OAuth2:
+        - egressgateways:list
+      - ApiKeyAuth: []
+      summary: List all egress gateways across all VPCs in the workspace
+      tags:
+      - VPCs
+  /egressgateways/usage:
+    get:
+      description: Returns the inverse map (gateway → sandbox names) for the workspace. Used by the egress-IPs UI to render attachment counts without fetching the sandboxes listing full client-side.
+      operationId: GetEgressGatewayUsage
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EgressGatewayUsage'
+          description: successful operation
+      security:
+      - OAuth2:
+        - egressgateways:list
+        - sandboxes:list
+      - ApiKeyAuth: []
+      summary: Egress gateway sandbox attachments
+      tags:
+      - VPCs
+  /egressips:
+    get:
+      operationId: ListAllEgressIPs
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/EgressIP'
+                type: array
+          description: successful operation
+      security:
+      - OAuth2:
+        - egressips:list
+      - ApiKeyAuth: []
+      summary: List all egress IPs across all VPCs and gateways in the workspace
+      tags:
+      - VPCs
+  /vpcs:
+    get:
+      operationId: ListVPCs
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/VPC'
+                type: array
+          description: successful operation
+      summary: List all VPCs in the workspace
+      tags:
+      - VPCs
+    post:
+      operationId: CreateVPC
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VPC'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VPC'
+          description: successful operation
+      summary: Create a VPC for the workspace
+      tags:
+      - VPCs
+  /vpcs/{vpcName}:
+    delete:
+      operationId: DeleteVPC
+      parameters:
+      - in: path
+        name: vpcName
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VPC'
+          description: successful operation
+      summary: Delete a VPC
+      tags:
+      - VPCs
+    get:
+      operationId: GetVPC
+      parameters:
+      - in: path
+        name: vpcName
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VPC'
+          description: successful operation
+      summary: Get a VPC by name
+      tags:
+      - VPCs
+  /vpcs/{vpcName}/egressgateways:
+    get:
+      operationId: ListEgressGateways
+      parameters:
+      - in: path
+        name: vpcName
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/EgressGateway'
+                type: array
+          description: successful operation
+      summary: List egress gateways in a VPC
+      tags:
+      - VPCs
+    post:
+      operationId: CreateEgressGateway
+      parameters:
+      - in: path
+        name: vpcName
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EgressGateway'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EgressGateway'
+          description: successful operation
+      summary: Create an egress gateway in a VPC
+      tags:
+      - VPCs
+  /vpcs/{vpcName}/egressgateways/{gatewayName}:
+    delete:
+      operationId: DeleteEgressGateway
+      parameters:
+      - in: path
+        name: vpcName
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: gatewayName
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EgressGateway'
+          description: successful operation
+      summary: Delete an egress gateway
+      tags:
+      - VPCs
+    get:
+      operationId: GetEgressGateway
+      parameters:
+      - in: path
+        name: vpcName
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: gatewayName
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EgressGateway'
+          description: successful operation
+      summary: Get an egress gateway by name
+      tags:
+      - VPCs
+  /vpcs/{vpcName}/egressgateways/{gatewayName}/ips:
+    get:
+      operationId: ListEgressIPs
+      parameters:
+      - in: path
+        name: vpcName
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: gatewayName
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/EgressIP'
+                type: array
+          description: successful operation
+      summary: List egress IPs in a gateway
+      tags:
+      - VPCs
+    post:
+      operationId: CreateEgressIP
+      parameters:
+      - in: path
+        name: vpcName
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: gatewayName
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EgressIP'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EgressIP'
+          description: successful operation
+      summary: Allocate a new egress IP from the gateway
+      tags:
+      - VPCs
+  /vpcs/{vpcName}/egressgateways/{gatewayName}/ips/{ipName}:
+    delete:
+      operationId: DeleteEgressIP
+      parameters:
+      - in: path
+        name: vpcName
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: gatewayName
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: ipName
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EgressIP'
+          description: successful operation
+      summary: Delete an egress IP
+      tags:
+      - VPCs
+    get:
+      operationId: GetEgressIP
+      parameters:
+      - in: path
+        name: vpcName
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: gatewayName
+        required: true
+        schema:
+          type: string
+      - in: path
+        name: ipName
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EgressIP'
+          description: successful operation
+      summary: Get an egress IP by name
+      tags:
+      - VPCs
+components:
+  schemas:
+    Metadata:
+      type: object
+      description: Common metadata fields shared by all Blaxel resources including name, labels, timestamps, and ownership information
+      allOf:
+      - $ref: '#/components/schemas/TimeFields'
+      - $ref: '#/components/schemas/OwnerFields'
+      - properties:
+          displayName:
+            type: string
+            description: Human-readable name for display in the UI. Can contain spaces and special characters, max 63 characters.
+            example: My Resource
+          externalId:
+            type: string
+            description: Caller-owned identifier for external lookups. Max 64 chars, alphanumeric + dash.
+            example: my-session-123
+          labels:
+            $ref: '#/components/schemas/MetadataLabels'
+          name:
+            type: string
+            description: Unique identifier for the resource within the workspace. Must be lowercase alphanumeric with hyphens, max 49 characters. Immutable after creation.
+            example: my-resource
+          plan:
+            type: string
+            description: Billing plan tier applied to this resource (inherited from workspace account)
+            readOnly: true
+          url:
+            type: string
+            description: Auto-generated endpoint URL for accessing this resource (for agents, functions, models, sandboxes)
+            readOnly: true
+          workspace:
+            type: string
+            description: Name of the workspace this resource belongs to (read-only, set automatically)
+            readOnly: true
+        required:
+        - name
+    EgressGatewayMetadata:
+      type: object
+      description: Metadata for an egress gateway resource including workspace, VPC, and name
+      allOf:
+      - $ref: '#/components/schemas/TimeFields'
+      - $ref: '#/components/schemas/OwnerFields'
+      - properties:
+          displayName:
+            type: string
+            description: Human-readable name for display in the UI. Can contain spaces and special characters, max 63 characters.
+            example: My Egress Gateway
+          name:
+            type: string
+            description: Unique identifier for the egress gateway within the VPC. Must be lowercase alphanumeric with hyphens, max 49 characters. Immutable after creation.
+            example: my-egress-gateway
+          vpcName:
+            type: string
+            description: Name of the VPC this egress gateway belongs to
+            readOnly: true
+          workspace:
+            type: string
+            description: Name of the workspace this resource belongs to (read-only, set automatically)
+            readOnly: true
+        required:
+        - name
+    CoreEvent:
+      type: object
+      description: Core event
+      properties:
+        canaryRevision:
+          type: string
+          description: Canary revisionID link to the event
+        message:
+          type: string
+          description: Event message
+          example: Deployment successful
+        revision:
+          type: string
+          description: RevisionID link to the event
+          example: rev-abc123
+        status:
+          type: string
+          description: Event status
+          example: DEPLOYED
+        time:
+          type: string
+          description: Event time
+          example: '2025-01-15T10:30:00Z'
+        type:
+          type: string
+          description: Event type
+          example: deployment
+      readOnly: true
+    EgressGateway:
+      type: object
+      description: An egress gateway that manages outbound traffic routing within a VPC. Multiple egress IPs can be allocated from a single gateway.
+      properties:
+        events:
+          $ref: '#/components/schemas/CoreEvents'
+        metadata:
+          $ref: '#/components/schemas/EgressGatewayMetadata'
+        spec:
+          $ref: '#/components/schemas/EgressGatewaySpec'
+        status:
+          $ref: '#/components/schemas/Status'
+      required:
+      - metadata
+      - spec
+    EgressGatewayUsage:
+      type: object
+      description: Sandboxes currently bound to each egress gateway. Returned by GET /egressgateways/usage so the egress-IPs UI can render attachment counts without fetching the sandboxes listing full. Keys are gateway names; values are sandbox names.
+      additionalProperties:
+        items:
+          type: string
+        type: array
+    Status:
+      type: string
+      description: Deployment status of a resource deployed on Blaxel
+      enum:
+      - DELETING
+      - TERMINATED
+      - FAILED
+      - DEACTIVATED
+      - DEACTIVATING
+      - UPLOADING
+      - BUILDING
+      - DEPLOYING
+      - DEPLOYED
+      - BUILT
+      - ARCHIVING
+      - ARCHIVED
+      - UNARCHIVING
+      readOnly: true
+    VPCSpec:
+      type: object
+      description: VPC specification (controlplane-only, no external resources)
+      additionalProperties: true
+    MetadataLabels:
+      type: object
+      description: Key-value pairs for organizing and filtering resources. Labels can be used to categorize resources by environment, project, team, or any custom taxonomy.
+      additionalProperties:
+        type: string
+    EgressIPSpec:
+      type: object
+      description: Specification for an egress IP including IP family and the provisioned address
+      properties:
+        ipFamily:
+          type: string
+          description: IP address family, either IPv4 or IPv6
+          enum:
+          - IPv4
+          - IPv6
+          example: IPv4
+          default: IPv4
+        publicIp:
+          type: string
+          description: Public IP address assigned to this egress IP (read-only, set after provisioning)
+          readOnly: true
+      required:
+      - ipFamily
+    EgressIPMetadata:
+      type: object
+      description: Metadata for an egress IP address including gateway association and name
+      allOf:
+      - $ref: '#/components/schemas/TimeFields'
+      - $ref: '#/components/schemas/OwnerFields'
+      - properties:
+          displayName:
+            type: string
+            description: Human-readable name for display in the UI. Can contain spaces and special characters, max 63 characters.
+            example: My Egress IP
+          gatewayName:
+            type: string
+            description: Name of the egress gateway this IP is allocated from
+            readOnly: true
+          name:
+            type: string
+            description: Unique identifier for the egress IP within the gateway. Must be lowercase alphanumeric with hyphens, max 49 characters. Immutable after creation.
+            example: my-egress-ip
+          vpcName:
+            type: string
+            description: Name of the VPC this egress IP belongs to
+            readOnly: true
+          workspace:
+            type: string
+            description: Name of the workspace this resource belongs to (read-only, set automatically)
+            readOnly: true
+        required:
+        - name
+    EgressGatewaySpec:
+      type: object
+      description: Specification for an egress gateway including region and capacity configuration
+      properties:
+        region:
+          type: string
+          description: Region where the egress gateway is provisioned (e.g. us-pdx-1, eu-lon-1)
+          example: us-pdx-1
+      required:
+      - region
+    VPC:
+      type: object
+      description: Virtual Private Cloud scoped to a workspace for network isolation and dedicated egress
+      properties:
+        events:
+          $ref: '#/components/schemas/CoreEvents'
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        spec:
+          $ref: '#/components/schemas/VPCSpec'
+        status:
+          $ref: '#/components/schemas/Status'
+      required:
+      - metadata
+      - spec
+    TimeFields:
+      type: object
+      description: Time fields for Persistence
+      properties:
+        createdAt:
+          type: string
+          description: The date and time when the resource was created
+          readOnly: true
+        updatedAt:
+          type: string
+          description: The date and time when the resource was updated
+          readOnly: true
+    CoreEvents:
+      type: array
+      description: Events happening on a resource deployed on Blaxel
+      items:
+        $ref: '#/components/schemas/CoreEvent'
+      readOnly: true
+    OwnerFields:
+      type: object
+      description: Owner fields for Persistence
+      properties:
+        createdBy:
+          type: string
+          description: The user or service account who created the resource
+          readOnly: true
+        updatedBy:
+          type: string
+          description: The user or service account who updated the resource
+          readOnly: true
+    EgressIP:
+      type: object
+      description: An individual IP address allocated from an egress gateway for dedicated outbound traffic
+      properties:
+        events:
+          $ref: '#/components/schemas/CoreEvents'
+        metadata:
+          $ref: '#/components/schemas/EgressIPMetadata'
+        spec:
+          $ref: '#/components/schemas/EgressIPSpec'
+        status:
+          $ref: '#/components/schemas/Status'
+      required:
+      - metadata
+      - spec
+  securitySchemes:
+    ApiKeyAuth:
+      bearerFormat: API Key
+      description: Long-lived API key for programmatic access
+      scheme: bearer
+      type: http
+    OAuth2:
+      description: OAuth2 authentication with JWT tokens
+      flows:
+        authorizationCode:
+          authorizationUrl: /oauth/authorize
+          scopes:
+            admin: Administrative access
+            agents:create: Create agents
+            agents:delete: Delete agents
+            agents:get: Get agent details
+            agents:list: List agents
+            agents:update: Update agents
+            apiKey:list: List API keys
+            apiKey:write: Create and delete API keys
+            applications:create: Create applications
+            applications:delete: Delete applications
+            applications:get: Get application details
+            applications:list: List applications
+            applications:update: Update applications
+            configurations:list: List configurations
+            customdomains:create: Create custom domains
+            customdomains:delete: Delete custom domains
+            customdomains:get: Get custom domain details
+            customdomains:list: List custom domains
+            customdomains:update: Update custom domains
+            functions:create: Create functions
+            functions:delete: Delete functions
+            functions:get: Get function details
+            functions:list: List functions
+            functions:update: Update functions
+            integrations:create: Create integrations
+            integrations:list: List integrations
+            invitations:list: List invitations
+            jobs:create: Create jobs
+            jobs:delete: Delete jobs
+            jobs:get: Get job details
+            jobs:list: List jobs
+            jobs:update: Update jobs
+            locations:list: List locations
+            mcphub:list: List MCP hub resources
+            models:create: Create models
+            models:delete: Delete models
+            models:get: Get model details
+            models:list: List models
+            models:update: Update models
+            policies:create: Create policies
+            policies:delete: Delete policies
+            policies:get: Get policy details
+            policies:list: List policies
+            policies:update: Update policies
+            sandboxes:control: Control sandbox operations
+            sandboxes:create: Create sandboxes
+            sandboxes:delete: Delete sandboxes
+            sandboxes:get: Get sandbox details
+            sandboxes:list: List sandboxes
+            sandboxes:update: Update sandboxes
+            sandboxhub:list: List sandbox hub resources
+            secrets:create: Create secrets
+            secrets:delete: Delete secrets
+            secrets:list: List secrets
+            templates:get: Get template details
+            templates:list: List templates
+            volumeTemplates:create: Create volume templates
+            volumeTemplates:delete: Delete volume templates
+            volumeTemplates:get: Get volume template details
+            volumeTemplates:list: List volume templates
+            volumeTemplates:upsert: Create or update volume templates
+            volumes:create: Create volumes
+            volumes:delete: Delete volumes
+            volumes:get: Get volume details
+            volumes:list: List volumes
+            workspaces:accept: Accept workspace invitation
+            workspaces:create: Create workspaces
+            workspaces:decline: Decline workspace invitation
+            workspaces:delete: Delete workspaces
+            workspaces:get: Get workspace details
+            workspaces:invite: Invite users to workspace
+            workspaces:leave: Leave workspace
+            workspaces:list: List workspaces
+            workspaces:remove: Remove users from workspace
+            workspaces:update: Update workspaces
+          tokenUrl: /oauth/token
+        clientCredentials:
+          scopes:
+            admin: Administrative access
+            agents:create: Create agents
+            agents:delete: Delete agents
+            agents:get: Get agent details
+            agents:list: List agents
+            agents:update: Update agents
+            apiKey:list: List API keys
+            apiKey:write: Create and delete API keys
+            applications:create: Create applications
+            applications:delete: Delete applications
+            applications:get: Get application details
+            applications:list: List applications
+            applications:update: Update applications
+            configurations:list: List configurations
+            customdomains:create: Create custom domains
+            customdomains:delete: Delete custom domains
+            customdomains:get: Get custom domain details
+            customdomains:list: List custom domains
+            customdomains:update: Update custom domains
+            functions:create: Create functions
+            functions:delete: Delete functions
+            functions:get: Get function details
+            functions:list: List functions
+            functions:update: Update functions
+            integrations:create: Create integrations
+            integrations:list: List integrations
+            invitations:list: List invitations
+            jobs:create: Create jobs
+            jobs:delete: Delete jobs
+            jobs:get: Get job details
+            jobs:list: List jobs
+            jobs:update: Update jobs
+            locations:list: List locations
+            mcphub:list: List MCP hub resources
+            models:create: Create models
+            models:delete: Delete models
+            models:get: Get model details
+            models:list: List models
+            models:update: Update models
+            policies:create: Create policies
+            policies:delete: Delete policies
+            policies:get: Get policy details
+            policies:list: List policies
+            policies:update: Update policies
+            sandboxes:control: Control sandbox operations
+            sandboxes:create: Create sandboxes
+            sandboxes:delete: Delete sandboxes
+            sandboxes:get: Get sandbox details
+            sandboxes:list: List sandboxes
+            sandboxes:update: Update sandboxes
+            sandboxhub:list: List sandbox hub resources
+            secrets:create: Create secrets
+            secrets:delete: Delete secrets
+            secrets:list: List secrets
+            templates:get: Get template details
+            templates:list: List templates
+            volumeTemplates:create: Create volume templates
+            volumeTemplates:delete: Delete volume templates
+            volumeTemplates:get: Get volume template details
+            volumeTemplates:list: List volume templates
+            volumeTemplates:upsert: Create or update volume templates
+            volumes:create: Create volumes
+            volumes:delete: Delete volumes
+            volumes:get: Get volume details
+            volumes:list: List volumes
+            workspaces:accept: Accept workspace invitation
+            workspaces:create: Create workspaces
+            workspaces:decline: Decline workspace invitation
+            workspaces:delete: Delete workspaces
+            workspaces:get: Get workspace details
+            workspaces:invite: Invite users to workspace
+            workspaces:leave: Leave workspace
+            workspaces:list: List workspaces
+            workspaces:remove: Remove users from workspace
+            workspaces:update: Update workspaces
+          tokenUrl: /oauth/token
+      type: oauth2

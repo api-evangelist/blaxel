@@ -1,151 +1,821 @@
 openapi: 3.2.0
 info:
   title: Blaxel Control Plane Models API
-  description: Representative specification of the Blaxel (formerly Beamlit) control plane REST API. The control plane manages agents, MCP/function servers, models, sandboxes, jobs, policies, integrations, and workspaces. Authenticate with a Bearer API key (Authorization or X-Blaxel-Authorization header) or an OAuth 2.0 short-lived JWT. Requests may include a Blaxel-Version header (YYYY-MM-DD) and, for multi-workspace accounts, an X-Blaxel-Workspace header.
-  termsOfService: https://blaxel.ai/terms-of-service
-  contact:
-    name: Blaxel Support
-    email: support@blaxel.ai
-  version: v0
+  version: 0.0.1
 servers:
-- url: https://api.blaxel.ai/v0
+- description: Blaxel Control Plane
+  url: https://api.blaxel.ai/v0
+- description: Blaxel Inference
+  url: https://run.blaxel.ai
 security:
-- apiKey: []
-- bearerAuth: []
+- OAuth2:
+  - admin
+- ApiKeyAuth: []
 tags:
 - name: Models
 paths:
   /models:
     get:
-      operationId: listModels
-      tags:
-      - Models
-      summary: List all model deployments in the workspace
+      description: Returns model gateway endpoints configured in the workspace. Each model represents a proxy to an external LLM provider (OpenAI, Anthropic, etc.) with unified access control. Starting with API version 2026-04-28 the response is wrapped in `{data, meta}` and supports cursor pagination via the `cursor` and `limit` query parameters; older versions keep returning a bare array with all models.
+      operationId: ListModels
+      parameters:
+      - $ref: '#/components/parameters/PaginationCursor'
+      - $ref: '#/components/parameters/PaginationLimit'
+      - $ref: '#/components/parameters/PaginationSort'
+      - $ref: '#/components/parameters/PaginationQuery'
+      - $ref: '#/components/parameters/PaginationAnchor'
+      - $ref: '#/components/parameters/ExternalIdFilter'
+      - $ref: '#/components/parameters/ListingStatus'
       responses:
         '200':
-          description: A list of models.
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Model'
+                $ref: '#/components/schemas/ModelList'
+          description: successful operation
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Insufficient permissions to list models
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - models:list
+      - ApiKeyAuth: []
+      summary: List model endpoints
+      tags:
+      - Models
     post:
-      operationId: createModel
-      tags:
-      - Models
-      summary: Create a new model deployment behind the model gateway
+      description: Creates a new model gateway endpoint that proxies requests to an external LLM provider. Requires an integration connection with valid API credentials for the target provider.
+      operationId: CreateModel
       requestBody:
-        required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/Model'
-      responses:
-        '200':
-          description: The created model.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Model'
-  /models/{model_name}:
-    parameters:
-    - $ref: '#/components/parameters/ModelName'
-    get:
-      operationId: getModel
-      tags:
-      - Models
-      summary: Get a model by name
-      responses:
-        '200':
-          description: The requested model.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Model'
-    put:
-      operationId: updateModel
-      tags:
-      - Models
-      summary: Update a model by name
-      requestBody:
         required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Model'
       responses:
         '200':
-          description: The updated model.
-    delete:
-      operationId: deleteModel
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Model'
+          description: successful operation
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad request - Invalid model configuration or integration connection not found
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Insufficient permissions to create models
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Conflict - Model with this name already exists
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - models:create
+      - ApiKeyAuth: []
+      summary: Create model endpoint
       tags:
       - Models
-      summary: Delete a model by name
-      responses:
-        '200':
-          description: The deleted model.
-  /models/{model_name}/revisions:
+  /models/{modelName}:
     parameters:
-    - $ref: '#/components/parameters/ModelName'
-    get:
-      operationId: listModelRevisions
-      tags:
-      - Models
-      summary: List revisions for a model
-      responses:
-        '200':
-          description: A list of model revisions.
-components:
-  schemas:
-    Metadata:
-      type: object
-      properties:
-        name:
-          type: string
-        displayName:
-          type: string
-        workspace:
-          type: string
-        createdAt:
-          type: string
-          format: date-time
-        updatedAt:
-          type: string
-          format: date-time
-        labels:
-          type: object
-          additionalProperties:
-            type: string
-    Model:
-      type: object
-      properties:
-        metadata:
-          $ref: '#/components/schemas/Metadata'
-        spec:
-          type: object
-          properties:
-            runtime:
-              type: object
-            integrationConnections:
-              type: array
-              items:
-                type: string
-  parameters:
-    ModelName:
-      name: model_name
+    - description: Unique name identifier of the model endpoint
       in: path
+      name: modelName
       required: true
       schema:
         type: string
+    delete:
+      description: Permanently deletes a model gateway endpoint. Any agents or applications using this endpoint will need to be updated to use a different model.
+      operationId: DeleteModel
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Model'
+          description: successful operation
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Insufficient permissions to delete this model
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found - Model does not exist
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - models:delete
+      - ApiKeyAuth: []
+      summary: Delete model endpoint
+      tags:
+      - Models
+    get:
+      description: Returns detailed information about a model gateway endpoint including its provider configuration, integration connection, and usage status.
+      operationId: GetModel
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Model'
+          description: successful operation
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Insufficient permissions to view this model
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found - Model does not exist
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - models:get
+      - ApiKeyAuth: []
+      summary: Get model endpoint
+      tags:
+      - Models
+    put:
+      description: Updates a model gateway endpoint's configuration. Changes to provider settings or integration connection take effect immediately.
+      operationId: UpdateModel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Model'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Model'
+          description: successful operation
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad request - Invalid model configuration
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Insufficient permissions to update this model
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found - Model does not exist
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - models:update
+      - ApiKeyAuth: []
+      summary: Update model endpoint
+      tags:
+      - Models
+  /models/{modelName}/revisions:
+    get:
+      description: Returns revisions for a model by name.
+      operationId: ListModelRevisions
+      parameters:
+      - description: Name of the model
+        in: path
+        name: modelName
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/RevisionMetadata'
+                type: array
+          description: successful operation
+      security:
+      - OAuth2:
+        - models:list
+      - ApiKeyAuth: []
+      summary: List model revisions
+      tags:
+      - Models
+components:
+  schemas:
+    PaginationMeta:
+      type: object
+      description: Pagination metadata returned alongside a page of listing results. Always present on listing endpoints starting with API version 2026-04-28.
+      properties:
+        hasMore:
+          type: boolean
+          description: True when more pages are available beyond the current one.
+        nextCursor:
+          type: string
+          description: Opaque cursor to pass back as the `cursor` query param for the next page. Empty when there are no more pages.
+        total:
+          type: integer
+          description: Total number of items in the workspace, ignoring the current page's filters. Lets the UI render "page X of Y" without walking the cursor chain. Computed from the hash-only metadata.workspace GSI count, so search (`q`) does not narrow it.
+        totalIsPartial:
+          type: boolean
+          description: True when `total` is a lower bound rather than a complete count. Counting a very large workspace is bounded so the listing stays fast, and this flag says the real number is higher. Clients must not derive a page count from `total` when this is set — keep paging with `nextCursor` until `hasMore` is false.
+    RevisionMetadata:
+      type: object
+      description: Revision metadata
+      properties:
+        active:
+          type: boolean
+          description: Is the revision active
+        canary:
+          type: boolean
+          description: Is the revision canary
+        createdAt:
+          type: string
+          description: Revision created at
+          readOnly: true
+        createdBy:
+          type: string
+          description: Revision created by
+          readOnly: true
+        id:
+          type: string
+          description: Revision ID
+          readOnly: true
+        previousActive:
+          type: boolean
+          description: Is the revision previous active
+        status:
+          type: string
+          description: Status of the revision
+          readOnly: true
+        trafficPercent:
+          type: integer
+          description: Percent of traffic to the revision
+    Metadata:
+      type: object
+      description: Common metadata fields shared by all Blaxel resources including name, labels, timestamps, and ownership information
+      allOf:
+      - $ref: '#/components/schemas/TimeFields'
+      - $ref: '#/components/schemas/OwnerFields'
+      - properties:
+          displayName:
+            type: string
+            description: Human-readable name for display in the UI. Can contain spaces and special characters, max 63 characters.
+            example: My Resource
+          externalId:
+            type: string
+            description: Caller-owned identifier for external lookups. Max 64 chars, alphanumeric + dash.
+            example: my-session-123
+          labels:
+            $ref: '#/components/schemas/MetadataLabels'
+          name:
+            type: string
+            description: Unique identifier for the resource within the workspace. Must be lowercase alphanumeric with hyphens, max 49 characters. Immutable after creation.
+            example: my-resource
+          plan:
+            type: string
+            description: Billing plan tier applied to this resource (inherited from workspace account)
+            readOnly: true
+          url:
+            type: string
+            description: Auto-generated endpoint URL for accessing this resource (for agents, functions, models, sandboxes)
+            readOnly: true
+          workspace:
+            type: string
+            description: Name of the workspace this resource belongs to (read-only, set automatically)
+            readOnly: true
+        required:
+        - name
+    PoliciesList:
+      type: array
+      items:
+        type: string
+        description: Policy name
+    Model:
+      type: object
+      description: Gateway endpoint to external LLM provider APIs (OpenAI, Anthropic, etc.) with unified access control, credentials management, and usage tracking.
+      properties:
+        events:
+          $ref: '#/components/schemas/CoreEvents'
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        spec:
+          $ref: '#/components/schemas/ModelSpec'
+        status:
+          $ref: '#/components/schemas/Status'
+      required:
+      - metadata
+      - spec
+    ModelRuntime:
+      type: object
+      description: Configuration identifying which external LLM provider and model this gateway endpoint proxies to
+      properties:
+        endpointName:
+          type: string
+          description: Provider-specific endpoint name (e.g., HuggingFace Inference Endpoints name)
+        generation:
+          type: string
+          description: Infrastructure generation. Empty (default) uses the classic deployment path. mk3 deploys through the model-gateway on microVM clusters.
+          enum:
+          - mk3
+          - mk2
+        model:
+          type: string
+          description: Model identifier at the provider (e.g., gpt-4.1, claude-sonnet-4-20250514, mistral-large-latest)
+          example: gpt-4.1
+        organization:
+          type: string
+          description: Organization or account identifier at the provider (required for some providers like OpenAI)
+          example: org-abc123
+        type:
+          type: string
+          description: LLM provider type determining the API protocol and authentication method
+          enum:
+          - hf_private_endpoint
+          - hf_public_endpoint
+          - huggingface
+          - public_model
+          - mcp
+          - openai
+          - anthropic
+          - gemini
+          - mistral
+          - deepseek
+          - cohere
+          - cerebras
+          - xai
+          - vertexai
+          - azure-openai-service
+          - azure-ai-inference
+          - azure-marketplace
+          - groq
+          example: openai
+    CoreEvents:
+      type: array
+      description: Events happening on a resource deployed on Blaxel
+      items:
+        $ref: '#/components/schemas/CoreEvent'
+      readOnly: true
+    OwnerFields:
+      type: object
+      description: Owner fields for Persistence
+      properties:
+        createdBy:
+          type: string
+          description: The user or service account who created the resource
+          readOnly: true
+        updatedBy:
+          type: string
+          description: The user or service account who updated the resource
+          readOnly: true
+    Flavors:
+      type: array
+      description: Types of hardware available for deployments
+      items:
+        $ref: '#/components/schemas/Flavor'
+    CoreEvent:
+      type: object
+      description: Core event
+      properties:
+        canaryRevision:
+          type: string
+          description: Canary revisionID link to the event
+        message:
+          type: string
+          description: Event message
+          example: Deployment successful
+        revision:
+          type: string
+          description: RevisionID link to the event
+          example: rev-abc123
+        status:
+          type: string
+          description: Event status
+          example: DEPLOYED
+        time:
+          type: string
+          description: Event time
+          example: '2025-01-15T10:30:00Z'
+        type:
+          type: string
+          description: Event type
+          example: deployment
+      readOnly: true
+    Error:
+      type: object
+      description: Standard error response returned by the API when a request fails
+      properties:
+        code:
+          type: integer
+          description: HTTP status code of the error
+          example: 409
+        error:
+          type: string
+          description: Error type or code identifying the kind of error
+          example: Resource already exists
+        message:
+          type: string
+          description: Human-readable error message describing what went wrong
+          example: Invalid request body
+      required:
+      - error
+    ModelList:
+      type: object
+      description: Cursor-paginated list of model gateway endpoints. Returned starting with API version 2026-04-28; older API versions return a bare array.
+      properties:
+        data:
+          type: array
+          description: Page of models.
+          items:
+            $ref: '#/components/schemas/Model'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+    Status:
+      type: string
+      description: Deployment status of a resource deployed on Blaxel
+      enum:
+      - DELETING
+      - TERMINATED
+      - FAILED
+      - DEACTIVATED
+      - DEACTIVATING
+      - UPLOADING
+      - BUILDING
+      - DEPLOYING
+      - DEPLOYED
+      - BUILT
+      - ARCHIVING
+      - ARCHIVED
+      - UNARCHIVING
+      readOnly: true
+    MetadataLabels:
+      type: object
+      description: Key-value pairs for organizing and filtering resources. Labels can be used to categorize resources by environment, project, team, or any custom taxonomy.
+      additionalProperties:
+        type: string
+    IntegrationConnectionsList:
+      type: array
+      items:
+        type: string
+        description: Deployment integration connection name
+    Flavor:
+      type: object
+      description: A type of hardware available for deployments
+      properties:
+        name:
+          type: string
+          description: Flavor name (e.g. t4)
+          example: t4
+        type:
+          type: string
+          description: Flavor type (e.g. cpu, gpu)
+          enum:
+          - cpu
+          - gpu
+          example: cpu
+    TimeFields:
+      type: object
+      description: Time fields for Persistence
+      properties:
+        createdAt:
+          type: string
+          description: The date and time when the resource was created
+          readOnly: true
+        updatedAt:
+          type: string
+          description: The date and time when the resource was updated
+          readOnly: true
+    ModelSpec:
+      type: object
+      description: Configuration for a model gateway endpoint including provider type, credentials, and access policies
+      properties:
+        enabled:
+          type: boolean
+          description: When false, the model endpoint is disabled and will not accept inference requests
+          example: true
+          default: true
+        flavors:
+          $ref: '#/components/schemas/Flavors'
+        integrationConnections:
+          $ref: '#/components/schemas/IntegrationConnectionsList'
+        policies:
+          $ref: '#/components/schemas/PoliciesList'
+        runtime:
+          $ref: '#/components/schemas/ModelRuntime'
+        sandbox:
+          type: boolean
+          description: When true, uses sandbox/test credentials from the integration connection
+          example: false
+  parameters:
+    PaginationAnchor:
+      description: Start from a known pagination boundary. `end` is only supported for `createdAt` listings (asc or desc) and returns the tail page directly without walking every cursor from the first page.
+      in: query
+      name: anchor
+      required: false
+      schema:
+        enum:
+        - end
+        type: string
+    PaginationQuery:
+      description: Substring search across `metadata.name`, `metadata.displayName` and labels (keys + values). Trimmed and lowercased server-side; queries shorter than 2 characters fall back to the unfiltered listing. Bound into the cursor fingerprint so a cursor opened with one query cannot be reused with another. Only honoured starting on Blaxel-Version 2026-04-28.
+      in: query
+      name: q
+      required: false
+      schema:
+        maxLength: 200
+        type: string
+    ListingStatus:
+      description: Comma-separated list of statuses to filter on (e.g. `DEPLOYED,FAILED`). Values are case-insensitive; unknown values are rejected with a 400. Selecting every status is equivalent to omitting the parameter. Bound into the cursor fingerprint so a cursor opened with one selection cannot be reused with another. Filtering itself requires the 2026-04-28 Blaxel-Version (the paginated listing); on earlier versions the value is still validated but the listing is unfiltered, except for sandboxes where it is applied on every version.
+      example: DEPLOYED,FAILED
+      in: query
+      name: status
+      required: false
+      schema:
+        type: string
+    PaginationSort:
+      description: Sort spec, formatted as `<key>:<direction>`. Allowed values are `createdAt:desc` (default), `createdAt:asc`, `name:asc`, `name:desc`. The cursor fingerprint is bound to the sort, so a cursor opened with one value cannot be reused with another. Only honoured starting on Blaxel-Version 2026-04-28.
+      in: query
+      name: sort
+      required: false
+      schema:
+        enum:
+        - createdAt:desc
+        - createdAt:asc
+        - name:asc
+        - name:desc
+        type: string
+    PaginationLimit:
+      description: Maximum number of items to return per page. Defaults to 50, clamped to 200.
+      in: query
+      name: limit
+      required: false
+      schema:
+        default: 50
+        maximum: 200
+        minimum: 1
+        type: integer
+    ExternalIdFilter:
+      description: Filter resources by metadata.externalId. When set, only resources matching this caller-owned external ID are returned.
+      in: query
+      name: externalId
+      required: false
+      schema:
+        maxLength: 64
+        pattern: ^[a-zA-Z0-9-]*$
+        type: string
+    PaginationCursor:
+      description: Opaque cursor returned by a previous response's meta.nextCursor. Only valid for the same query (workspace + filters); the server rejects cursors bound to a different query or older than 24h. Omit on the first page.
+      in: query
+      name: cursor
+      required: false
+      schema:
+        type: string
+      x-stainless-pagination-property:
+        purpose: next_cursor_param
   securitySchemes:
-    apiKey:
-      type: apiKey
-      in: header
-      name: X-Blaxel-Authorization
-      description: API key supplied as "Bearer YOUR-API-KEY".
-    bearerAuth:
-      type: http
+    ApiKeyAuth:
+      bearerFormat: API Key
+      description: Long-lived API key for programmatic access
       scheme: bearer
-      bearerFormat: JWT
-      description: OAuth 2.0 short-lived JWT access token.
+      type: http
+    OAuth2:
+      description: OAuth2 authentication with JWT tokens
+      flows:
+        authorizationCode:
+          authorizationUrl: /oauth/authorize
+          scopes:
+            admin: Administrative access
+            agents:create: Create agents
+            agents:delete: Delete agents
+            agents:get: Get agent details
+            agents:list: List agents
+            agents:update: Update agents
+            apiKey:list: List API keys
+            apiKey:write: Create and delete API keys
+            applications:create: Create applications
+            applications:delete: Delete applications
+            applications:get: Get application details
+            applications:list: List applications
+            applications:update: Update applications
+            configurations:list: List configurations
+            customdomains:create: Create custom domains
+            customdomains:delete: Delete custom domains
+            customdomains:get: Get custom domain details
+            customdomains:list: List custom domains
+            customdomains:update: Update custom domains
+            functions:create: Create functions
+            functions:delete: Delete functions
+            functions:get: Get function details
+            functions:list: List functions
+            functions:update: Update functions
+            integrations:create: Create integrations
+            integrations:list: List integrations
+            invitations:list: List invitations
+            jobs:create: Create jobs
+            jobs:delete: Delete jobs
+            jobs:get: Get job details
+            jobs:list: List jobs
+            jobs:update: Update jobs
+            locations:list: List locations
+            mcphub:list: List MCP hub resources
+            models:create: Create models
+            models:delete: Delete models
+            models:get: Get model details
+            models:list: List models
+            models:update: Update models
+            policies:create: Create policies
+            policies:delete: Delete policies
+            policies:get: Get policy details
+            policies:list: List policies
+            policies:update: Update policies
+            sandboxes:control: Control sandbox operations
+            sandboxes:create: Create sandboxes
+            sandboxes:delete: Delete sandboxes
+            sandboxes:get: Get sandbox details
+            sandboxes:list: List sandboxes
+            sandboxes:update: Update sandboxes
+            sandboxhub:list: List sandbox hub resources
+            secrets:create: Create secrets
+            secrets:delete: Delete secrets
+            secrets:list: List secrets
+            templates:get: Get template details
+            templates:list: List templates
+            volumeTemplates:create: Create volume templates
+            volumeTemplates:delete: Delete volume templates
+            volumeTemplates:get: Get volume template details
+            volumeTemplates:list: List volume templates
+            volumeTemplates:upsert: Create or update volume templates
+            volumes:create: Create volumes
+            volumes:delete: Delete volumes
+            volumes:get: Get volume details
+            volumes:list: List volumes
+            workspaces:accept: Accept workspace invitation
+            workspaces:create: Create workspaces
+            workspaces:decline: Decline workspace invitation
+            workspaces:delete: Delete workspaces
+            workspaces:get: Get workspace details
+            workspaces:invite: Invite users to workspace
+            workspaces:leave: Leave workspace
+            workspaces:list: List workspaces
+            workspaces:remove: Remove users from workspace
+            workspaces:update: Update workspaces
+          tokenUrl: /oauth/token
+        clientCredentials:
+          scopes:
+            admin: Administrative access
+            agents:create: Create agents
+            agents:delete: Delete agents
+            agents:get: Get agent details
+            agents:list: List agents
+            agents:update: Update agents
+            apiKey:list: List API keys
+            apiKey:write: Create and delete API keys
+            applications:create: Create applications
+            applications:delete: Delete applications
+            applications:get: Get application details
+            applications:list: List applications
+            applications:update: Update applications
+            configurations:list: List configurations
+            customdomains:create: Create custom domains
+            customdomains:delete: Delete custom domains
+            customdomains:get: Get custom domain details
+            customdomains:list: List custom domains
+            customdomains:update: Update custom domains
+            functions:create: Create functions
+            functions:delete: Delete functions
+            functions:get: Get function details
+            functions:list: List functions
+            functions:update: Update functions
+            integrations:create: Create integrations
+            integrations:list: List integrations
+            invitations:list: List invitations
+            jobs:create: Create jobs
+            jobs:delete: Delete jobs
+            jobs:get: Get job details
+            jobs:list: List jobs
+            jobs:update: Update jobs
+            locations:list: List locations
+            mcphub:list: List MCP hub resources
+            models:create: Create models
+            models:delete: Delete models
+            models:get: Get model details
+            models:list: List models
+            models:update: Update models
+            policies:create: Create policies
+            policies:delete: Delete policies
+            policies:get: Get policy details
+            policies:list: List policies
+            policies:update: Update policies
+            sandboxes:control: Control sandbox operations
+            sandboxes:create: Create sandboxes
+            sandboxes:delete: Delete sandboxes
+            sandboxes:get: Get sandbox details
+            sandboxes:list: List sandboxes
+            sandboxes:update: Update sandboxes
+            sandboxhub:list: List sandbox hub resources
+            secrets:create: Create secrets
+            secrets:delete: Delete secrets
+            secrets:list: List secrets
+            templates:get: Get template details
+            templates:list: List templates
+            volumeTemplates:create: Create volume templates
+            volumeTemplates:delete: Delete volume templates
+            volumeTemplates:get: Get volume template details
+            volumeTemplates:list: List volume templates
+            volumeTemplates:upsert: Create or update volume templates
+            volumes:create: Create volumes
+            volumes:delete: Delete volumes
+            volumes:get: Get volume details
+            volumes:list: List volumes
+            workspaces:accept: Accept workspace invitation
+            workspaces:create: Create workspaces
+            workspaces:decline: Decline workspace invitation
+            workspaces:delete: Delete workspaces
+            workspaces:get: Get workspace details
+            workspaces:invite: Invite users to workspace
+            workspaces:leave: Leave workspace
+            workspaces:list: List workspaces
+            workspaces:remove: Remove users from workspace
+            workspaces:update: Update workspaces
+          tokenUrl: /oauth/token
+      type: oauth2

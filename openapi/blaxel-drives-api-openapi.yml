@@ -1,0 +1,713 @@
+openapi: 3.2.0
+info:
+  title: Blaxel Control Plane Drives API
+  version: 0.0.1
+servers:
+- description: Blaxel Control Plane
+  url: https://api.blaxel.ai/v0
+- description: Blaxel Inference
+  url: https://run.blaxel.ai
+security:
+- OAuth2:
+  - admin
+- ApiKeyAuth: []
+tags:
+- name: drives
+paths:
+  /drives:
+    get:
+      description: Returns all drives in the workspace. Drives provide persistent storage that can be attached to agents, functions, and sandboxes. Starting with API version 2026-04-28, the response wraps items in `{data, meta}` and supports cursor pagination via the `cursor` and `limit` query parameters; older versions keep returning a bare array with all drives.
+      operationId: ListDrives
+      parameters:
+      - $ref: '#/components/parameters/PaginationCursor'
+      - $ref: '#/components/parameters/PaginationLimit'
+      - $ref: '#/components/parameters/PaginationSort'
+      - $ref: '#/components/parameters/PaginationQuery'
+      - $ref: '#/components/parameters/PaginationAnchor'
+      - description: Filter drives by external ID. When set, only drives matching this caller-owned identifier are returned.
+        in: query
+        name: externalId
+        required: false
+        schema:
+          type: string
+      - $ref: '#/components/parameters/ListingStatus'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DriveList'
+          description: successful operation
+        '401':
+          description: Unauthorized
+      security:
+      - OAuth2:
+        - drives:list
+      - ApiKeyAuth: []
+      summary: List drives
+      tags:
+      - drives
+    post:
+      description: Creates a new drive in the workspace. Drives can be buckets and can be mounted at runtime to sandboxes.
+      operationId: CreateDrive
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Drive'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Drive'
+          description: successful operation
+        '401':
+          description: Unauthorized
+      security:
+      - OAuth2:
+        - drives:create
+      - ApiKeyAuth: []
+      summary: Create a drive
+      tags:
+      - drives
+  /drives/{driveName}:
+    delete:
+      description: Starts the deletion of a drive. The drive is marked DELETING and its storage is wiped asynchronously; the drive disappears from listings once the cleanup completes.
+      operationId: DeleteDrive
+      parameters:
+      - in: path
+        name: driveName
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  message:
+                    example: Drive deletion started
+                    type: string
+                  name:
+                    example: my-drive
+                    type: string
+                  status:
+                    example: DELETING
+                    type: string
+                type: object
+          description: successful operation
+        '401':
+          description: Unauthorized
+        '404':
+          description: Drive not found
+      security:
+      - OAuth2:
+        - drives:delete
+      - ApiKeyAuth: []
+      summary: Delete a drive
+      tags:
+      - drives
+    get:
+      description: Retrieves details of a specific drive including its status and events.
+      operationId: GetDrive
+      parameters:
+      - in: path
+        name: driveName
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Drive'
+          description: successful operation
+        '401':
+          description: Unauthorized
+        '404':
+          description: Drive not found
+      security:
+      - OAuth2:
+        - drives:get
+      - ApiKeyAuth: []
+      summary: Get a drive
+      tags:
+      - drives
+    put:
+      description: Updates an existing drive. Metadata fields like displayName and labels can be changed. Size can be set if not already configured.
+      operationId: UpdateDrive
+      parameters:
+      - in: path
+        name: driveName
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Drive'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Drive'
+          description: successful operation
+        '401':
+          description: Unauthorized
+        '404':
+          description: Drive not found
+      security:
+      - OAuth2:
+        - drives:create
+      - ApiKeyAuth: []
+      summary: Update a drive
+      tags:
+      - drives
+  /drives/{driveName}/access-token:
+    post:
+      description: Issues a short-lived JWT access token scoped to a specific drive. The token can be used as Bearer authentication for direct S3 operations against the drive's bucket.
+      operationId: CreateDriveAccessToken
+      parameters:
+      - in: path
+        name: driveName
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  access_token:
+                    type: string
+                  expires_in:
+                    type: number
+                  token_type:
+                    example: Bearer
+                    type: string
+                type: object
+          description: successful operation
+        '401':
+          description: Unauthorized
+        '403':
+          description: Drives feature not enabled
+        '404':
+          description: Drive not found
+      security:
+      - OAuth2:
+        - drives:get
+      - ApiKeyAuth: []
+      summary: Create drive access token
+      tags:
+      - drives
+  /drives/{driveName}/folders:
+    delete:
+      description: Deletes a folder and all its contents directly in drive storage. This is synchronous and non-atomic. If it times out or fails, some contents may have been deleted; retry the same path to finish cleanup. An absent folder succeeds. The drive root and internal metadata cannot be deleted.
+      operationId: DeleteDriveFolder
+      parameters:
+      - in: path
+        name: driveName
+        required: true
+        schema:
+          type: string
+      - description: Relative folder path ending in a slash, for example documents/reports/.
+        in: query
+        name: path
+        required: true
+        schema:
+          maxLength: 1024
+          type: string
+      responses:
+        '204':
+          description: Folder and its contents deleted, or folder already absent
+        '400':
+          description: Invalid folder path
+        '401':
+          description: Unauthorized
+        '403':
+          description: Insufficient permissions, protected path, or drives feature disabled
+        '404':
+          description: Drive not found
+        '409':
+          description: Drive unavailable or requested path is not a folder
+        '502':
+          description: Storage unavailable or deletion incomplete; retry to finish cleanup
+        '504':
+          description: Deletion timed out and may be partially complete; retry to finish cleanup
+      security:
+      - OAuth2:
+        - drives:delete
+      - ApiKeyAuth: []
+      summary: Delete a folder and its contents
+      tags:
+      - drives
+  /drives/by-external-id/{externalId}:
+    parameters:
+    - description: Caller-owned external identifier for the drive
+      in: path
+      name: externalId
+      required: true
+      schema:
+        type: string
+    get:
+      description: Returns a drive matching the given external ID. If no drive is found, returns 404.
+      operationId: GetDriveByExternalId
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Drive'
+          description: successful operation
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden - Insufficient permissions to view drives
+        '404':
+          description: Drive not found
+        '500':
+          description: Internal server error
+      security:
+      - OAuth2:
+        - drives:get
+      - ApiKeyAuth: []
+      summary: Get drive by external ID
+      tags:
+      - drives
+  /drives/jwks.json:
+    get:
+      description: Returns the JSON Web Key Set containing the Ed25519 public key used to verify drive access tokens. Other S3-compatible storage can use this endpoint to validate Bearer tokens.
+      operationId: GetDriveJWKS
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  keys:
+                    items:
+                      type: object
+                    type: array
+                type: object
+          description: successful operation
+      security: []
+      summary: Get drive token JWKS
+      tags:
+      - drives
+components:
+  schemas:
+    Metadata:
+      type: object
+      description: Common metadata fields shared by all Blaxel resources including name, labels, timestamps, and ownership information
+      allOf:
+      - $ref: '#/components/schemas/TimeFields'
+      - $ref: '#/components/schemas/OwnerFields'
+      - properties:
+          displayName:
+            type: string
+            description: Human-readable name for display in the UI. Can contain spaces and special characters, max 63 characters.
+            example: My Resource
+          externalId:
+            type: string
+            description: Caller-owned identifier for external lookups. Max 64 chars, alphanumeric + dash.
+            example: my-session-123
+          labels:
+            $ref: '#/components/schemas/MetadataLabels'
+          name:
+            type: string
+            description: Unique identifier for the resource within the workspace. Must be lowercase alphanumeric with hyphens, max 49 characters. Immutable after creation.
+            example: my-resource
+          plan:
+            type: string
+            description: Billing plan tier applied to this resource (inherited from workspace account)
+            readOnly: true
+          url:
+            type: string
+            description: Auto-generated endpoint URL for accessing this resource (for agents, functions, models, sandboxes)
+            readOnly: true
+          workspace:
+            type: string
+            description: Name of the workspace this resource belongs to (read-only, set automatically)
+            readOnly: true
+        required:
+        - name
+    PaginationMeta:
+      type: object
+      description: Pagination metadata returned alongside a page of listing results. Always present on listing endpoints starting with API version 2026-04-28.
+      properties:
+        hasMore:
+          type: boolean
+          description: True when more pages are available beyond the current one.
+        nextCursor:
+          type: string
+          description: Opaque cursor to pass back as the `cursor` query param for the next page. Empty when there are no more pages.
+        total:
+          type: integer
+          description: Total number of items in the workspace, ignoring the current page's filters. Lets the UI render "page X of Y" without walking the cursor chain. Computed from the hash-only metadata.workspace GSI count, so search (`q`) does not narrow it.
+        totalIsPartial:
+          type: boolean
+          description: True when `total` is a lower bound rather than a complete count. Counting a very large workspace is bounded so the listing stays fast, and this flag says the real number is higher. Clients must not derive a page count from `total` when this is set — keep paging with `nextCursor` until `hasMore` is false.
+    CoreEvent:
+      type: object
+      description: Core event
+      properties:
+        canaryRevision:
+          type: string
+          description: Canary revisionID link to the event
+        message:
+          type: string
+          description: Event message
+          example: Deployment successful
+        revision:
+          type: string
+          description: RevisionID link to the event
+          example: rev-abc123
+        status:
+          type: string
+          description: Event status
+          example: DEPLOYED
+        time:
+          type: string
+          description: Event time
+          example: '2025-01-15T10:30:00Z'
+        type:
+          type: string
+          description: Event type
+          example: deployment
+      readOnly: true
+    MetadataLabels:
+      type: object
+      description: Key-value pairs for organizing and filtering resources. Labels can be used to categorize resources by environment, project, team, or any custom taxonomy.
+      additionalProperties:
+        type: string
+    DriveList:
+      type: object
+      description: Cursor-paginated list of drives. Returned starting with API version 2026-04-28; older API versions return a bare array.
+      properties:
+        data:
+          type: array
+          description: Page of drives.
+          items:
+            $ref: '#/components/schemas/Drive'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+    DrivePermission:
+      type: object
+      description: Permission that controls which workloads can access a drive. A workload must have ALL specified labels (AND logic). Permissions are evaluated with OR logic — the first matching permission grants access.
+      properties:
+        labels:
+          type: object
+          description: Labels that the workload must have. All labels must match (AND logic). Empty labels match all workloads.
+        mode:
+          type: string
+          description: Access mode granted by this permission
+          enum:
+          - read
+          - read-write
+        path:
+          type: string
+          description: Subfolder path to restrict access to. Defaults to / (full drive).
+          example: /data
+    DriveSpec:
+      type: object
+      description: Immutable drive configuration set at creation time
+      properties:
+        permissions:
+          type: array
+          description: Permissions controlling which workloads can access this drive. Empty means all workloads in the workspace can access the drive. Maximum 3 permissions.
+          items:
+            $ref: '#/components/schemas/DrivePermission'
+        region:
+          type: string
+          description: Deployment region for the drive (e.g., us-pdx-1, eu-lon-1). Must match the region of resources it attaches to.
+          example: us-pdx-1
+    Drive:
+      type: object
+      description: Drive providing persistent storage that can be attached to agents, functions, and sandboxes. Drives can be mounted at runtime via the sbx API.
+      properties:
+        events:
+          $ref: '#/components/schemas/CoreEvents'
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        spec:
+          $ref: '#/components/schemas/DriveSpec'
+        state:
+          $ref: '#/components/schemas/DriveState'
+        status:
+          type: string
+          description: Drive status computed from events
+          readOnly: true
+      required:
+      - metadata
+      - spec
+    TimeFields:
+      type: object
+      description: Time fields for Persistence
+      properties:
+        createdAt:
+          type: string
+          description: The date and time when the resource was created
+          readOnly: true
+        updatedAt:
+          type: string
+          description: The date and time when the resource was updated
+          readOnly: true
+    CoreEvents:
+      type: array
+      description: Events happening on a resource deployed on Blaxel
+      items:
+        $ref: '#/components/schemas/CoreEvent'
+      readOnly: true
+    OwnerFields:
+      type: object
+      description: Owner fields for Persistence
+      properties:
+        createdBy:
+          type: string
+          description: The user or service account who created the resource
+          readOnly: true
+        updatedBy:
+          type: string
+          description: The user or service account who updated the resource
+          readOnly: true
+    DriveState:
+      type: object
+      description: Current runtime state of the drive
+      properties:
+        s3Url:
+          type: string
+          description: S3-compatible endpoint URL for accessing drive contents
+          readOnly: true
+      readOnly: true
+  parameters:
+    PaginationCursor:
+      description: Opaque cursor returned by a previous response's meta.nextCursor. Only valid for the same query (workspace + filters); the server rejects cursors bound to a different query or older than 24h. Omit on the first page.
+      in: query
+      name: cursor
+      required: false
+      schema:
+        type: string
+      x-stainless-pagination-property:
+        purpose: next_cursor_param
+    ListingStatus:
+      description: Comma-separated list of statuses to filter on (e.g. `DEPLOYED,FAILED`). Values are case-insensitive; unknown values are rejected with a 400. Selecting every status is equivalent to omitting the parameter. Bound into the cursor fingerprint so a cursor opened with one selection cannot be reused with another. Filtering itself requires the 2026-04-28 Blaxel-Version (the paginated listing); on earlier versions the value is still validated but the listing is unfiltered, except for sandboxes where it is applied on every version.
+      example: DEPLOYED,FAILED
+      in: query
+      name: status
+      required: false
+      schema:
+        type: string
+    PaginationAnchor:
+      description: Start from a known pagination boundary. `end` is only supported for `createdAt` listings (asc or desc) and returns the tail page directly without walking every cursor from the first page.
+      in: query
+      name: anchor
+      required: false
+      schema:
+        enum:
+        - end
+        type: string
+    PaginationQuery:
+      description: Substring search across `metadata.name`, `metadata.displayName` and labels (keys + values). Trimmed and lowercased server-side; queries shorter than 2 characters fall back to the unfiltered listing. Bound into the cursor fingerprint so a cursor opened with one query cannot be reused with another. Only honoured starting on Blaxel-Version 2026-04-28.
+      in: query
+      name: q
+      required: false
+      schema:
+        maxLength: 200
+        type: string
+    PaginationSort:
+      description: Sort spec, formatted as `<key>:<direction>`. Allowed values are `createdAt:desc` (default), `createdAt:asc`, `name:asc`, `name:desc`. The cursor fingerprint is bound to the sort, so a cursor opened with one value cannot be reused with another. Only honoured starting on Blaxel-Version 2026-04-28.
+      in: query
+      name: sort
+      required: false
+      schema:
+        enum:
+        - createdAt:desc
+        - createdAt:asc
+        - name:asc
+        - name:desc
+        type: string
+    PaginationLimit:
+      description: Maximum number of items to return per page. Defaults to 50, clamped to 200.
+      in: query
+      name: limit
+      required: false
+      schema:
+        default: 50
+        maximum: 200
+        minimum: 1
+        type: integer
+  securitySchemes:
+    ApiKeyAuth:
+      bearerFormat: API Key
+      description: Long-lived API key for programmatic access
+      scheme: bearer
+      type: http
+    OAuth2:
+      description: OAuth2 authentication with JWT tokens
+      flows:
+        authorizationCode:
+          authorizationUrl: /oauth/authorize
+          scopes:
+            admin: Administrative access
+            agents:create: Create agents
+            agents:delete: Delete agents
+            agents:get: Get agent details
+            agents:list: List agents
+            agents:update: Update agents
+            apiKey:list: List API keys
+            apiKey:write: Create and delete API keys
+            applications:create: Create applications
+            applications:delete: Delete applications
+            applications:get: Get application details
+            applications:list: List applications
+            applications:update: Update applications
+            configurations:list: List configurations
+            customdomains:create: Create custom domains
+            customdomains:delete: Delete custom domains
+            customdomains:get: Get custom domain details
+            customdomains:list: List custom domains
+            customdomains:update: Update custom domains
+            functions:create: Create functions
+            functions:delete: Delete functions
+            functions:get: Get function details
+            functions:list: List functions
+            functions:update: Update functions
+            integrations:create: Create integrations
+            integrations:list: List integrations
+            invitations:list: List invitations
+            jobs:create: Create jobs
+            jobs:delete: Delete jobs
+            jobs:get: Get job details
+            jobs:list: List jobs
+            jobs:update: Update jobs
+            locations:list: List locations
+            mcphub:list: List MCP hub resources
+            models:create: Create models
+            models:delete: Delete models
+            models:get: Get model details
+            models:list: List models
+            models:update: Update models
+            policies:create: Create policies
+            policies:delete: Delete policies
+            policies:get: Get policy details
+            policies:list: List policies
+            policies:update: Update policies
+            sandboxes:control: Control sandbox operations
+            sandboxes:create: Create sandboxes
+            sandboxes:delete: Delete sandboxes
+            sandboxes:get: Get sandbox details
+            sandboxes:list: List sandboxes
+            sandboxes:update: Update sandboxes
+            sandboxhub:list: List sandbox hub resources
+            secrets:create: Create secrets
+            secrets:delete: Delete secrets
+            secrets:list: List secrets
+            templates:get: Get template details
+            templates:list: List templates
+            volumeTemplates:create: Create volume templates
+            volumeTemplates:delete: Delete volume templates
+            volumeTemplates:get: Get volume template details
+            volumeTemplates:list: List volume templates
+            volumeTemplates:upsert: Create or update volume templates
+            volumes:create: Create volumes
+            volumes:delete: Delete volumes
+            volumes:get: Get volume details
+            volumes:list: List volumes
+            workspaces:accept: Accept workspace invitation
+            workspaces:create: Create workspaces
+            workspaces:decline: Decline workspace invitation
+            workspaces:delete: Delete workspaces
+            workspaces:get: Get workspace details
+            workspaces:invite: Invite users to workspace
+            workspaces:leave: Leave workspace
+            workspaces:list: List workspaces
+            workspaces:remove: Remove users from workspace
+            workspaces:update: Update workspaces
+          tokenUrl: /oauth/token
+        clientCredentials:
+          scopes:
+            admin: Administrative access
+            agents:create: Create agents
+            agents:delete: Delete agents
+            agents:get: Get agent details
+            agents:list: List agents
+            agents:update: Update agents
+            apiKey:list: List API keys
+            apiKey:write: Create and delete API keys
+            applications:create: Create applications
+            applications:delete: Delete applications
+            applications:get: Get application details
+            applications:list: List applications
+            applications:update: Update applications
+            configurations:list: List configurations
+            customdomains:create: Create custom domains
+            customdomains:delete: Delete custom domains
+            customdomains:get: Get custom domain details
+            customdomains:list: List custom domains
+            customdomains:update: Update custom domains
+            functions:create: Create functions
+            functions:delete: Delete functions
+            functions:get: Get function details
+            functions:list: List functions
+            functions:update: Update functions
+            integrations:create: Create integrations
+            integrations:list: List integrations
+            invitations:list: List invitations
+            jobs:create: Create jobs
+            jobs:delete: Delete jobs
+            jobs:get: Get job details
+            jobs:list: List jobs
+            jobs:update: Update jobs
+            locations:list: List locations
+            mcphub:list: List MCP hub resources
+            models:create: Create models
+            models:delete: Delete models
+            models:get: Get model details
+            models:list: List models
+            models:update: Update models
+            policies:create: Create policies
+            policies:delete: Delete policies
+            policies:get: Get policy details
+            policies:list: List policies
+            policies:update: Update policies
+            sandboxes:control: Control sandbox operations
+            sandboxes:create: Create sandboxes
+            sandboxes:delete: Delete sandboxes
+            sandboxes:get: Get sandbox details
+            sandboxes:list: List sandboxes
+            sandboxes:update: Update sandboxes
+            sandboxhub:list: List sandbox hub resources
+            secrets:create: Create secrets
+            secrets:delete: Delete secrets
+            secrets:list: List secrets
+            templates:get: Get template details
+            templates:list: List templates
+            volumeTemplates:create: Create volume templates
+            volumeTemplates:delete: Delete volume templates
+            volumeTemplates:get: Get volume template details
+            volumeTemplates:list: List volume templates
+            volumeTemplates:upsert: Create or update volume templates
+            volumes:create: Create volumes
+            volumes:delete: Delete volumes
+            volumes:get: Get volume details
+            volumes:list: List volumes
+            workspaces:accept: Accept workspace invitation
+            workspaces:create: Create workspaces
+            workspaces:decline: Decline workspace invitation
+            workspaces:delete: Delete workspaces
+            workspaces:get: Get workspace details
+            workspaces:invite: Invite users to workspace
+            workspaces:leave: Leave workspace
+            workspaces:list: List workspaces
+            workspaces:remove: Remove users from workspace
+            workspaces:update: Update workspaces
+          tokenUrl: /oauth/token
+      type: oauth2

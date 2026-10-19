@@ -1,0 +1,620 @@
+openapi: 3.2.0
+info:
+  title: Blaxel Control Plane Customdomains API
+  version: 0.0.1
+servers:
+- description: Blaxel Control Plane
+  url: https://api.blaxel.ai/v0
+- description: Blaxel Inference
+  url: https://run.blaxel.ai
+security:
+- OAuth2:
+  - admin
+- ApiKeyAuth: []
+tags:
+- name: customdomains
+paths:
+  /applications/{applicationName}/customdomains:
+    post:
+      description: Creates a new custom domain scoped to a specific application. After creation, you must configure DNS records and verify domain ownership before it becomes active.
+      operationId: CreateApplicationCustomDomain
+      parameters:
+      - description: Name of the application
+        in: path
+        name: applicationName
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomDomain'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomDomain'
+          description: successful operation
+      security:
+      - OAuth2:
+        - customdomains:create
+      - ApiKeyAuth: []
+      summary: Create application custom domain
+      tags:
+      - customdomains
+      x-stainless-ignore: true
+  /customdomains:
+    get:
+      description: Returns all custom domains configured in the workspace. Custom domains allow serving preview deployments under your own domain (e.g., preview.yourdomain.com).
+      operationId: ListCustomDomains
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/CustomDomain'
+                type: array
+          description: successful operation
+      security:
+      - OAuth2:
+        - customdomains:list
+      - ApiKeyAuth: []
+      summary: List custom domains
+      tags:
+      - customdomains
+      x-stainless-ignore: true
+    post:
+      description: Creates a new custom domain for preview deployments. After creation, you must configure DNS records and verify domain ownership before it becomes active.
+      operationId: CreateCustomDomain
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomDomain'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomDomain'
+          description: successful operation
+      security:
+      - OAuth2:
+        - customdomains:create
+      - ApiKeyAuth: []
+      summary: Create custom domain
+      tags:
+      - customdomains
+      x-stainless-ignore: true
+  /customdomains/{domainName}:
+    delete:
+      operationId: DeleteCustomDomain
+      parameters:
+      - description: Name of the custom domain
+        in: path
+        name: domainName
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomDomain'
+          description: successful operation
+      security:
+      - OAuth2:
+        - customdomains:delete
+      - ApiKeyAuth: []
+      summary: Delete custom domain
+      tags:
+      - customdomains
+      x-stainless-ignore: true
+    get:
+      operationId: GetCustomDomain
+      parameters:
+      - description: Name of the custom domain
+        in: path
+        name: domainName
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomDomain'
+          description: successful operation
+      security:
+      - OAuth2:
+        - customdomains:get
+      - ApiKeyAuth: []
+      summary: Get custom domain
+      tags:
+      - customdomains
+      x-stainless-ignore: true
+    put:
+      operationId: UpdateCustomDomain
+      parameters:
+      - description: Name of the custom domain
+        in: path
+        name: domainName
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomDomain'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomDomain'
+          description: successful operation
+      security:
+      - OAuth2:
+        - customdomains:update
+      - ApiKeyAuth: []
+      summary: Update custom domain
+      tags:
+      - customdomains
+      x-stainless-ignore: true
+  /customdomains/{domainName}/share:
+    get:
+      description: Returns the list of workspaces (and/or the account) that a custom domain is currently shared with.
+      operationId: ListCustomDomainShares
+      parameters:
+      - description: Name of the custom domain
+        in: path
+        name: domainName
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/CustomDomainShareTarget'
+                type: array
+          description: successful operation
+        '404':
+          description: custom domain not found
+      security:
+      - OAuth2:
+        - customdomains:get
+      - ApiKeyAuth: []
+      summary: List custom domain shares
+      tags:
+      - customdomains
+      x-stainless-ignore: true
+    post:
+      description: Shares a verified custom domain with another workspace of the same account by copying the domain record; the ACM certificate and CloudFront tenant stay with the owner and are reused (not re-provisioned). Use targetWorkspace "account" to make the domain usable by every workspace of the account. Cross-account sharing is not supported.
+      operationId: ShareCustomDomain
+      parameters:
+      - description: Name of the custom domain
+        in: path
+        name: domainName
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                targetWorkspace:
+                  description: Name of the workspace to share the domain with, or "account" to share with every workspace of the account.
+                  type: string
+              required:
+              - targetWorkspace
+              type: object
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomDomain'
+          description: successful operation
+        '400':
+          description: invalid request
+        '404':
+          description: custom domain not found
+        '409':
+          description: custom domain conflict in target workspace
+      security:
+      - OAuth2:
+        - customdomains:update
+      - ApiKeyAuth: []
+      summary: Share a custom domain
+      tags:
+      - customdomains
+      x-stainless-ignore: true
+  /customdomains/{domainName}/share/{targetWorkspace}:
+    delete:
+      description: Revokes sharing of a custom domain with a target workspace (or the account when targetWorkspace is "account"). Removes the shared copy / clears the account-global marker; the owner's domain is not affected.
+      operationId: UnshareCustomDomain
+      parameters:
+      - description: Name of the custom domain
+        in: path
+        name: domainName
+        required: true
+        schema:
+          type: string
+      - description: Name of the target workspace, or "account" for an account-wide share.
+        in: path
+        name: targetWorkspace
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomDomain'
+          description: successful operation
+        '404':
+          description: custom domain or share not found
+      security:
+      - OAuth2:
+        - customdomains:update
+      - ApiKeyAuth: []
+      summary: Unshare a custom domain
+      tags:
+      - customdomains
+      x-stainless-ignore: true
+  /customdomains/{domainName}/verify:
+    post:
+      operationId: VerifyCustomDomain
+      parameters:
+      - description: Name of the custom domain
+        in: path
+        name: domainName
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomDomain'
+          description: successful operation
+      security:
+      - OAuth2:
+        - customdomains:update
+      - ApiKeyAuth: []
+      summary: Verify custom domain
+      tags:
+      - customdomains
+      x-stainless-ignore: true
+components:
+  schemas:
+    CustomDomain:
+      type: object
+      description: 'Custom domain for preview deployments
+
+        The custom domain represents a base domain (e.g., example.com) that will be used
+
+        to serve preview deployments. Each preview will be accessible at a subdomain:
+
+        <preview-id>.preview.<base-domain> (e.g., abc123.preview.example.com)'
+      properties:
+        metadata:
+          $ref: '#/components/schemas/CustomDomainMetadata'
+        spec:
+          $ref: '#/components/schemas/CustomDomainSpec'
+      required:
+      - metadata
+      - spec
+      x-stainless-ignore: true
+    CustomDomainMetadata:
+      type: object
+      description: Custom domain metadata
+      allOf:
+      - $ref: '#/components/schemas/TimeFields'
+      - $ref: '#/components/schemas/OwnerFields'
+      - properties:
+          displayName:
+            type: string
+            description: Display name for the custom domain
+            example: Preview Domain
+          labels:
+            $ref: '#/components/schemas/MetadataLabels'
+          name:
+            type: string
+            description: Domain name (e.g., "example.com")
+            example: preview.example.com
+          sharedFromWorkspace:
+            type: string
+            description: If this custom domain is shared from another workspace of the same account, this field contains the name of the source (owning) workspace. Empty for owned domains.
+            readOnly: true
+          workspace:
+            type: string
+            description: Workspace name
+    MetadataLabels:
+      type: object
+      description: Key-value pairs for organizing and filtering resources. Labels can be used to categorize resources by environment, project, team, or any custom taxonomy.
+      additionalProperties:
+        type: string
+    TimeFields:
+      type: object
+      description: Time fields for Persistence
+      properties:
+        createdAt:
+          type: string
+          description: The date and time when the resource was created
+          readOnly: true
+        updatedAt:
+          type: string
+          description: The date and time when the resource was updated
+          readOnly: true
+    CustomDomainSpec:
+      type: object
+      description: Custom domain specification
+      properties:
+        cnameRecords:
+          type: string
+          description: CNAME target for the domain
+        domainType:
+          type: string
+          description: Type of custom domain (previews or applications)
+          enum:
+          - previews
+          - applications
+          example: applications
+        fallbackPreviewId:
+          type: string
+          description: Preview ID to route to when a preview lookup fails on this custom domain
+          example: my-fallback-preview
+        lastVerifiedAt:
+          type: string
+          description: Last verification attempt timestamp
+          readOnly: true
+        region:
+          type: string
+          description: Region that the custom domain is associated with
+          example: us-pdx-1
+        status:
+          type: string
+          description: Current status of the domain (pending, verified, failed)
+          enum:
+          - pending
+          - verified
+          - failed
+          readOnly: true
+          example: verified
+        subjectAlternativeNames:
+          type: array
+          description: Subject Alternative Names (SANs) for the ACM certificate. Only applicable for application domains.
+          items:
+            type: object
+            additionalProperties: true
+        txtRecords:
+          type: object
+          description: Map of TXT record names to values for domain verification
+          additionalProperties:
+            type: string
+        validationMethod:
+          type: string
+          description: How the TLS certificate is validated. "dns" (default) requires the certificate validation CNAME records to be published; "http" validates over HTTP once the domain points to Blaxel and requires no validation record. HTTP validation is not available for wildcard domains (previews or "*." names) and cannot be changed after creation.
+          enum:
+          - dns
+          - http
+          example: dns
+          default: dns
+        verificationError:
+          type: string
+          description: Error message if verification failed
+          readOnly: true
+      x-stainless-ignore: true
+    OwnerFields:
+      type: object
+      description: Owner fields for Persistence
+      properties:
+        createdBy:
+          type: string
+          description: The user or service account who created the resource
+          readOnly: true
+        updatedBy:
+          type: string
+          description: The user or service account who updated the resource
+          readOnly: true
+    CustomDomainShareTarget:
+      type: object
+      description: A workspace (or the whole account) a custom domain is shared with
+      properties:
+        status:
+          type: string
+          description: Share status; always "active" for same-account custom domain shares.
+        workspace:
+          type: string
+          description: The workspace the domain is shared with, or "account" for an account-wide share.
+        workspaceDisplayName:
+          type: string
+          description: Display name of the target workspace (empty for an account-wide share).
+      required:
+      - workspace
+      - status
+      x-stainless-ignore: true
+  securitySchemes:
+    ApiKeyAuth:
+      bearerFormat: API Key
+      description: Long-lived API key for programmatic access
+      scheme: bearer
+      type: http
+    OAuth2:
+      description: OAuth2 authentication with JWT tokens
+      flows:
+        authorizationCode:
+          authorizationUrl: /oauth/authorize
+          scopes:
+            admin: Administrative access
+            agents:create: Create agents
+            agents:delete: Delete agents
+            agents:get: Get agent details
+            agents:list: List agents
+            agents:update: Update agents
+            apiKey:list: List API keys
+            apiKey:write: Create and delete API keys
+            applications:create: Create applications
+            applications:delete: Delete applications
+            applications:get: Get application details
+            applications:list: List applications
+            applications:update: Update applications
+            configurations:list: List configurations
+            customdomains:create: Create custom domains
+            customdomains:delete: Delete custom domains
+            customdomains:get: Get custom domain details
+            customdomains:list: List custom domains
+            customdomains:update: Update custom domains
+            functions:create: Create functions
+            functions:delete: Delete functions
+            functions:get: Get function details
+            functions:list: List functions
+            functions:update: Update functions
+            integrations:create: Create integrations
+            integrations:list: List integrations
+            invitations:list: List invitations
+            jobs:create: Create jobs
+            jobs:delete: Delete jobs
+            jobs:get: Get job details
+            jobs:list: List jobs
+            jobs:update: Update jobs
+            locations:list: List locations
+            mcphub:list: List MCP hub resources
+            models:create: Create models
+            models:delete: Delete models
+            models:get: Get model details
+            models:list: List models
+            models:update: Update models
+            policies:create: Create policies
+            policies:delete: Delete policies
+            policies:get: Get policy details
+            policies:list: List policies
+            policies:update: Update policies
+            sandboxes:control: Control sandbox operations
+            sandboxes:create: Create sandboxes
+            sandboxes:delete: Delete sandboxes
+            sandboxes:get: Get sandbox details
+            sandboxes:list: List sandboxes
+            sandboxes:update: Update sandboxes
+            sandboxhub:list: List sandbox hub resources
+            secrets:create: Create secrets
+            secrets:delete: Delete secrets
+            secrets:list: List secrets
+            templates:get: Get template details
+            templates:list: List templates
+            volumeTemplates:create: Create volume templates
+            volumeTemplates:delete: Delete volume templates
+            volumeTemplates:get: Get volume template details
+            volumeTemplates:list: List volume templates
+            volumeTemplates:upsert: Create or update volume templates
+            volumes:create: Create volumes
+            volumes:delete: Delete volumes
+            volumes:get: Get volume details
+            volumes:list: List volumes
+            workspaces:accept: Accept workspace invitation
+            workspaces:create: Create workspaces
+            workspaces:decline: Decline workspace invitation
+            workspaces:delete: Delete workspaces
+            workspaces:get: Get workspace details
+            workspaces:invite: Invite users to workspace
+            workspaces:leave: Leave workspace
+            workspaces:list: List workspaces
+            workspaces:remove: Remove users from workspace
+            workspaces:update: Update workspaces
+          tokenUrl: /oauth/token
+        clientCredentials:
+          scopes:
+            admin: Administrative access
+            agents:create: Create agents
+            agents:delete: Delete agents
+            agents:get: Get agent details
+            agents:list: List agents
+            agents:update: Update agents
+            apiKey:list: List API keys
+            apiKey:write: Create and delete API keys
+            applications:create: Create applications
+            applications:delete: Delete applications
+            applications:get: Get application details
+            applications:list: List applications
+            applications:update: Update applications
+            configurations:list: List configurations
+            customdomains:create: Create custom domains
+            customdomains:delete: Delete custom domains
+            customdomains:get: Get custom domain details
+            customdomains:list: List custom domains
+            customdomains:update: Update custom domains
+            functions:create: Create functions
+            functions:delete: Delete functions
+            functions:get: Get function details
+            functions:list: List functions
+            functions:update: Update functions
+            integrations:create: Create integrations
+            integrations:list: List integrations
+            invitations:list: List invitations
+            jobs:create: Create jobs
+            jobs:delete: Delete jobs
+            jobs:get: Get job details
+            jobs:list: List jobs
+            jobs:update: Update jobs
+            locations:list: List locations
+            mcphub:list: List MCP hub resources
+            models:create: Create models
+            models:delete: Delete models
+            models:get: Get model details
+            models:list: List models
+            models:update: Update models
+            policies:create: Create policies
+            policies:delete: Delete policies
+            policies:get: Get policy details
+            policies:list: List policies
+            policies:update: Update policies
+            sandboxes:control: Control sandbox operations
+            sandboxes:create: Create sandboxes
+            sandboxes:delete: Delete sandboxes
+            sandboxes:get: Get sandbox details
+            sandboxes:list: List sandboxes
+            sandboxes:update: Update sandboxes
+            sandboxhub:list: List sandbox hub resources
+            secrets:create: Create secrets
+            secrets:delete: Delete secrets
+            secrets:list: List secrets
+            templates:get: Get template details
+            templates:list: List templates
+            volumeTemplates:create: Create volume templates
+            volumeTemplates:delete: Delete volume templates
+            volumeTemplates:get: Get volume template details
+            volumeTemplates:list: List volume templates
+            volumeTemplates:upsert: Create or update volume templates
+            volumes:create: Create volumes
+            volumes:delete: Delete volumes
+            volumes:get: Get volume details
+            volumes:list: List volumes
+            workspaces:accept: Accept workspace invitation
+            workspaces:create: Create workspaces
+            workspaces:decline: Decline workspace invitation
+            workspaces:delete: Delete workspaces
+            workspaces:get: Get workspace details
+            workspaces:invite: Invite users to workspace
+            workspaces:leave: Leave workspace
+            workspaces:list: List workspaces
+            workspaces:remove: Remove users from workspace
+            workspaces:update: Update workspaces
+          tokenUrl: /oauth/token
+      type: oauth2

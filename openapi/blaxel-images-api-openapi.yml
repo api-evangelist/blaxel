@@ -1,0 +1,1019 @@
+openapi: 3.2.0
+info:
+  title: Blaxel Control Plane Images API
+  version: 0.0.1
+servers:
+- description: Blaxel Control Plane
+  url: https://api.blaxel.ai/v0
+- description: Blaxel Inference
+  url: https://run.blaxel.ai
+security:
+- OAuth2:
+  - admin
+- ApiKeyAuth: []
+tags:
+- name: Images
+paths:
+  /images:
+    delete:
+      description: Cleans up unused container images in the workspace registry. Only removes images that are not currently referenced by any active agent, function, sandbox, or job deployment.
+      operationId: CleanupImages
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  deleted:
+                    description: Number of images deleted
+                    type: integer
+                  message:
+                    description: Result message
+                    type: string
+                type: object
+          description: successful operation
+      security:
+      - OAuth2:
+        - images:delete
+      - ApiKeyAuth: []
+      summary: Cleanup unused container images
+      tags:
+      - Images
+    get:
+      description: Returns paginated image summaries starting with API version 2026-09-22. Older versions return a bare array including all tags.
+      operationId: ListImages
+      parameters:
+      - in: query
+        name: cursor
+        schema:
+          type: string
+      - in: query
+        name: limit
+        schema:
+          default: 50
+          maximum: 100
+          type: integer
+      - in: query
+        name: sort
+        schema:
+          type: string
+      - description: Case-sensitive name prefix. Selects name order.
+        in: query
+        name: q
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    items:
+                      $ref: '#/components/schemas/ImageSummary'
+                    type: array
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+                required:
+                - data
+                - meta
+                type: object
+          description: successful operation
+      security:
+      - OAuth2:
+        - images:list
+      - ApiKeyAuth: []
+      summary: List container images
+      tags:
+      - Images
+    post:
+      description: Builds or imports a container image without creating a deployment. Provide a registry image reference to download and convert an existing image, or omit image to receive a presigned URL for uploading source code. Registry imports can specify memoryMb and volumeMb for the import worker. These settings do not change the resources of workloads using the image.
+      operationId: CreateImage
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                dockerConfig:
+                  description: Docker configuration JSON containing credentials for the source registry.
+                  type: string
+                generation:
+                  description: Runtime generation (e.g., mk3). Defaults to mk3 if not specified.
+                  type: string
+                image:
+                  description: A pre-built Docker image reference (e.g., docker.io/myorg/myimage:latest). References with a registry hostname start an asynchronous import that downloads and converts the image for the resource runtime.
+                  type: string
+                memoryMb:
+                  description: Memory for the registry import worker in MiB. Only supported when image is a registry reference. When omitted, the platform default is used.
+                  example: 16384
+                  maximum: 32768
+                  minimum: 1
+                  type: integer
+                name:
+                  description: Name of the image to build
+                  type: string
+                resourceType:
+                  description: Resource type (agent, function, sandbox, job)
+                  type: string
+                tag:
+                  description: Tag for the imported image. Only supported when image is a registry reference. When omitted, a tag is derived from the build inputs. Tags are immutable, so a tag that already exists is rejected. latest, pending and failed are reserved.
+                  example: v1.2.0
+                  maxLength: 32
+                  pattern: ^[A-Za-z0-9_][A-Za-z0-9_.-]{0,31}$
+                  type: string
+                volumeMb:
+                  description: Temporary scratch disk for the registry import worker in MiB. Only supported when image is a registry reference. When omitted, the platform default is used. Set to 0 to use memory-backed scratch. Positive values are not supported for HIPAA workspaces.
+                  example: 32768
+                  maximum: 131072
+                  minimum: 0
+                  type: integer
+              required:
+              - resourceType
+              - name
+              type: object
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  image:
+                    description: The registered image reference (only present when image was provided in request)
+                    type: string
+                  message:
+                    description: Status message
+                    type: string
+                  name:
+                    description: Name of the image
+                    type: string
+                  resourceType:
+                    description: Resource type
+                    type: string
+                type: object
+          description: successful operation
+          headers:
+            X-Blaxel-Upload-Url:
+              description: Presigned URL for uploading source code
+              schema:
+                type: string
+        '400':
+          description: invalid request
+        '409':
+          description: the requested tag already exists
+      security:
+      - OAuth2:
+        - images:create
+      - ApiKeyAuth: []
+      summary: Build a container image
+      tags:
+      - Images
+  /images/{resourceType}/{imageName}:
+    parameters:
+    - description: Resource type (agents, functions, sandboxes, jobs)
+      in: path
+      name: resourceType
+      required: true
+      schema:
+        type: string
+    - description: Name of the container image repository
+      in: path
+      name: imageName
+      required: true
+      schema:
+        type: string
+    delete:
+      description: Deletes a container image and all its tags from the workspace registry. Will fail if the image is currently in use by an active deployment.
+      operationId: DeleteImage
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Image'
+          description: successful operation
+        '400':
+          description: image used
+        '404':
+          description: image not found
+      security:
+      - OAuth2:
+        - images:delete
+      - ApiKeyAuth: []
+      summary: Delete container image
+      tags:
+      - Images
+    get:
+      description: Returns a bounded image summary starting with API version 2026-09-22. Older versions return the image with all tags.
+      operationId: GetImage
+      parameters:
+      - description: Owner workspace for an account-shared image.
+        in: query
+        name: sourceWorkspace
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImageSummary'
+          description: successful operation
+      security:
+      - OAuth2:
+        - images:get
+      - ApiKeyAuth: []
+      summary: Get container image
+      tags:
+      - Images
+  /images/{resourceType}/{imageName}/share:
+    parameters:
+    - description: Resource type (agents, functions, sandboxes, jobs)
+      in: path
+      name: resourceType
+      required: true
+      schema:
+        type: string
+    - description: Name of the container image repository
+      in: path
+      name: imageName
+      required: true
+      schema:
+        type: string
+    get:
+      description: Returns the list of workspaces that a container image is currently shared with.
+      operationId: ListImageShares
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/ImageShareTarget'
+                type: array
+          description: successful operation
+        '404':
+          description: image not found
+      security:
+      - OAuth2:
+        - images:get
+      - ApiKeyAuth: []
+      summary: List image shares
+      tags:
+      - Images
+    post:
+      description: Shares a container image with another workspace by copying the metadata record. The underlying storage (S3) data is not duplicated. For same-account targets the share is applied immediately. For cross-account targets, a pending image share is created and must be explicitly accepted by an admin of the target workspace; the correct target account ID must be supplied as an anti-spam measure.
+      operationId: ShareImage
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                targetAccountId:
+                  description: Account ID of the target workspace. Required when the target workspace belongs to a different account than the source workspace (anti-spam).
+                  type: string
+                targetWorkspace:
+                  description: Name of the workspace to share the image with
+                  type: string
+              required:
+              - targetWorkspace
+              type: object
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Image'
+          description: successful operation (same-account share, applied immediately)
+        '202':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PendingImageShare'
+          description: pending approval from target workspace admin
+        '400':
+          description: invalid request
+        '404':
+          description: image not found
+        '409':
+          description: image conflict in target workspace
+      security:
+      - OAuth2:
+        - images:share
+      - ApiKeyAuth: []
+      summary: Share a container image
+      tags:
+      - Images
+  /images/{resourceType}/{imageName}/share/{targetWorkspace}:
+    parameters:
+    - description: Resource type (agents, functions, sandboxes, jobs)
+      in: path
+      name: resourceType
+      required: true
+      schema:
+        type: string
+    - description: Name of the container image repository
+      in: path
+      name: imageName
+      required: true
+      schema:
+        type: string
+    - description: Name of the target workspace to revoke sharing from
+      in: path
+      name: targetWorkspace
+      required: true
+      schema:
+        type: string
+    delete:
+      description: Revokes sharing of a container image with a target workspace. Removes the metadata copy from the target workspace. The source image is not affected.
+      operationId: UnshareImage
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Image'
+          description: successful operation
+        '404':
+          description: image or share not found
+      security:
+      - OAuth2:
+        - images:share
+      - ApiKeyAuth: []
+      summary: Unshare a container image
+      tags:
+      - Images
+  /images/{resourceType}/{imageName}/tags:
+    parameters:
+    - in: path
+      name: resourceType
+      required: true
+      schema:
+        type: string
+    - in: path
+      name: imageName
+      required: true
+      schema:
+        type: string
+    get:
+      description: Returns a bounded page of image tags. Search by prefix or exact name. Tags are ordered by name only. Send Blaxel-Version 2026-09-22 with image catalog requests.
+      operationId: ListImageTags
+      parameters:
+      - in: query
+        name: cursor
+        schema:
+          type: string
+      - in: query
+        name: limit
+        schema:
+          default: 50
+          maximum: 100
+          type: integer
+      - description: Order by tag name. Creation-time sorting is not supported.
+        in: query
+        name: sort
+        schema:
+          default: name:asc
+          enum:
+          - name:asc
+          - name:desc
+          type: string
+      - description: Case-sensitive name prefix. Selects name order.
+        in: query
+        name: q
+        schema:
+          type: string
+      - description: Exact tag name, mutually exclusive with q.
+        in: query
+        name: name
+        schema:
+          type: string
+      - description: Owner workspace for an account-shared image.
+        in: query
+        name: sourceWorkspace
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    items:
+                      $ref: '#/components/schemas/ImageTag'
+                    type: array
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+                required:
+                - data
+                - meta
+                type: object
+          description: A page of tags
+      security:
+      - OAuth2:
+        - images:get
+      - ApiKeyAuth: []
+      summary: List image tags
+      tags:
+      - Images
+  /images/{resourceType}/{imageName}/tags/{tagName}:
+    parameters:
+    - description: Resource type (agents, functions, sandboxes, jobs)
+      in: path
+      name: resourceType
+      required: true
+      schema:
+        type: string
+    - description: Name of the container image repository
+      in: path
+      name: imageName
+      required: true
+      schema:
+        type: string
+    - description: Tag name to delete (e.g., latest, v1.0.0)
+      in: path
+      name: tagName
+      required: true
+      schema:
+        type: string
+    delete:
+      description: Deletes a specific tag from a container image. The underlying image layers are kept if other tags reference them. Will fail if the tag is currently in use.
+      operationId: DeleteImageTag
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Image'
+          description: successful operation
+        '204':
+          description: Tag deleted (API version 2026-09-22 and later).
+        '400':
+          description: tag is in use
+        '404':
+          description: image or tag not found
+      security:
+      - OAuth2:
+        - images:delete
+      - ApiKeyAuth: []
+      summary: Delete container image tag
+      tags:
+      - Images
+  /pending-image-shares:
+    get:
+      description: Lists pending cross-account image shares targeting the caller's workspace (incoming) or originating from it (outgoing). Expired shares are cleaned up opportunistically.
+      operationId: ListPendingImageShares
+      parameters:
+      - description: 'Direction of pending shares: "incoming" (default) or "outgoing"'
+        in: query
+        name: direction
+        required: false
+        schema:
+          enum:
+          - incoming
+          - outgoing
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/PendingImageShareRender'
+                type: array
+          description: successful operation
+      security:
+      - OAuth2:
+        - images:share
+      - ApiKeyAuth: []
+      summary: List pending image shares
+      tags:
+      - Images
+  /pending-image-shares/{pendingShareId}/accept:
+    parameters:
+    - description: ID of the pending image share
+      in: path
+      name: pendingShareId
+      required: true
+      schema:
+        type: string
+    post:
+      description: Accepts a pending cross-account image share and copies the image metadata to the target workspace. Caller must be an admin of the target workspace.
+      operationId: AcceptImageShare
+      parameters:
+      - description: When true, overwrite conflicting tags in the target workspace instead of returning 409.
+        in: query
+        name: force
+        required: false
+        schema:
+          type: boolean
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Image'
+          description: successful operation
+        '403':
+          description: forbidden
+        '404':
+          description: pending image share not found
+        '409':
+          description: image conflict in target workspace
+        '410':
+          description: pending image share expired
+      security:
+      - OAuth2:
+        - images:share
+      - ApiKeyAuth: []
+      summary: Accept a pending image share
+      tags:
+      - Images
+  /pending-image-shares/{pendingShareId}/decline:
+    parameters:
+    - description: ID of the pending image share
+      in: path
+      name: pendingShareId
+      required: true
+      schema:
+        type: string
+    post:
+      description: Declines a pending cross-account image share. Caller must be an admin of the target workspace.
+      operationId: DeclineImageShare
+      responses:
+        '204':
+          description: successfully declined
+        '403':
+          description: forbidden
+        '404':
+          description: pending image share not found
+      security:
+      - OAuth2:
+        - images:share
+      - ApiKeyAuth: []
+      summary: Decline a pending image share
+      tags:
+      - Images
+components:
+  schemas:
+    ImageSpec:
+      type: object
+      properties:
+        size:
+          type: integer
+          description: The size of the image in bytes.
+          readOnly: true
+        tags:
+          type: array
+          description: List of tags available for this image.
+          items:
+            $ref: '#/components/schemas/ImageTag'
+    PaginationMeta:
+      type: object
+      description: Pagination metadata returned alongside a page of listing results. Always present on listing endpoints starting with API version 2026-04-28.
+      properties:
+        hasMore:
+          type: boolean
+          description: True when more pages are available beyond the current one.
+        nextCursor:
+          type: string
+          description: Opaque cursor to pass back as the `cursor` query param for the next page. Empty when there are no more pages.
+        total:
+          type: integer
+          description: Total number of items in the workspace, ignoring the current page's filters. Lets the UI render "page X of Y" without walking the cursor chain. Computed from the hash-only metadata.workspace GSI count, so search (`q`) does not narrow it.
+        totalIsPartial:
+          type: boolean
+          description: True when `total` is a lower bound rather than a complete count. Counting a very large workspace is bounded so the listing stays fast, and this flag says the real number is higher. Clients must not derive a page count from `total` when this is set — keep paging with `nextCursor` until `hasMore` is false.
+    CoreEvent:
+      type: object
+      description: Core event
+      properties:
+        canaryRevision:
+          type: string
+          description: Canary revisionID link to the event
+        message:
+          type: string
+          description: Event message
+          example: Deployment successful
+        revision:
+          type: string
+          description: RevisionID link to the event
+          example: rev-abc123
+        status:
+          type: string
+          description: Event status
+          example: DEPLOYED
+        time:
+          type: string
+          description: Event time
+          example: '2025-01-15T10:30:00Z'
+        type:
+          type: string
+          description: Event type
+          example: deployment
+      readOnly: true
+    Status:
+      type: string
+      description: Deployment status of a resource deployed on Blaxel
+      enum:
+      - DELETING
+      - TERMINATED
+      - FAILED
+      - DEACTIVATED
+      - DEACTIVATING
+      - UPLOADING
+      - BUILDING
+      - DEPLOYING
+      - DEPLOYED
+      - BUILT
+      - ARCHIVING
+      - ARCHIVED
+      - UNARCHIVING
+      readOnly: true
+    ImageTag:
+      type: object
+      properties:
+        createdAt:
+          type: string
+          description: The date and time when the tag was created.
+          readOnly: true
+        name:
+          type: string
+          description: The name of the tag.
+        size:
+          type: integer
+          description: The size of the image in bytes.
+          readOnly: true
+        updatedAt:
+          type: string
+          description: The date and time when the tag was last updated.
+          readOnly: true
+    ImageSummarySpec:
+      type: object
+      properties:
+        size:
+          type: integer
+          readOnly: true
+        tagCount:
+          type: integer
+          readOnly: true
+    ImageMetadata:
+      type: object
+      properties:
+        createdAt:
+          type: string
+          description: The date and time when the image was created.
+          readOnly: true
+        displayName:
+          type: string
+          description: The display name of the image (registry/workspace/repository).
+        events:
+          $ref: '#/components/schemas/CoreEvents'
+        lastDeployedAt:
+          type: string
+          description: The date and time when the image was last deployed (most recent across all tags).
+          readOnly: true
+        name:
+          type: string
+          description: The name of the image (repository name).
+        resourceType:
+          type: string
+          description: The resource type of the image.
+        sourceWorkspace:
+          type: string
+          description: If this image is shared from another workspace, this field contains the name of the source workspace. Empty for non-shared images.
+          readOnly: true
+        status:
+          $ref: '#/components/schemas/Status'
+        updatedAt:
+          type: string
+          description: The date and time when the image was last updated.
+          readOnly: true
+        workspace:
+          type: string
+          description: The workspace of the image.
+          readOnly: true
+    ImageSummary:
+      type: object
+      properties:
+        metadata:
+          $ref: '#/components/schemas/ImageMetadata'
+        spec:
+          $ref: '#/components/schemas/ImageSummarySpec'
+      required:
+      - metadata
+      - spec
+    PendingImageShareRender:
+      type: object
+      description: Rendered pending image share with source/target workspace metadata
+      properties:
+        createdAt:
+          type: string
+          description: Creation date
+        expiresAt:
+          type: string
+          description: Expiration date
+        hasConflict:
+          type: boolean
+          description: Whether the target workspace already has an image with the same name (potential conflict)
+        id:
+          type: string
+          description: Unique identifier for the pending image share
+        imageName:
+          type: string
+          description: Image name (repository)
+        resourceType:
+          type: string
+          description: Resource type (agent, function, sandbox, job)
+        sharedBy:
+          type: string
+          description: User sub who initiated the share
+        sharedByEmail:
+          type: string
+          description: Email of the user who initiated the share
+        sourceAccountId:
+          type: string
+          description: Source account ID
+        sourceWorkspace:
+          type: string
+          description: Source workspace name
+        sourceWorkspaceDisplayName:
+          type: string
+          description: Source workspace display name
+        targetAccountId:
+          type: string
+          description: Target account ID
+        targetWorkspace:
+          type: string
+          description: Target workspace name
+        targetWorkspaceDisplayName:
+          type: string
+          description: Target workspace display name
+    Image:
+      type: object
+      properties:
+        metadata:
+          $ref: '#/components/schemas/ImageMetadata'
+        spec:
+          $ref: '#/components/schemas/ImageSpec'
+      required:
+      - metadata
+      - spec
+    TimeFields:
+      type: object
+      description: Time fields for Persistence
+      properties:
+        createdAt:
+          type: string
+          description: The date and time when the resource was created
+          readOnly: true
+        updatedAt:
+          type: string
+          description: The date and time when the resource was updated
+          readOnly: true
+    CoreEvents:
+      type: array
+      description: Events happening on a resource deployed on Blaxel
+      items:
+        $ref: '#/components/schemas/CoreEvent'
+      readOnly: true
+    OwnerFields:
+      type: object
+      description: Owner fields for Persistence
+      properties:
+        createdBy:
+          type: string
+          description: The user or service account who created the resource
+          readOnly: true
+        updatedBy:
+          type: string
+          description: The user or service account who updated the resource
+          readOnly: true
+    ImageShareTarget:
+      type: object
+      properties:
+        accountId:
+          type: string
+          description: ID of the account that owns the target workspace.
+        accountOwnerEmail:
+          type: string
+          description: Email of the account owner for the target workspace (when available).
+        pendingShareId:
+          type: string
+          description: ID of the pending share record when status is "pending".
+        status:
+          type: string
+          description: '"active" when the share is applied in the target workspace, "pending" when it is awaiting accept on a cross-account share.'
+        workspace:
+          type: string
+          description: The workspace the image is shared with.
+        workspaceDisplayName:
+          type: string
+          description: Display name of the target workspace.
+      required:
+      - workspace
+      - accountId
+      - status
+    PendingImageShare:
+      type: object
+      description: Pending cross-account image share awaiting approval from the destination workspace
+      allOf:
+      - $ref: '#/components/schemas/TimeFields'
+      - $ref: '#/components/schemas/OwnerFields'
+      - properties:
+          expiresAt:
+            type: string
+            description: The date and time when the pending share expires
+          id:
+            type: string
+            description: Unique identifier for the pending image share
+          imageName:
+            type: string
+            description: Image name (repository)
+          resourceType:
+            type: string
+            description: Resource type (agent, function, sandbox, job)
+          sharedBy:
+            type: string
+            description: User sub who initiated the share
+          sourceAccountId:
+            type: string
+            description: Source account ID
+          sourceWorkspace:
+            type: string
+            description: Source workspace name
+          targetAccountId:
+            type: string
+            description: Target account ID
+          targetWorkspace:
+            type: string
+            description: Target workspace name
+  securitySchemes:
+    ApiKeyAuth:
+      bearerFormat: API Key
+      description: Long-lived API key for programmatic access
+      scheme: bearer
+      type: http
+    OAuth2:
+      description: OAuth2 authentication with JWT tokens
+      flows:
+        authorizationCode:
+          authorizationUrl: /oauth/authorize
+          scopes:
+            admin: Administrative access
+            agents:create: Create agents
+            agents:delete: Delete agents
+            agents:get: Get agent details
+            agents:list: List agents
+            agents:update: Update agents
+            apiKey:list: List API keys
+            apiKey:write: Create and delete API keys
+            applications:create: Create applications
+            applications:delete: Delete applications
+            applications:get: Get application details
+            applications:list: List applications
+            applications:update: Update applications
+            configurations:list: List configurations
+            customdomains:create: Create custom domains
+            customdomains:delete: Delete custom domains
+            customdomains:get: Get custom domain details
+            customdomains:list: List custom domains
+            customdomains:update: Update custom domains
+            functions:create: Create functions
+            functions:delete: Delete functions
+            functions:get: Get function details
+            functions:list: List functions
+            functions:update: Update functions
+            integrations:create: Create integrations
+            integrations:list: List integrations
+            invitations:list: List invitations
+            jobs:create: Create jobs
+            jobs:delete: Delete jobs
+            jobs:get: Get job details
+            jobs:list: List jobs
+            jobs:update: Update jobs
+            locations:list: List locations
+            mcphub:list: List MCP hub resources
+            models:create: Create models
+            models:delete: Delete models
+            models:get: Get model details
+            models:list: List models
+            models:update: Update models
+            policies:create: Create policies
+            policies:delete: Delete policies
+            policies:get: Get policy details
+            policies:list: List policies
+            policies:update: Update policies
+            sandboxes:control: Control sandbox operations
+            sandboxes:create: Create sandboxes
+            sandboxes:delete: Delete sandboxes
+            sandboxes:get: Get sandbox details
+            sandboxes:list: List sandboxes
+            sandboxes:update: Update sandboxes
+            sandboxhub:list: List sandbox hub resources
+            secrets:create: Create secrets
+            secrets:delete: Delete secrets
+            secrets:list: List secrets
+            templates:get: Get template details
+            templates:list: List templates
+            volumeTemplates:create: Create volume templates
+            volumeTemplates:delete: Delete volume templates
+            volumeTemplates:get: Get volume template details
+            volumeTemplates:list: List volume templates
+            volumeTemplates:upsert: Create or update volume templates
+            volumes:create: Create volumes
+            volumes:delete: Delete volumes
+            volumes:get: Get volume details
+            volumes:list: List volumes
+            workspaces:accept: Accept workspace invitation
+            workspaces:create: Create workspaces
+            workspaces:decline: Decline workspace invitation
+            workspaces:delete: Delete workspaces
+            workspaces:get: Get workspace details
+            workspaces:invite: Invite users to workspace
+            workspaces:leave: Leave workspace
+            workspaces:list: List workspaces
+            workspaces:remove: Remove users from workspace
+            workspaces:update: Update workspaces
+          tokenUrl: /oauth/token
+        clientCredentials:
+          scopes:
+            admin: Administrative access
+            agents:create: Create agents
+            agents:delete: Delete agents
+            agents:get: Get agent details
+            agents:list: List agents
+            agents:update: Update agents
+            apiKey:list: List API keys
+            apiKey:write: Create and delete API keys
+            applications:create: Create applications
+            applications:delete: Delete applications
+            applications:get: Get application details
+            applications:list: List applications
+            applications:update: Update applications
+            configurations:list: List configurations
+            customdomains:create: Create custom domains
+            customdomains:delete: Delete custom domains
+            customdomains:get: Get custom domain details
+            customdomains:list: List custom domains
+            customdomains:update: Update custom domains
+            functions:create: Create functions
+            functions:delete: Delete functions
+            functions:get: Get function details
+            functions:list: List functions
+            functions:update: Update functions
+            integrations:create: Create integrations
+            integrations:list: List integrations
+            invitations:list: List invitations
+            jobs:create: Create jobs
+            jobs:delete: Delete jobs
+            jobs:get: Get job details
+            jobs:list: List jobs
+            jobs:update: Update jobs
+            locations:list: List locations
+            mcphub:list: List MCP hub resources
+            models:create: Create models
+            models:delete: Delete models
+            models:get: Get model details
+            models:list: List models
+            models:update: Update models
+            policies:create: Create policies
+            policies:delete: Delete policies
+            policies:get: Get policy details
+            policies:list: List policies
+            policies:update: Update policies
+            sandboxes:control: Control sandbox operations
+            sandboxes:create: Create sandboxes
+            sandboxes:delete: Delete sandboxes
+            sandboxes:get: Get sandbox details
+            sandboxes:list: List sandboxes
+            sandboxes:update: Update sandboxes
+            sandboxhub:list: List sandbox hub resources
+            secrets:create: Create secrets
+            secrets:delete: Delete secrets
+            secrets:list: List secrets
+            templates:get: Get template details
+            templates:list: List templates
+            volumeTemplates:create: Create volume templates
+            volumeTemplates:delete: Delete volume templates
+            volumeTemplates:get: Get volume template details
+            volumeTemplates:list: List volume templates
+            volumeTemplates:upsert: Create or update volume templates
+            volumes:create: Create volumes
+            volumes:delete: Delete volumes
+            volumes:get: Get volume details
+            volumes:list: List volumes
+            workspaces:accept: Accept workspace invitation
+            workspaces:create: Create workspaces
+            workspaces:decline: Decline workspace invitation
+            workspaces:delete: Delete workspaces
+            workspaces:get: Get workspace details
+            workspaces:invite: Invite users to workspace
+            workspaces:leave: Leave workspace
+            workspaces:list: List workspaces
+            workspaces:remove: Remove users from workspace
+            workspaces:update: Update workspaces
+          tokenUrl: /oauth/token
+      type: oauth2

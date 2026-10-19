@@ -1,46 +1,744 @@
 openapi: 3.2.0
 info:
   title: Blaxel Control Plane Volumes API
-  description: Representative specification of the Blaxel (formerly Beamlit) control plane REST API. The control plane manages agents, MCP/function servers, models, sandboxes, jobs, policies, integrations, and workspaces. Authenticate with a Bearer API key (Authorization or X-Blaxel-Authorization header) or an OAuth 2.0 short-lived JWT. Requests may include a Blaxel-Version header (YYYY-MM-DD) and, for multi-workspace accounts, an X-Blaxel-Workspace header.
-  termsOfService: https://blaxel.ai/terms-of-service
-  contact:
-    name: Blaxel Support
-    email: support@blaxel.ai
-  version: v0
+  version: 0.0.1
 servers:
-- url: https://api.blaxel.ai/v0
+- description: Blaxel Control Plane
+  url: https://api.blaxel.ai/v0
+- description: Blaxel Inference
+  url: https://run.blaxel.ai
 security:
-- apiKey: []
-- bearerAuth: []
+- OAuth2:
+  - admin
+- ApiKeyAuth: []
 tags:
 - name: Volumes
 paths:
   /volumes:
     get:
-      operationId: listVolumes
-      tags:
-      - Volumes
-      summary: List all volumes in the workspace
+      description: Returns persistent storage volumes in the workspace. Volumes can be attached to sandboxes for durable file storage that persists across sessions and sandbox deletions. Starting with API version 2026-04-28 the response is wrapped in `{data, meta}` and supports cursor pagination via the `cursor` and `limit` query parameters; older versions keep returning a bare array of volumes.
+      operationId: ListVolumes
+      parameters:
+      - $ref: '#/components/parameters/PaginationCursor'
+      - $ref: '#/components/parameters/PaginationLimit'
+      - $ref: '#/components/parameters/PaginationSort'
+      - $ref: '#/components/parameters/PaginationQuery'
+      - $ref: '#/components/parameters/PaginationAnchor'
+      - description: Filter volumes by external ID. When set, only volumes matching this caller-owned identifier are returned.
+        in: query
+        name: externalId
+        required: false
+        schema:
+          type: string
+      - $ref: '#/components/parameters/ListingStatus'
       responses:
         '200':
-          description: A list of volumes.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VolumeList'
+          description: successful operation
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Insufficient permissions to list volumes
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - volumes:list
+      - ApiKeyAuth: []
+      summary: List persistent volumes
+      tags:
+      - Volumes
     post:
-      operationId: createVolume
-      tags:
-      - Volumes
-      summary: Create a new volume
+      description: Creates a new persistent storage volume that can be attached to sandboxes. Volumes must be created in a specific region and can only attach to sandboxes in the same region.
+      operationId: CreateVolume
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Volume'
+        required: true
       responses:
         '200':
-          description: The created volume.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Volume'
+          description: successful operation
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad request - Invalid volume configuration (e.g., invalid region)
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Insufficient permissions to create volumes
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Conflict - Volume with this name already exists
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - volumes:create
+      - ApiKeyAuth: []
+      summary: Create persistent volume
+      tags:
+      - Volumes
+  /volumes/{volumeName}:
+    parameters:
+    - description: Name of the volume
+      in: path
+      name: volumeName
+      required: true
+      schema:
+        type: string
+    delete:
+      description: Permanently deletes a volume and all its data. The volume must not be attached to any sandbox. This action cannot be undone.
+      operationId: DeleteVolume
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Volume'
+          description: successful operation
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Insufficient permissions to delete this volume
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found - Volume does not exist
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Conflict - Volume is currently attached to a sandbox
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - volumes:delete
+      - ApiKeyAuth: []
+      summary: Delete persistent volume
+      tags:
+      - Volumes
+    get:
+      description: Returns detailed information about a volume including its size, region, attachment status, and any events history.
+      operationId: GetVolume
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Volume'
+          description: successful operation
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Insufficient permissions to view this volume
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found - Volume does not exist
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - volumes:get
+      - ApiKeyAuth: []
+      summary: Get persistent volume
+      tags:
+      - Volumes
+    put:
+      description: Updates a volume.
+      operationId: UpdateVolume
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Volume'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Volume'
+          description: successful operation
+      security:
+      - OAuth2:
+        - volumes:update
+      - ApiKeyAuth: []
+      summary: Update volume
+      tags:
+      - Volumes
+  /volumes/by-external-id/{externalId}:
+    parameters:
+    - description: Caller-owned external identifier for the volume
+      in: path
+      name: externalId
+      required: true
+      schema:
+        type: string
+    get:
+      description: Returns an active volume matching the given external ID. If no active volume is found, returns 404.
+      operationId: GetVolumeByExternalId
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Volume'
+          description: successful operation
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Insufficient permissions to view volumes
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found - No active volume with this external ID
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - volumes:get
+      - ApiKeyAuth: []
+      summary: Get volume by external ID
+      tags:
+      - Volumes
 components:
+  schemas:
+    PaginationMeta:
+      type: object
+      description: Pagination metadata returned alongside a page of listing results. Always present on listing endpoints starting with API version 2026-04-28.
+      properties:
+        hasMore:
+          type: boolean
+          description: True when more pages are available beyond the current one.
+        nextCursor:
+          type: string
+          description: Opaque cursor to pass back as the `cursor` query param for the next page. Empty when there are no more pages.
+        total:
+          type: integer
+          description: Total number of items in the workspace, ignoring the current page's filters. Lets the UI render "page X of Y" without walking the cursor chain. Computed from the hash-only metadata.workspace GSI count, so search (`q`) does not narrow it.
+        totalIsPartial:
+          type: boolean
+          description: True when `total` is a lower bound rather than a complete count. Counting a very large workspace is bounded so the listing stays fast, and this flag says the real number is higher. Clients must not derive a page count from `total` when this is set — keep paging with `nextCursor` until `hasMore` is false.
+    LiteVolumeSpec:
+      type: object
+      description: Compact spec for a Volume, returned in listing responses.
+      properties:
+        region:
+          type: string
+          description: Region the volume is provisioned in.
+        size:
+          type: integer
+          description: Volume size in gigabytes.
+    LiteVolume:
+      type: object
+      description: LiteVolume is the listing-shape projection of a Volume. Drops events to keep page payloads small.
+      properties:
+        metadata:
+          $ref: '#/components/schemas/LiteVolumeMetadata'
+        spec:
+          $ref: '#/components/schemas/LiteVolumeSpec'
+        state:
+          $ref: '#/components/schemas/VolumeState'
+        status:
+          type: string
+          description: Computed status of the volume.
+        terminatedAt:
+          type: string
+          description: Termination timestamp for soft-deleted volumes.
+    LiteVolumeMetadata:
+      type: object
+      description: Compact metadata for a Volume, returned in listing responses.
+      properties:
+        createdAt:
+          type: string
+        displayName:
+          type: string
+        externalId:
+          type: string
+          description: Caller-owned identifier for external lookups.
+        name:
+          type: string
+        updatedAt:
+          type: string
+    Volume:
+      type: object
+      description: Persistent storage volume that can be attached to sandboxes for durable file storage across sessions. Volumes survive sandbox deletion and can be reattached to new sandboxes.
+      properties:
+        events:
+          $ref: '#/components/schemas/CoreEvents'
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        spec:
+          $ref: '#/components/schemas/VolumeSpec'
+        state:
+          $ref: '#/components/schemas/VolumeState'
+        status:
+          type: string
+          description: Volume status computed from events
+          readOnly: true
+        terminatedAt:
+          type: string
+          description: Timestamp when the volume was marked for termination
+          readOnly: true
+      required:
+      - metadata
+      - spec
+    Metadata:
+      type: object
+      description: Common metadata fields shared by all Blaxel resources including name, labels, timestamps, and ownership information
+      allOf:
+      - $ref: '#/components/schemas/TimeFields'
+      - $ref: '#/components/schemas/OwnerFields'
+      - properties:
+          displayName:
+            type: string
+            description: Human-readable name for display in the UI. Can contain spaces and special characters, max 63 characters.
+            example: My Resource
+          externalId:
+            type: string
+            description: Caller-owned identifier for external lookups. Max 64 chars, alphanumeric + dash.
+            example: my-session-123
+          labels:
+            $ref: '#/components/schemas/MetadataLabels'
+          name:
+            type: string
+            description: Unique identifier for the resource within the workspace. Must be lowercase alphanumeric with hyphens, max 49 characters. Immutable after creation.
+            example: my-resource
+          plan:
+            type: string
+            description: Billing plan tier applied to this resource (inherited from workspace account)
+            readOnly: true
+          url:
+            type: string
+            description: Auto-generated endpoint URL for accessing this resource (for agents, functions, models, sandboxes)
+            readOnly: true
+          workspace:
+            type: string
+            description: Name of the workspace this resource belongs to (read-only, set automatically)
+            readOnly: true
+        required:
+        - name
+    CoreEvents:
+      type: array
+      description: Events happening on a resource deployed on Blaxel
+      items:
+        $ref: '#/components/schemas/CoreEvent'
+      readOnly: true
+    OwnerFields:
+      type: object
+      description: Owner fields for Persistence
+      properties:
+        createdBy:
+          type: string
+          description: The user or service account who created the resource
+          readOnly: true
+        updatedBy:
+          type: string
+          description: The user or service account who updated the resource
+          readOnly: true
+    VolumeList:
+      type: object
+      description: Cursor-paginated list of volumes. Returned starting with API version 2026-04-28; older API versions return a bare array. Items use the lite shape (no inline event history).
+      properties:
+        data:
+          type: array
+          description: Page of volumes.
+          items:
+            $ref: '#/components/schemas/LiteVolume'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+    CoreEvent:
+      type: object
+      description: Core event
+      properties:
+        canaryRevision:
+          type: string
+          description: Canary revisionID link to the event
+        message:
+          type: string
+          description: Event message
+          example: Deployment successful
+        revision:
+          type: string
+          description: RevisionID link to the event
+          example: rev-abc123
+        status:
+          type: string
+          description: Event status
+          example: DEPLOYED
+        time:
+          type: string
+          description: Event time
+          example: '2025-01-15T10:30:00Z'
+        type:
+          type: string
+          description: Event type
+          example: deployment
+      readOnly: true
+    VolumeSpec:
+      type: object
+      description: Immutable volume configuration set at creation time (size and region cannot be changed after creation)
+      properties:
+        region:
+          type: string
+          description: Deployment region for the volume (e.g., us-pdx-1, eu-lon-1). Must match the region of sandboxes it attaches to.
+          example: us-pdx-1
+        size:
+          type: integer
+          description: Storage capacity in megabytes. Can be increased after creation but not decreased.
+          example: 1024
+        template:
+          type: string
+          description: Volume template to initialize from, with optional revision (e.g., "mytemplate:1" or "mytemplate:latest")
+          example: mytemplate:latest
+    VolumeState:
+      type: object
+      description: Current runtime state of the volume including attachment status
+      properties:
+        attachedTo:
+          type: string
+          description: Resource currently using this volume in format "type:name" (e.g., "sandbox:my-sandbox"). Empty if not attached.
+          example: sandbox:my-sandbox
+      readOnly: true
+    MetadataLabels:
+      type: object
+      description: Key-value pairs for organizing and filtering resources. Labels can be used to categorize resources by environment, project, team, or any custom taxonomy.
+      additionalProperties:
+        type: string
+    TimeFields:
+      type: object
+      description: Time fields for Persistence
+      properties:
+        createdAt:
+          type: string
+          description: The date and time when the resource was created
+          readOnly: true
+        updatedAt:
+          type: string
+          description: The date and time when the resource was updated
+          readOnly: true
+    Error:
+      type: object
+      description: Standard error response returned by the API when a request fails
+      properties:
+        code:
+          type: integer
+          description: HTTP status code of the error
+          example: 409
+        error:
+          type: string
+          description: Error type or code identifying the kind of error
+          example: Resource already exists
+        message:
+          type: string
+          description: Human-readable error message describing what went wrong
+          example: Invalid request body
+      required:
+      - error
+  parameters:
+    PaginationAnchor:
+      description: Start from a known pagination boundary. `end` is only supported for `createdAt` listings (asc or desc) and returns the tail page directly without walking every cursor from the first page.
+      in: query
+      name: anchor
+      required: false
+      schema:
+        enum:
+        - end
+        type: string
+    PaginationQuery:
+      description: Substring search across `metadata.name`, `metadata.displayName` and labels (keys + values). Trimmed and lowercased server-side; queries shorter than 2 characters fall back to the unfiltered listing. Bound into the cursor fingerprint so a cursor opened with one query cannot be reused with another. Only honoured starting on Blaxel-Version 2026-04-28.
+      in: query
+      name: q
+      required: false
+      schema:
+        maxLength: 200
+        type: string
+    ListingStatus:
+      description: Comma-separated list of statuses to filter on (e.g. `DEPLOYED,FAILED`). Values are case-insensitive; unknown values are rejected with a 400. Selecting every status is equivalent to omitting the parameter. Bound into the cursor fingerprint so a cursor opened with one selection cannot be reused with another. Filtering itself requires the 2026-04-28 Blaxel-Version (the paginated listing); on earlier versions the value is still validated but the listing is unfiltered, except for sandboxes where it is applied on every version.
+      example: DEPLOYED,FAILED
+      in: query
+      name: status
+      required: false
+      schema:
+        type: string
+    PaginationSort:
+      description: Sort spec, formatted as `<key>:<direction>`. Allowed values are `createdAt:desc` (default), `createdAt:asc`, `name:asc`, `name:desc`. The cursor fingerprint is bound to the sort, so a cursor opened with one value cannot be reused with another. Only honoured starting on Blaxel-Version 2026-04-28.
+      in: query
+      name: sort
+      required: false
+      schema:
+        enum:
+        - createdAt:desc
+        - createdAt:asc
+        - name:asc
+        - name:desc
+        type: string
+    PaginationLimit:
+      description: Maximum number of items to return per page. Defaults to 50, clamped to 200.
+      in: query
+      name: limit
+      required: false
+      schema:
+        default: 50
+        maximum: 200
+        minimum: 1
+        type: integer
+    PaginationCursor:
+      description: Opaque cursor returned by a previous response's meta.nextCursor. Only valid for the same query (workspace + filters); the server rejects cursors bound to a different query or older than 24h. Omit on the first page.
+      in: query
+      name: cursor
+      required: false
+      schema:
+        type: string
+      x-stainless-pagination-property:
+        purpose: next_cursor_param
   securitySchemes:
-    apiKey:
-      type: apiKey
-      in: header
-      name: X-Blaxel-Authorization
-      description: API key supplied as "Bearer YOUR-API-KEY".
-    bearerAuth:
-      type: http
+    ApiKeyAuth:
+      bearerFormat: API Key
+      description: Long-lived API key for programmatic access
       scheme: bearer
-      bearerFormat: JWT
-      description: OAuth 2.0 short-lived JWT access token.
+      type: http
+    OAuth2:
+      description: OAuth2 authentication with JWT tokens
+      flows:
+        authorizationCode:
+          authorizationUrl: /oauth/authorize
+          scopes:
+            admin: Administrative access
+            agents:create: Create agents
+            agents:delete: Delete agents
+            agents:get: Get agent details
+            agents:list: List agents
+            agents:update: Update agents
+            apiKey:list: List API keys
+            apiKey:write: Create and delete API keys
+            applications:create: Create applications
+            applications:delete: Delete applications
+            applications:get: Get application details
+            applications:list: List applications
+            applications:update: Update applications
+            configurations:list: List configurations
+            customdomains:create: Create custom domains
+            customdomains:delete: Delete custom domains
+            customdomains:get: Get custom domain details
+            customdomains:list: List custom domains
+            customdomains:update: Update custom domains
+            functions:create: Create functions
+            functions:delete: Delete functions
+            functions:get: Get function details
+            functions:list: List functions
+            functions:update: Update functions
+            integrations:create: Create integrations
+            integrations:list: List integrations
+            invitations:list: List invitations
+            jobs:create: Create jobs
+            jobs:delete: Delete jobs
+            jobs:get: Get job details
+            jobs:list: List jobs
+            jobs:update: Update jobs
+            locations:list: List locations
+            mcphub:list: List MCP hub resources
+            models:create: Create models
+            models:delete: Delete models
+            models:get: Get model details
+            models:list: List models
+            models:update: Update models
+            policies:create: Create policies
+            policies:delete: Delete policies
+            policies:get: Get policy details
+            policies:list: List policies
+            policies:update: Update policies
+            sandboxes:control: Control sandbox operations
+            sandboxes:create: Create sandboxes
+            sandboxes:delete: Delete sandboxes
+            sandboxes:get: Get sandbox details
+            sandboxes:list: List sandboxes
+            sandboxes:update: Update sandboxes
+            sandboxhub:list: List sandbox hub resources
+            secrets:create: Create secrets
+            secrets:delete: Delete secrets
+            secrets:list: List secrets
+            templates:get: Get template details
+            templates:list: List templates
+            volumeTemplates:create: Create volume templates
+            volumeTemplates:delete: Delete volume templates
+            volumeTemplates:get: Get volume template details
+            volumeTemplates:list: List volume templates
+            volumeTemplates:upsert: Create or update volume templates
+            volumes:create: Create volumes
+            volumes:delete: Delete volumes
+            volumes:get: Get volume details
+            volumes:list: List volumes
+            workspaces:accept: Accept workspace invitation
+            workspaces:create: Create workspaces
+            workspaces:decline: Decline workspace invitation
+            workspaces:delete: Delete workspaces
+            workspaces:get: Get workspace details
+            workspaces:invite: Invite users to workspace
+            workspaces:leave: Leave workspace
+            workspaces:list: List workspaces
+            workspaces:remove: Remove users from workspace
+            workspaces:update: Update workspaces
+          tokenUrl: /oauth/token
+        clientCredentials:
+          scopes:
+            admin: Administrative access
+            agents:create: Create agents
+            agents:delete: Delete agents
+            agents:get: Get agent details
+            agents:list: List agents
+            agents:update: Update agents
+            apiKey:list: List API keys
+            apiKey:write: Create and delete API keys
+            applications:create: Create applications
+            applications:delete: Delete applications
+            applications:get: Get application details
+            applications:list: List applications
+            applications:update: Update applications
+            configurations:list: List configurations
+            customdomains:create: Create custom domains
+            customdomains:delete: Delete custom domains
+            customdomains:get: Get custom domain details
+            customdomains:list: List custom domains
+            customdomains:update: Update custom domains
+            functions:create: Create functions
+            functions:delete: Delete functions
+            functions:get: Get function details
+            functions:list: List functions
+            functions:update: Update functions
+            integrations:create: Create integrations
+            integrations:list: List integrations
+            invitations:list: List invitations
+            jobs:create: Create jobs
+            jobs:delete: Delete jobs
+            jobs:get: Get job details
+            jobs:list: List jobs
+            jobs:update: Update jobs
+            locations:list: List locations
+            mcphub:list: List MCP hub resources
+            models:create: Create models
+            models:delete: Delete models
+            models:get: Get model details
+            models:list: List models
+            models:update: Update models
+            policies:create: Create policies
+            policies:delete: Delete policies
+            policies:get: Get policy details
+            policies:list: List policies
+            policies:update: Update policies
+            sandboxes:control: Control sandbox operations
+            sandboxes:create: Create sandboxes
+            sandboxes:delete: Delete sandboxes
+            sandboxes:get: Get sandbox details
+            sandboxes:list: List sandboxes
+            sandboxes:update: Update sandboxes
+            sandboxhub:list: List sandbox hub resources
+            secrets:create: Create secrets
+            secrets:delete: Delete secrets
+            secrets:list: List secrets
+            templates:get: Get template details
+            templates:list: List templates
+            volumeTemplates:create: Create volume templates
+            volumeTemplates:delete: Delete volume templates
+            volumeTemplates:get: Get volume template details
+            volumeTemplates:list: List volume templates
+            volumeTemplates:upsert: Create or update volume templates
+            volumes:create: Create volumes
+            volumes:delete: Delete volumes
+            volumes:get: Get volume details
+            volumes:list: List volumes
+            workspaces:accept: Accept workspace invitation
+            workspaces:create: Create workspaces
+            workspaces:decline: Decline workspace invitation
+            workspaces:delete: Delete workspaces
+            workspaces:get: Get workspace details
+            workspaces:invite: Invite users to workspace
+            workspaces:leave: Leave workspace
+            workspaces:list: List workspaces
+            workspaces:remove: Remove users from workspace
+            workspaces:update: Update workspaces
+          tokenUrl: /oauth/token
+      type: oauth2

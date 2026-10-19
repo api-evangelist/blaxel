@@ -1,119 +1,912 @@
 openapi: 3.2.0
 info:
   title: Blaxel Control Plane Workspaces API
-  description: Representative specification of the Blaxel (formerly Beamlit) control plane REST API. The control plane manages agents, MCP/function servers, models, sandboxes, jobs, policies, integrations, and workspaces. Authenticate with a Bearer API key (Authorization or X-Blaxel-Authorization header) or an OAuth 2.0 short-lived JWT. Requests may include a Blaxel-Version header (YYYY-MM-DD) and, for multi-workspace accounts, an X-Blaxel-Workspace header.
-  termsOfService: https://blaxel.ai/terms-of-service
-  contact:
-    name: Blaxel Support
-    email: support@blaxel.ai
-  version: v0
+  version: 0.0.1
 servers:
-- url: https://api.blaxel.ai/v0
+- description: Blaxel Control Plane
+  url: https://api.blaxel.ai/v0
+- description: Blaxel Inference
+  url: https://run.blaxel.ai
 security:
-- apiKey: []
-- bearerAuth: []
+- OAuth2:
+  - admin
+- ApiKeyAuth: []
 tags:
 - name: Workspaces
 paths:
-  /workspaces:
+  /features:
     get:
-      operationId: listWorkspaces
-      tags:
-      - Workspaces
-      summary: List all workspaces the caller belongs to
+      description: Returns only the feature flags that are currently enabled for the specified workspace. Disabled features are not included to prevent information leakage.
+      operationId: getWorkspaceFeatures
       responses:
         '200':
-          description: A list of workspaces.
+          content:
+            application/json:
+              example:
+                features:
+                  advanced_metrics: true
+                  gpu_deployments: true
+                  new_ui: true
+              schema:
+                properties:
+                  features:
+                    additionalProperties:
+                      type: boolean
+                    description: Map of feature keys to enabled state (always true). Disabled features are omitted.
+                    type: object
+                type: object
+          description: Map of enabled features (only enabled flags are included)
+        '401':
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Workspace'
-    post:
-      operationId: createWorkspace
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - You do not have access to this workspace
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found - Workspace does not exist
+      security:
+      - OAuth2:
+        - featureFlags:list
+      - ApiKeyAuth: []
+      summary: Get enabled features for workspace
       tags:
       - Workspaces
-      summary: Create a new workspace
+      x-stainless-ignore: true
+  /users:
+    get:
+      description: Returns all team members in the workspace including their roles (admin, member or viewer) and invitation status.
+      operationId: ListWorkspaceUsers
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/WorkspaceUser'
+                type: array
+          description: successful operation
+      security:
+      - OAuth2:
+        - workspaces:list
+      - ApiKeyAuth: []
+      summary: List workspace team members
+      tags:
+      - Workspaces
+      x-stainless-ignore: true
+    post:
+      description: Invites a new team member to the workspace by email. The invitee will receive an email to accept the invitation before gaining access to workspace resources.
+      operationId: InviteWorkspaceUser
       requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                email:
+                  format: email
+                  type: string
+              type: object
+        description: Email of the user to invite
         required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PendingInvitation'
+          description: successful operation
+        '400':
+          description: invalid email format
+        '404':
+          description: workspace not found
+      security:
+      - OAuth2:
+        - workspaces:invite
+      - ApiKeyAuth: []
+      summary: Invite user to workspace
+      tags:
+      - Workspaces
+      x-stainless-ignore: true
+  /users/{subOrEmail}:
+    delete:
+      description: Removes a user from the workspace (or revokes an invitation if the user has not accepted the invitation yet).
+      operationId: RemoveWorkspaceUser
+      parameters:
+      - description: Sub or email of the user
+        in: path
+        name: subOrEmail
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: User successfully removed or invitation revoked
+        '404':
+          description: Workspace or user not found
+      security:
+      - OAuth2:
+        - workspaces:remove
+      - ApiKeyAuth: []
+      summary: Remove user from workspace or revoke invitation
+      tags:
+      - Workspaces
+      x-stainless-ignore: true
+    put:
+      description: Updates the role of a user in the workspace.
+      operationId: UpdateWorkspaceUserRole
+      parameters:
+      - description: Sub or email of the user
+        in: path
+        name: subOrEmail
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                role:
+                  description: The new role to assign to the user
+                  type: string
+              required:
+              - role
+              type: object
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkspaceUser'
+          description: User role updated successfully
+        '400':
+          description: Invalid role provided
+        '404':
+          description: Workspace or user not found
+      security:
+      - OAuth2:
+        - workspaces:update
+      - ApiKeyAuth: []
+      summary: Update user role in workspace
+      tags:
+      - Workspaces
+      x-stainless-ignore: true
+  /workspaces:
+    get:
+      description: Returns all workspaces the authenticated user has access to. Each workspace is a separate tenant with its own resources, team members, and billing.
+      operationId: ListWorkspaces
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Workspace'
+                type: array
+          description: successful operation
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - workspaces:list
+      - ApiKeyAuth: []
+      summary: List accessible workspaces
+      tags:
+      - Workspaces
+    post:
+      description: Creates a new workspace tenant. The authenticated user becomes the workspace admin. Requires a linked billing account.
+      operationId: CreateWorkspace
+      requestBody:
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/Workspace'
+        required: true
       responses:
         '200':
-          description: The created workspace.
-  /workspaces/{workspace_name}:
-    parameters:
-    - name: workspace_name
-      in: path
-      required: true
-      schema:
-        type: string
-    get:
-      operationId: getWorkspace
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workspace'
+          description: successful operation
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad request - Invalid workspace configuration
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Insufficient permissions or no billing account linked
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Conflict - Workspace with this name already exists
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - workspaces:create
+      - ApiKeyAuth: []
+      summary: Create workspace tenant
       tags:
       - Workspaces
-      summary: Get a workspace by name
-      responses:
-        '200':
-          description: The requested workspace.
-    put:
-      operationId: updateWorkspace
-      tags:
-      - Workspaces
-      summary: Update a workspace by name
-      responses:
-        '200':
-          description: The updated workspace.
+      x-stainless-ignore: true
+  /workspaces/{workspaceName}:
     delete:
-      operationId: deleteWorkspace
-      tags:
-      - Workspaces
-      summary: Delete a workspace by name
+      description: Permanently deletes a workspace and ALL its resources (agents, functions, sandboxes, volumes, etc.). This action cannot be undone. Only workspace admins can delete a workspace.
+      operationId: DeleteWorkspace
+      parameters:
+      - description: Name of the workspace
+        in: path
+        name: workspaceName
+        required: true
+        schema:
+          type: string
       responses:
         '200':
-          description: The deleted workspace.
-  /users:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workspace'
+          description: successful operation
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Only workspace admins can delete workspaces
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found - Workspace does not exist
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - workspaces:delete
+      - ApiKeyAuth: []
+      summary: Delete workspace tenant
+      tags:
+      - Workspaces
+      x-stainless-ignore: true
     get:
-      operationId: listWorkspaceUsers
-      tags:
-      - Workspaces
-      summary: List users in the current workspace
+      description: Returns detailed information about a workspace including its display name, account ID, status, and runtime configuration.
+      operationId: GetWorkspace
+      parameters:
+      - description: Name of the workspace
+        in: path
+        name: workspaceName
+        required: true
+        schema:
+          type: string
+      - description: When true, the response includes a resourceCounts map with the number of agents, functions, models, sandboxes, policies, jobs, volumes, volumetemplates, integrationconnections, previews, customdomains, serviceaccounts and images currently in this workspace. Off by default — each count is one extra indexed query.
+        in: query
+        name: countResources
+        required: false
+        schema:
+          default: false
+          type: boolean
       responses:
         '200':
-          description: A list of workspace users.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workspace'
+          description: successful operation
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - You do not have access to this workspace
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found - Workspace does not exist
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - workspaces:get
+      - ApiKeyAuth: []
+      summary: Get workspace details
+      tags:
+      - Workspaces
+    put:
+      description: Updates a workspace's settings such as display name and labels. The workspace name cannot be changed after creation.
+      operationId: UpdateWorkspace
+      parameters:
+      - description: name of the workspace
+        in: path
+        name: workspaceName
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Workspace'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workspace'
+          description: successful operation
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad request - Invalid workspace configuration
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Insufficient permissions to update this workspace
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found - Workspace does not exist
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - workspaces:update
+      - ApiKeyAuth: []
+      summary: Update workspace
+      tags:
+      - Workspaces
+      x-stainless-ignore: true
+  /workspaces/{workspaceName}/leave:
+    delete:
+      description: Leaves a workspace.
+      operationId: LeaveWorkspace
+      parameters:
+      - description: Name of the workspace
+        in: path
+        name: workspaceName
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Workspace'
+          description: Workspace successfully left
+        '404':
+          description: Workspace not found
+      security:
+      - OAuth2:
+        - workspaces:leave
+      - ApiKeyAuth: []
+      summary: Leave workspace
+      tags:
+      - Workspaces
+      x-stainless-ignore: true
+  /workspaces/availability:
     post:
-      operationId: inviteWorkspaceUser
-      tags:
-      - Workspaces
-      summary: Invite a user to the current workspace
+      description: Check if a workspace is available.
+      operationId: CheckWorkspaceAvailability
+      parameters:
+      - description: When true, return a structured WorkspaceAvailability object with a machine-readable reason and human-readable message instead of a bare boolean. Defaults to false for backwards compatibility.
+        in: query
+        name: withReason
+        required: false
+        schema:
+          type: boolean
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                name:
+                  type: string
+              required:
+              - name
+              type: object
+        required: true
       responses:
         '200':
-          description: The invited user.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: boolean
+                - $ref: '#/components/schemas/WorkspaceAvailability'
+          description: successful operation
+      summary: Check workspace availability
+      tags:
+      - Workspaces
+      x-stainless-ignore: true
 components:
   schemas:
-    Workspace:
+    WorkspaceUser:
       type: object
+      description: Workspace user
       properties:
-        name:
+        accepted:
+          type: boolean
+          description: Whether the user has accepted the workspace invitation
+        email:
           type: string
-        displayName:
+          description: Workspace user email
+        email_verified:
+          type: boolean
+          description: Whether the user's email has been verified
+        expired:
+          type: boolean
+          description: Whether the invitation has expired
+        family_name:
           type: string
-        region:
+          description: Workspace user family name
+        given_name:
           type: string
+          description: Workspace user given name
+        mfa_enabled:
+          type: boolean
+          description: Whether the user has at least one verified MFA factor. Omitted when the caller is not entitled to see it (only workspace admins and owners see other members' MFA status) and for pending invitations, which have no account yet.
+        role:
+          type: string
+          description: Workspace user role
+        source:
+          type: string
+          description: Source of the user provisioning
+          enum:
+          - directory_sync
+          - invitation
+          - domain_capture
+        sub:
+          type: string
+          description: Workspace user identifier
+    TimeFields:
+      type: object
+      description: Time fields for Persistence
+      properties:
         createdAt:
           type: string
-          format: date-time
+          description: The date and time when the resource was created
+          readOnly: true
+        updatedAt:
+          type: string
+          description: The date and time when the resource was updated
+          readOnly: true
+    MetadataLabels:
+      type: object
+      description: Key-value pairs for organizing and filtering resources. Labels can be used to categorize resources by environment, project, team, or any custom taxonomy.
+      additionalProperties:
+        type: string
+    WorkspaceSandboxSettings:
+      type: object
+      description: Workspace-wide sandbox configuration that applies to all sandbox deployments in the workspace.
+      properties:
+        disableProcessLogging:
+          type: boolean
+          description: When true, sandbox deployments in this workspace set SANDBOX_DISABLE_PROCESS_LOGGING=true to disable per-process stdout/stderr logging. Requires sandbox-api v0.2.28+.
+    PendingInvitation:
+      type: object
+      description: Pending invitation in workspace
+      allOf:
+      - $ref: '#/components/schemas/TimeFields'
+      - $ref: '#/components/schemas/OwnerFields'
+      - properties:
+          email:
+            type: string
+            description: User email
+          expiresAt:
+            type: string
+            description: The date and time when the invitation expires
+          invitedBy:
+            type: string
+            description: User sub
+          role:
+            type: string
+            description: ACL role
+          workspace:
+            type: string
+            description: Workspace name
+    WorkspaceHipaaUnsafe:
+      type: object
+      description: Per-workspace HIPAA opt-out record. Toggled from workspace settings; the backend stamps `updatedBy` and `updatedAt`.
+      properties:
+        enabled:
+          type: boolean
+          description: True marks this workspace as HIPAA-unsafe (NOT compliant), overriding the account-level addon. False marks the workspace as HIPAA compliant.
+        updatedAt:
+          type: string
+          description: RFC3339 timestamp when the opt-out was last toggled. Stamped server-side.
+          readOnly: true
+        updatedBy:
+          type: string
+          description: User id (sub) of the actor that last toggled this opt-out. Stamped server-side.
+          readOnly: true
+    WorkspaceHipaaInfo:
+      type: object
+      description: HIPAA compliance state for a workspace. `accountEnabled` mirrors the account-level `hipaa_compliance` addon (set server-side from operator tooling and Stripe billing events). `unsafe` records a per-workspace opt-out toggled from workspace settings; absent when the account does not have the addon.
+      properties:
+        accountEnabled:
+          type: boolean
+          description: True when the parent account has the HIPAA compliance addon active. Set server-side from operator tooling and Stripe billing events; cannot be changed from workspace settings.
+        unsafe:
+          $ref: '#/components/schemas/WorkspaceHipaaUnsafe'
+    WorkspaceAvailability:
+      type: object
+      description: Result of a workspace-name availability check.
+      properties:
+        available:
+          type: boolean
+          description: Whether the requested workspace name is available.
+        message:
+          type: string
+          description: Human-readable explanation suitable for display in the UI. Empty when available.
+        reason:
+          type: string
+          description: Machine-readable reason explaining why the name is unavailable. Empty when available.
+          enum:
+          - taken
+          - forbidden_reserved
+          - forbidden_blaxel
+          - forbidden_v_prefix
+    Workspace:
+      type: object
+      description: Tenant container that groups all Blaxel resources (agents, functions, models, etc.) with shared team access control and billing.
+      allOf:
+      - $ref: '#/components/schemas/TimeFields'
+      - $ref: '#/components/schemas/OwnerFields'
+      - properties:
+          accountId:
+            type: string
+            description: Workspace account id
+          basetenTeamId:
+            type: string
+            description: Baseten team this workspace was provisioned for; absent on native workspaces
+            readOnly: true
+          displayName:
+            type: string
+            description: Workspace display name
+            example: My Workspace
+          groupMappings:
+            type: array
+            description: Group-to-role mappings for directory sync (SCIM) group membership
+            items:
+              $ref: '#/components/schemas/GroupWorkspaceMapping'
+          hipaaInfo:
+            $ref: '#/components/schemas/WorkspaceHipaaInfo'
+          id:
+            type: string
+            description: Autogenerated unique workspace id
+            readOnly: true
+          labels:
+            $ref: '#/components/schemas/MetadataLabels'
+          name:
+            type: string
+            description: Workspace name
+            example: my-workspace
+          region:
+            type: string
+            description: Workspace write region
+            example: us-west-2
+          resourceCounts:
+            type: object
+            description: Per-resource counts (agents, functions, models, sandboxes, policies, jobs, volumes, drives, volumetemplates, integrationconnections, previews, customdomains, serviceaccounts, images). Only populated when GetWorkspace is called with ?countResources=true.
+            additionalProperties:
+              type: integer
+            readOnly: true
+          runtime:
+            $ref: '#/components/schemas/WorkspaceRuntime'
+          status:
+            type: string
+            description: Workspace status (created, account_binded, account_configured, workspace_configured, ready, error)
+            enum:
+            - created
+            - account_binded
+            - account_configured
+            - workspace_configured
+            - ready
+            - error
+            readOnly: true
+            example: ready
+          statusReason:
+            type: string
+            description: Reason for current status (only set for error status)
+            readOnly: true
+    WorkspaceRuntime:
+      type: object
+      description: Runtime configuration for the workspace infrastructure
+      properties:
+        generation:
+          type: string
+          description: Infrastructure generation version for the workspace (affects available features and deployment behavior)
+          example: mk3
+        sandbox:
+          $ref: '#/components/schemas/WorkspaceSandboxSettings'
+    OwnerFields:
+      type: object
+      description: Owner fields for Persistence
+      properties:
+        createdBy:
+          type: string
+          description: The user or service account who created the resource
+          readOnly: true
+        updatedBy:
+          type: string
+          description: The user or service account who updated the resource
+          readOnly: true
+    GroupWorkspaceMapping:
+      type: object
+      description: Mapping between an IdP group and a workspace role for directory sync
+      properties:
+        groupName:
+          type: string
+          description: Name of the IdP group (e.g. "Engineering", "Platform")
+          example: Engineering
+        role:
+          type: string
+          description: Role to assign in this workspace (admin, member or viewer)
+          enum:
+          - admin
+          - member
+          - viewer
+          example: admin
+    Error:
+      type: object
+      description: Standard error response returned by the API when a request fails
+      properties:
+        code:
+          type: integer
+          description: HTTP status code of the error
+          example: 409
+        error:
+          type: string
+          description: Error type or code identifying the kind of error
+          example: Resource already exists
+        message:
+          type: string
+          description: Human-readable error message describing what went wrong
+          example: Invalid request body
+      required:
+      - error
   securitySchemes:
-    apiKey:
-      type: apiKey
-      in: header
-      name: X-Blaxel-Authorization
-      description: API key supplied as "Bearer YOUR-API-KEY".
-    bearerAuth:
-      type: http
+    ApiKeyAuth:
+      bearerFormat: API Key
+      description: Long-lived API key for programmatic access
       scheme: bearer
-      bearerFormat: JWT
-      description: OAuth 2.0 short-lived JWT access token.
+      type: http
+    OAuth2:
+      description: OAuth2 authentication with JWT tokens
+      flows:
+        authorizationCode:
+          authorizationUrl: /oauth/authorize
+          scopes:
+            admin: Administrative access
+            agents:create: Create agents
+            agents:delete: Delete agents
+            agents:get: Get agent details
+            agents:list: List agents
+            agents:update: Update agents
+            apiKey:list: List API keys
+            apiKey:write: Create and delete API keys
+            applications:create: Create applications
+            applications:delete: Delete applications
+            applications:get: Get application details
+            applications:list: List applications
+            applications:update: Update applications
+            configurations:list: List configurations
+            customdomains:create: Create custom domains
+            customdomains:delete: Delete custom domains
+            customdomains:get: Get custom domain details
+            customdomains:list: List custom domains
+            customdomains:update: Update custom domains
+            functions:create: Create functions
+            functions:delete: Delete functions
+            functions:get: Get function details
+            functions:list: List functions
+            functions:update: Update functions
+            integrations:create: Create integrations
+            integrations:list: List integrations
+            invitations:list: List invitations
+            jobs:create: Create jobs
+            jobs:delete: Delete jobs
+            jobs:get: Get job details
+            jobs:list: List jobs
+            jobs:update: Update jobs
+            locations:list: List locations
+            mcphub:list: List MCP hub resources
+            models:create: Create models
+            models:delete: Delete models
+            models:get: Get model details
+            models:list: List models
+            models:update: Update models
+            policies:create: Create policies
+            policies:delete: Delete policies
+            policies:get: Get policy details
+            policies:list: List policies
+            policies:update: Update policies
+            sandboxes:control: Control sandbox operations
+            sandboxes:create: Create sandboxes
+            sandboxes:delete: Delete sandboxes
+            sandboxes:get: Get sandbox details
+            sandboxes:list: List sandboxes
+            sandboxes:update: Update sandboxes
+            sandboxhub:list: List sandbox hub resources
+            secrets:create: Create secrets
+            secrets:delete: Delete secrets
+            secrets:list: List secrets
+            templates:get: Get template details
+            templates:list: List templates
+            volumeTemplates:create: Create volume templates
+            volumeTemplates:delete: Delete volume templates
+            volumeTemplates:get: Get volume template details
+            volumeTemplates:list: List volume templates
+            volumeTemplates:upsert: Create or update volume templates
+            volumes:create: Create volumes
+            volumes:delete: Delete volumes
+            volumes:get: Get volume details
+            volumes:list: List volumes
+            workspaces:accept: Accept workspace invitation
+            workspaces:create: Create workspaces
+            workspaces:decline: Decline workspace invitation
+            workspaces:delete: Delete workspaces
+            workspaces:get: Get workspace details
+            workspaces:invite: Invite users to workspace
+            workspaces:leave: Leave workspace
+            workspaces:list: List workspaces
+            workspaces:remove: Remove users from workspace
+            workspaces:update: Update workspaces
+          tokenUrl: /oauth/token
+        clientCredentials:
+          scopes:
+            admin: Administrative access
+            agents:create: Create agents
+            agents:delete: Delete agents
+            agents:get: Get agent details
+            agents:list: List agents
+            agents:update: Update agents
+            apiKey:list: List API keys
+            apiKey:write: Create and delete API keys
+            applications:create: Create applications
+            applications:delete: Delete applications
+            applications:get: Get application details
+            applications:list: List applications
+            applications:update: Update applications
+            configurations:list: List configurations
+            customdomains:create: Create custom domains
+            customdomains:delete: Delete custom domains
+            customdomains:get: Get custom domain details
+            customdomains:list: List custom domains
+            customdomains:update: Update custom domains
+            functions:create: Create functions
+            functions:delete: Delete functions
+            functions:get: Get function details
+            functions:list: List functions
+            functions:update: Update functions
+            integrations:create: Create integrations
+            integrations:list: List integrations
+            invitations:list: List invitations
+            jobs:create: Create jobs
+            jobs:delete: Delete jobs
+            jobs:get: Get job details
+            jobs:list: List jobs
+            jobs:update: Update jobs
+            locations:list: List locations
+            mcphub:list: List MCP hub resources
+            models:create: Create models
+            models:delete: Delete models
+            models:get: Get model details
+            models:list: List models
+            models:update: Update models
+            policies:create: Create policies
+            policies:delete: Delete policies
+            policies:get: Get policy details
+            policies:list: List policies
+            policies:update: Update policies
+            sandboxes:control: Control sandbox operations
+            sandboxes:create: Create sandboxes
+            sandboxes:delete: Delete sandboxes
+            sandboxes:get: Get sandbox details
+            sandboxes:list: List sandboxes
+            sandboxes:update: Update sandboxes
+            sandboxhub:list: List sandbox hub resources
+            secrets:create: Create secrets
+            secrets:delete: Delete secrets
+            secrets:list: List secrets
+            templates:get: Get template details
+            templates:list: List templates
+            volumeTemplates:create: Create volume templates
+            volumeTemplates:delete: Delete volume templates
+            volumeTemplates:get: Get volume template details
+            volumeTemplates:list: List volume templates
+            volumeTemplates:upsert: Create or update volume templates
+            volumes:create: Create volumes
+            volumes:delete: Delete volumes
+            volumes:get: Get volume details
+            volumes:list: List volumes
+            workspaces:accept: Accept workspace invitation
+            workspaces:create: Create workspaces
+            workspaces:decline: Decline workspace invitation
+            workspaces:delete: Delete workspaces
+            workspaces:get: Get workspace details
+            workspaces:invite: Invite users to workspace
+            workspaces:leave: Leave workspace
+            workspaces:list: List workspaces
+            workspaces:remove: Remove users from workspace
+            workspaces:update: Update workspaces
+          tokenUrl: /oauth/token
+      type: oauth2

@@ -1,0 +1,326 @@
+openapi: 3.2.0
+info:
+  title: Blaxel Control Plane Mcphub API
+  version: 0.0.1
+servers:
+- description: Blaxel Control Plane
+  url: https://api.blaxel.ai/v0
+- description: Blaxel Inference
+  url: https://run.blaxel.ai
+security:
+- OAuth2:
+  - admin
+- ApiKeyAuth: []
+tags:
+- name: mcphub
+paths:
+  /mcp/hub:
+    get:
+      description: Returns all pre-built MCP server definitions available in the Blaxel Hub. These can be deployed directly to your workspace with pre-configured tools and integrations.
+      operationId: ListMCPHubDefinitions
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/MCPDefinition'
+                type: array
+          description: successful operation
+      security:
+      - OAuth2:
+        - mcphub:list
+      - ApiKeyAuth: []
+      summary: List MCP Hub servers
+      tags:
+      - mcphub
+      x-stainless-ignore: true
+components:
+  schemas:
+    MCPDefinition:
+      type: object
+      description: Definition of an MCP from the MCP Hub
+      allOf:
+      - $ref: '#/components/schemas/TimeFields'
+      - properties:
+          categories:
+            type: array
+            description: Categories of the artifact
+            items:
+              type: object
+              additionalProperties: true
+          coming_soon:
+            type: boolean
+            description: If the artifact is coming soon
+          description:
+            type: string
+            description: Description of the artifact
+          displayName:
+            type: string
+            description: Display name of the artifact
+          enterprise:
+            type: boolean
+            description: If the artifact is enterprise
+          entrypoint:
+            $ref: '#/components/schemas/Entrypoint'
+          form:
+            $ref: '#/components/schemas/Form'
+          hidden:
+            type: boolean
+            description: If the artifact is hidden
+          hiddenSecrets:
+            type: array
+            description: Hidden secrets of the artifact
+            items:
+              type: string
+          icon:
+            type: string
+            description: Icon of the artifact
+          image:
+            type: string
+            description: Image of the artifact
+          integration:
+            type: string
+            description: Integration of the artifact
+          longDescription:
+            type: string
+            description: Long description of the artifact
+          name:
+            type: string
+            description: Name of the artifact
+          transport:
+            type: string
+            description: Transport compatibility for the MCP, can be "websocket" or "http-stream"
+          url:
+            type: string
+            description: URL of the artifact
+    OAuth:
+      type: object
+      description: OAuth of the artifact
+      properties:
+        scope:
+          type: array
+          description: Scope of the OAuth
+          items:
+            type: object
+            additionalProperties: true
+        type:
+          type: string
+          description: Type of the OAuth
+    Form:
+      type: object
+      description: Form of the artifact
+      properties:
+        config:
+          type: object
+          description: Config of the artifact
+          additionalProperties: true
+        oauth:
+          $ref: '#/components/schemas/OAuth'
+        secrets:
+          type: object
+          description: Secrets of the artifact
+          additionalProperties: true
+    TimeFields:
+      type: object
+      description: Time fields for Persistence
+      properties:
+        createdAt:
+          type: string
+          description: The date and time when the resource was created
+          readOnly: true
+        updatedAt:
+          type: string
+          description: The date and time when the resource was updated
+          readOnly: true
+    Entrypoint:
+      type: object
+      description: Entrypoint of the artifact
+      properties:
+        args:
+          type: array
+          description: Args of the entrypoint
+          items:
+            type: object
+            additionalProperties: true
+        command:
+          type: string
+          description: Command of the entrypoint
+        env:
+          type: object
+          description: Env of the entrypoint
+          additionalProperties:
+            type: string
+        superGatewayArgs:
+          type: array
+          description: Super Gateway args of the entrypoint
+          items:
+            type: object
+            additionalProperties: true
+  securitySchemes:
+    ApiKeyAuth:
+      bearerFormat: API Key
+      description: Long-lived API key for programmatic access
+      scheme: bearer
+      type: http
+    OAuth2:
+      description: OAuth2 authentication with JWT tokens
+      flows:
+        authorizationCode:
+          authorizationUrl: /oauth/authorize
+          scopes:
+            admin: Administrative access
+            agents:create: Create agents
+            agents:delete: Delete agents
+            agents:get: Get agent details
+            agents:list: List agents
+            agents:update: Update agents
+            apiKey:list: List API keys
+            apiKey:write: Create and delete API keys
+            applications:create: Create applications
+            applications:delete: Delete applications
+            applications:get: Get application details
+            applications:list: List applications
+            applications:update: Update applications
+            configurations:list: List configurations
+            customdomains:create: Create custom domains
+            customdomains:delete: Delete custom domains
+            customdomains:get: Get custom domain details
+            customdomains:list: List custom domains
+            customdomains:update: Update custom domains
+            functions:create: Create functions
+            functions:delete: Delete functions
+            functions:get: Get function details
+            functions:list: List functions
+            functions:update: Update functions
+            integrations:create: Create integrations
+            integrations:list: List integrations
+            invitations:list: List invitations
+            jobs:create: Create jobs
+            jobs:delete: Delete jobs
+            jobs:get: Get job details
+            jobs:list: List jobs
+            jobs:update: Update jobs
+            locations:list: List locations
+            mcphub:list: List MCP hub resources
+            models:create: Create models
+            models:delete: Delete models
+            models:get: Get model details
+            models:list: List models
+            models:update: Update models
+            policies:create: Create policies
+            policies:delete: Delete policies
+            policies:get: Get policy details
+            policies:list: List policies
+            policies:update: Update policies
+            sandboxes:control: Control sandbox operations
+            sandboxes:create: Create sandboxes
+            sandboxes:delete: Delete sandboxes
+            sandboxes:get: Get sandbox details
+            sandboxes:list: List sandboxes
+            sandboxes:update: Update sandboxes
+            sandboxhub:list: List sandbox hub resources
+            secrets:create: Create secrets
+            secrets:delete: Delete secrets
+            secrets:list: List secrets
+            templates:get: Get template details
+            templates:list: List templates
+            volumeTemplates:create: Create volume templates
+            volumeTemplates:delete: Delete volume templates
+            volumeTemplates:get: Get volume template details
+            volumeTemplates:list: List volume templates
+            volumeTemplates:upsert: Create or update volume templates
+            volumes:create: Create volumes
+            volumes:delete: Delete volumes
+            volumes:get: Get volume details
+            volumes:list: List volumes
+            workspaces:accept: Accept workspace invitation
+            workspaces:create: Create workspaces
+            workspaces:decline: Decline workspace invitation
+            workspaces:delete: Delete workspaces
+            workspaces:get: Get workspace details
+            workspaces:invite: Invite users to workspace
+            workspaces:leave: Leave workspace
+            workspaces:list: List workspaces
+            workspaces:remove: Remove users from workspace
+            workspaces:update: Update workspaces
+          tokenUrl: /oauth/token
+        clientCredentials:
+          scopes:
+            admin: Administrative access
+            agents:create: Create agents
+            agents:delete: Delete agents
+            agents:get: Get agent details
+            agents:list: List agents
+            agents:update: Update agents
+            apiKey:list: List API keys
+            apiKey:write: Create and delete API keys
+            applications:create: Create applications
+            applications:delete: Delete applications
+            applications:get: Get application details
+            applications:list: List applications
+            applications:update: Update applications
+            configurations:list: List configurations
+            customdomains:create: Create custom domains
+            customdomains:delete: Delete custom domains
+            customdomains:get: Get custom domain details
+            customdomains:list: List custom domains
+            customdomains:update: Update custom domains
+            functions:create: Create functions
+            functions:delete: Delete functions
+            functions:get: Get function details
+            functions:list: List functions
+            functions:update: Update functions
+            integrations:create: Create integrations
+            integrations:list: List integrations
+            invitations:list: List invitations
+            jobs:create: Create jobs
+            jobs:delete: Delete jobs
+            jobs:get: Get job details
+            jobs:list: List jobs
+            jobs:update: Update jobs
+            locations:list: List locations
+            mcphub:list: List MCP hub resources
+            models:create: Create models
+            models:delete: Delete models
+            models:get: Get model details
+            models:list: List models
+            models:update: Update models
+            policies:create: Create policies
+            policies:delete: Delete policies
+            policies:get: Get policy details
+            policies:list: List policies
+            policies:update: Update policies
+            sandboxes:control: Control sandbox operations
+            sandboxes:create: Create sandboxes
+            sandboxes:delete: Delete sandboxes
+            sandboxes:get: Get sandbox details
+            sandboxes:list: List sandboxes
+            sandboxes:update: Update sandboxes
+            sandboxhub:list: List sandbox hub resources
+            secrets:create: Create secrets
+            secrets:delete: Delete secrets
+            secrets:list: List secrets
+            templates:get: Get template details
+            templates:list: List templates
+            volumeTemplates:create: Create volume templates
+            volumeTemplates:delete: Delete volume templates
+            volumeTemplates:get: Get volume template details
+            volumeTemplates:list: List volume templates
+            volumeTemplates:upsert: Create or update volume templates
+            volumes:create: Create volumes
+            volumes:delete: Delete volumes
+            volumes:get: Get volume details
+            volumes:list: List volumes
+            workspaces:accept: Accept workspace invitation
+            workspaces:create: Create workspaces
+            workspaces:decline: Decline workspace invitation
+            workspaces:delete: Delete workspaces
+            workspaces:get: Get workspace details
+            workspaces:invite: Invite users to workspace
+            workspaces:leave: Leave workspace
+            workspaces:list: List workspaces
+            workspaces:remove: Remove users from workspace
+            workspaces:update: Update workspaces
+          tokenUrl: /oauth/token
+      type: oauth2

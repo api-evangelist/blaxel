@@ -1,0 +1,519 @@
+openapi: 3.2.0
+info:
+  title: Blaxel Control Plane Volume Templates API
+  version: 0.0.1
+servers:
+- description: Blaxel Control Plane
+  url: https://api.blaxel.ai/v0
+- description: Blaxel Inference
+  url: https://run.blaxel.ai
+security:
+- OAuth2:
+  - admin
+- ApiKeyAuth: []
+tags:
+- name: volumeTemplates
+paths:
+  /volume_templates:
+    get:
+      description: Returns all volume templates in the workspace. Volume templates contain pre-configured filesystem snapshots that can be used to initialize new volumes.
+      operationId: ListVolumeTemplates
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/VolumeTemplate'
+                type: array
+          description: successful operation
+      security:
+      - OAuth2:
+        - volumeTemplates:list
+      - ApiKeyAuth: []
+      summary: List volume templates
+      tags:
+      - volumeTemplates
+    post:
+      description: Creates a new volume template for initializing volumes with pre-configured filesystem contents. Optionally returns a presigned URL for uploading the template archive.
+      operationId: CreateVolumeTemplate
+      parameters:
+      - description: If true, returns a presigned URL for uploading the template content
+        in: query
+        name: upload
+        schema:
+          type: boolean
+      - description: Version name for the template version being created
+        in: query
+        name: version
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VolumeTemplate'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VolumeTemplate'
+          description: successful operation
+          headers:
+            X-Blaxel-Upload-Url:
+              description: Presigned URL for uploading template content (if upload=true)
+              schema:
+                type: string
+      security:
+      - OAuth2:
+        - volumeTemplates:create
+      - ApiKeyAuth: []
+      summary: Create volume template
+      tags:
+      - volumeTemplates
+  /volume_templates/{volumeTemplateName}:
+    parameters:
+    - description: Name of the volume template
+      in: path
+      name: volumeTemplateName
+      required: true
+      schema:
+        type: string
+    delete:
+      description: Deletes a volume template by name.
+      operationId: DeleteVolumeTemplate
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VolumeTemplate'
+          description: successful operation
+      security:
+      - OAuth2:
+        - volumeTemplates:delete
+      - ApiKeyAuth: []
+      summary: Delete volume template
+      tags:
+      - volumeTemplates
+    get:
+      description: Returns a volume template by name.
+      operationId: GetVolumeTemplate
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VolumeTemplate'
+          description: successful operation
+      security:
+      - OAuth2:
+        - volumeTemplates:get
+      - ApiKeyAuth: []
+      summary: Get volume template
+      tags:
+      - volumeTemplates
+    put:
+      description: Creates or updates a volume template.
+      operationId: UpdateVolumeTemplate
+      parameters:
+      - description: If true, returns a presigned URL for uploading the template content
+        in: query
+        name: upload
+        schema:
+          type: boolean
+      - description: Version name for the template version being created
+        in: query
+        name: version
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VolumeTemplate'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VolumeTemplate'
+          description: successful operation
+          headers:
+            X-Blaxel-Upload-Url:
+              description: Presigned URL for uploading template content (only when upload=true)
+              schema:
+                type: string
+      security:
+      - OAuth2:
+        - volumeTemplates:upsert
+      - ApiKeyAuth: []
+      summary: Create or update volume template
+      tags:
+      - volumeTemplates
+  /volume_templates/{volumeTemplateName}/versions/{versionName}:
+    parameters:
+    - description: Name of the volume template
+      in: path
+      name: volumeTemplateName
+      required: true
+      schema:
+        type: string
+    - description: Name of the version to delete
+      in: path
+      name: versionName
+      required: true
+      schema:
+        type: string
+    delete:
+      description: Deletes a specific version of a volume template.
+      operationId: DeleteVolumeTemplateVersion
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  message:
+                    type: string
+                  template:
+                    $ref: '#/components/schemas/VolumeTemplate'
+                type: object
+          description: Version deleted successfully
+        '400':
+          description: Cannot delete the only version
+        '404':
+          description: Version not found
+      security:
+      - OAuth2:
+        - volumeTemplates:delete
+      - ApiKeyAuth: []
+      summary: Delete volume template version
+      tags:
+      - volumeTemplates
+components:
+  schemas:
+    Metadata:
+      type: object
+      description: Common metadata fields shared by all Blaxel resources including name, labels, timestamps, and ownership information
+      allOf:
+      - $ref: '#/components/schemas/TimeFields'
+      - $ref: '#/components/schemas/OwnerFields'
+      - properties:
+          displayName:
+            type: string
+            description: Human-readable name for display in the UI. Can contain spaces and special characters, max 63 characters.
+            example: My Resource
+          externalId:
+            type: string
+            description: Caller-owned identifier for external lookups. Max 64 chars, alphanumeric + dash.
+            example: my-session-123
+          labels:
+            $ref: '#/components/schemas/MetadataLabels'
+          name:
+            type: string
+            description: Unique identifier for the resource within the workspace. Must be lowercase alphanumeric with hyphens, max 49 characters. Immutable after creation.
+            example: my-resource
+          plan:
+            type: string
+            description: Billing plan tier applied to this resource (inherited from workspace account)
+            readOnly: true
+          url:
+            type: string
+            description: Auto-generated endpoint URL for accessing this resource (for agents, functions, models, sandboxes)
+            readOnly: true
+          workspace:
+            type: string
+            description: Name of the workspace this resource belongs to (read-only, set automatically)
+            readOnly: true
+        required:
+        - name
+    VolumeTemplateVersion:
+      type: object
+      description: Volume template version tracking individual versions of template content
+      properties:
+        bucket:
+          type: string
+          description: S3 bucket name where this version is stored
+          readOnly: true
+        contentSize:
+          type: integer
+          description: Size of the template content in bytes
+          readOnly: true
+        name:
+          type: string
+          description: Name of the template version
+        region:
+          type: string
+          description: AWS region where this version is stored
+          readOnly: true
+        status:
+          type: string
+          description: Status of the version (CREATED, READY, FAILED)
+          enum:
+          - CREATED
+          - READY
+          - FAILED
+          readOnly: true
+        templateName:
+          type: string
+          description: Template name this version belongs to
+        versionId:
+          type: string
+          description: S3 version ID for this template version
+          readOnly: true
+        workspace:
+          type: string
+          description: Workspace name
+          readOnly: true
+    MetadataLabels:
+      type: object
+      description: Key-value pairs for organizing and filtering resources. Labels can be used to categorize resources by environment, project, team, or any custom taxonomy.
+      additionalProperties:
+        type: string
+    VolumeTemplateSpec:
+      type: object
+      description: Volume template specification
+      properties:
+        defaultSize:
+          type: integer
+          description: Default size of the volume in MB
+        description:
+          type: string
+          description: Description of the volume template
+    VolumeTemplateState:
+      type: object
+      description: Volume template state
+      properties:
+        lastVersionUploadedAt:
+          type: string
+          description: Timestamp of last version upload
+          readOnly: true
+        latestVersion:
+          type: string
+          description: Current/latest S3 version ID
+          readOnly: true
+        status:
+          type: string
+          description: Status of the volume template (created, ready, error)
+          enum:
+          - created
+          - ready
+          - error
+          readOnly: true
+        versionCount:
+          type: integer
+          description: Total number of versions for this template
+          readOnly: true
+    TimeFields:
+      type: object
+      description: Time fields for Persistence
+      properties:
+        createdAt:
+          type: string
+          description: The date and time when the resource was created
+          readOnly: true
+        updatedAt:
+          type: string
+          description: The date and time when the resource was updated
+          readOnly: true
+    OwnerFields:
+      type: object
+      description: Owner fields for Persistence
+      properties:
+        createdBy:
+          type: string
+          description: The user or service account who created the resource
+          readOnly: true
+        updatedBy:
+          type: string
+          description: The user or service account who updated the resource
+          readOnly: true
+    VolumeTemplate:
+      type: object
+      description: Volume template for creating pre-configured volumes
+      properties:
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        spec:
+          $ref: '#/components/schemas/VolumeTemplateSpec'
+        state:
+          $ref: '#/components/schemas/VolumeTemplateState'
+        versions:
+          type: array
+          description: List of versions for this template
+          items:
+            $ref: '#/components/schemas/VolumeTemplateVersion'
+      required:
+      - metadata
+      - spec
+  securitySchemes:
+    ApiKeyAuth:
+      bearerFormat: API Key
+      description: Long-lived API key for programmatic access
+      scheme: bearer
+      type: http
+    OAuth2:
+      description: OAuth2 authentication with JWT tokens
+      flows:
+        authorizationCode:
+          authorizationUrl: /oauth/authorize
+          scopes:
+            admin: Administrative access
+            agents:create: Create agents
+            agents:delete: Delete agents
+            agents:get: Get agent details
+            agents:list: List agents
+            agents:update: Update agents
+            apiKey:list: List API keys
+            apiKey:write: Create and delete API keys
+            applications:create: Create applications
+            applications:delete: Delete applications
+            applications:get: Get application details
+            applications:list: List applications
+            applications:update: Update applications
+            configurations:list: List configurations
+            customdomains:create: Create custom domains
+            customdomains:delete: Delete custom domains
+            customdomains:get: Get custom domain details
+            customdomains:list: List custom domains
+            customdomains:update: Update custom domains
+            functions:create: Create functions
+            functions:delete: Delete functions
+            functions:get: Get function details
+            functions:list: List functions
+            functions:update: Update functions
+            integrations:create: Create integrations
+            integrations:list: List integrations
+            invitations:list: List invitations
+            jobs:create: Create jobs
+            jobs:delete: Delete jobs
+            jobs:get: Get job details
+            jobs:list: List jobs
+            jobs:update: Update jobs
+            locations:list: List locations
+            mcphub:list: List MCP hub resources
+            models:create: Create models
+            models:delete: Delete models
+            models:get: Get model details
+            models:list: List models
+            models:update: Update models
+            policies:create: Create policies
+            policies:delete: Delete policies
+            policies:get: Get policy details
+            policies:list: List policies
+            policies:update: Update policies
+            sandboxes:control: Control sandbox operations
+            sandboxes:create: Create sandboxes
+            sandboxes:delete: Delete sandboxes
+            sandboxes:get: Get sandbox details
+            sandboxes:list: List sandboxes
+            sandboxes:update: Update sandboxes
+            sandboxhub:list: List sandbox hub resources
+            secrets:create: Create secrets
+            secrets:delete: Delete secrets
+            secrets:list: List secrets
+            templates:get: Get template details
+            templates:list: List templates
+            volumeTemplates:create: Create volume templates
+            volumeTemplates:delete: Delete volume templates
+            volumeTemplates:get: Get volume template details
+            volumeTemplates:list: List volume templates
+            volumeTemplates:upsert: Create or update volume templates
+            volumes:create: Create volumes
+            volumes:delete: Delete volumes
+            volumes:get: Get volume details
+            volumes:list: List volumes
+            workspaces:accept: Accept workspace invitation
+            workspaces:create: Create workspaces
+            workspaces:decline: Decline workspace invitation
+            workspaces:delete: Delete workspaces
+            workspaces:get: Get workspace details
+            workspaces:invite: Invite users to workspace
+            workspaces:leave: Leave workspace
+            workspaces:list: List workspaces
+            workspaces:remove: Remove users from workspace
+            workspaces:update: Update workspaces
+          tokenUrl: /oauth/token
+        clientCredentials:
+          scopes:
+            admin: Administrative access
+            agents:create: Create agents
+            agents:delete: Delete agents
+            agents:get: Get agent details
+            agents:list: List agents
+            agents:update: Update agents
+            apiKey:list: List API keys
+            apiKey:write: Create and delete API keys
+            applications:create: Create applications
+            applications:delete: Delete applications
+            applications:get: Get application details
+            applications:list: List applications
+            applications:update: Update applications
+            configurations:list: List configurations
+            customdomains:create: Create custom domains
+            customdomains:delete: Delete custom domains
+            customdomains:get: Get custom domain details
+            customdomains:list: List custom domains
+            customdomains:update: Update custom domains
+            functions:create: Create functions
+            functions:delete: Delete functions
+            functions:get: Get function details
+            functions:list: List functions
+            functions:update: Update functions
+            integrations:create: Create integrations
+            integrations:list: List integrations
+            invitations:list: List invitations
+            jobs:create: Create jobs
+            jobs:delete: Delete jobs
+            jobs:get: Get job details
+            jobs:list: List jobs
+            jobs:update: Update jobs
+            locations:list: List locations
+            mcphub:list: List MCP hub resources
+            models:create: Create models
+            models:delete: Delete models
+            models:get: Get model details
+            models:list: List models
+            models:update: Update models
+            policies:create: Create policies
+            policies:delete: Delete policies
+            policies:get: Get policy details
+            policies:list: List policies
+            policies:update: Update policies
+            sandboxes:control: Control sandbox operations
+            sandboxes:create: Create sandboxes
+            sandboxes:delete: Delete sandboxes
+            sandboxes:get: Get sandbox details
+            sandboxes:list: List sandboxes
+            sandboxes:update: Update sandboxes
+            sandboxhub:list: List sandbox hub resources
+            secrets:create: Create secrets
+            secrets:delete: Delete secrets
+            secrets:list: List secrets
+            templates:get: Get template details
+            templates:list: List templates
+            volumeTemplates:create: Create volume templates
+            volumeTemplates:delete: Delete volume templates
+            volumeTemplates:get: Get volume template details
+            volumeTemplates:list: List volume templates
+            volumeTemplates:upsert: Create or update volume templates
+            volumes:create: Create volumes
+            volumes:delete: Delete volumes
+            volumes:get: Get volume details
+            volumes:list: List volumes
+            workspaces:accept: Accept workspace invitation
+            workspaces:create: Create workspaces
+            workspaces:decline: Decline workspace invitation
+            workspaces:delete: Delete workspaces
+            workspaces:get: Get workspace details
+            workspaces:invite: Invite users to workspace
+            workspaces:leave: Leave workspace
+            workspaces:list: List workspaces
+            workspaces:remove: Remove users from workspace
+            workspaces:update: Update workspaces
+          tokenUrl: /oauth/token
+      type: oauth2

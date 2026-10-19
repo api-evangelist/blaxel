@@ -1,153 +1,949 @@
 openapi: 3.2.0
 info:
   title: Blaxel Control Plane Functions API
-  description: Representative specification of the Blaxel (formerly Beamlit) control plane REST API. The control plane manages agents, MCP/function servers, models, sandboxes, jobs, policies, integrations, and workspaces. Authenticate with a Bearer API key (Authorization or X-Blaxel-Authorization header) or an OAuth 2.0 short-lived JWT. Requests may include a Blaxel-Version header (YYYY-MM-DD) and, for multi-workspace accounts, an X-Blaxel-Workspace header.
-  termsOfService: https://blaxel.ai/terms-of-service
-  contact:
-    name: Blaxel Support
-    email: support@blaxel.ai
-  version: v0
+  version: 0.0.1
 servers:
-- url: https://api.blaxel.ai/v0
+- description: Blaxel Control Plane
+  url: https://api.blaxel.ai/v0
+- description: Blaxel Inference
+  url: https://run.blaxel.ai
 security:
-- apiKey: []
-- bearerAuth: []
+- OAuth2:
+  - admin
+- ApiKeyAuth: []
 tags:
 - name: Functions
 paths:
   /functions:
     get:
-      operationId: listFunctions
-      tags:
-      - Functions
-      summary: List all functions (MCP servers) in the workspace
+      description: Returns MCP server functions deployed in the workspace. Each function includes its deployment status, transport protocol (websocket or http-stream), and endpoint URL. Starting with API version 2026-04-28 the response is wrapped in `{data, meta}` and supports cursor pagination via the `cursor` and `limit` query parameters; older versions keep returning a bare array with all functions.
+      operationId: ListFunctions
+      parameters:
+      - $ref: '#/components/parameters/PaginationCursor'
+      - $ref: '#/components/parameters/PaginationLimit'
+      - $ref: '#/components/parameters/PaginationSort'
+      - $ref: '#/components/parameters/PaginationQuery'
+      - $ref: '#/components/parameters/PaginationAnchor'
+      - $ref: '#/components/parameters/ExternalIdFilter'
+      - $ref: '#/components/parameters/ListingStatus'
       responses:
         '200':
-          description: A list of functions.
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Function'
+                $ref: '#/components/schemas/FunctionList'
+          description: successful operation
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Insufficient permissions to list functions
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - functions:list
+      - ApiKeyAuth: []
+      summary: List all MCP servers
+      tags:
+      - Functions
     post:
-      operationId: createFunction
-      tags:
-      - Functions
-      summary: Create a new function (MCP server)
+      description: Creates a new MCP server function deployment. The function will expose tools via the Model Context Protocol that can be used by AI agents. Supports streamable HTTP transport.
+      operationId: CreateFunction
       requestBody:
-        required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/Function'
-      responses:
-        '200':
-          description: The created function.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Function'
-  /functions/{function_name}:
-    parameters:
-    - $ref: '#/components/parameters/FunctionName'
-    get:
-      operationId: getFunction
-      tags:
-      - Functions
-      summary: Get a function by name
-      responses:
-        '200':
-          description: The requested function.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Function'
-    put:
-      operationId: updateFunction
-      tags:
-      - Functions
-      summary: Update a function by name
-      requestBody:
         required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Function'
       responses:
         '200':
-          description: The updated function.
-    delete:
-      operationId: deleteFunction
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Function'
+          description: successful operation
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad request - Invalid function configuration
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Insufficient permissions to create functions
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Conflict - Function with this name already exists
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - functions:create
+      - ApiKeyAuth: []
+      summary: Create MCP server
       tags:
       - Functions
-      summary: Delete a function by name
-      responses:
-        '200':
-          description: The deleted function.
-  /functions/{function_name}/revisions:
+  /functions/{functionName}:
     parameters:
-    - $ref: '#/components/parameters/FunctionName'
-    get:
-      operationId: listFunctionRevisions
-      tags:
-      - Functions
-      summary: List revisions for a function
-      responses:
-        '200':
-          description: A list of function revisions.
-components:
-  schemas:
-    Metadata:
-      type: object
-      properties:
-        name:
-          type: string
-        displayName:
-          type: string
-        workspace:
-          type: string
-        createdAt:
-          type: string
-          format: date-time
-        updatedAt:
-          type: string
-          format: date-time
-        labels:
-          type: object
-          additionalProperties:
-            type: string
-    Function:
-      type: object
-      properties:
-        metadata:
-          $ref: '#/components/schemas/Metadata'
-        spec:
-          type: object
-          properties:
-            description:
-              type: string
-            runtime:
-              type: object
-            integrationConnections:
-              type: array
-              items:
-                type: string
-  parameters:
-    FunctionName:
-      name: function_name
+    - description: Unique name identifier of the MCP server function
       in: path
+      name: functionName
       required: true
       schema:
         type: string
+    delete:
+      description: Permanently deletes an MCP server function and all its deployment history. Any agents using this function's tools will no longer be able to invoke them.
+      operationId: DeleteFunction
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Function'
+          description: successful operation
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Insufficient permissions to delete this function
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found - Function does not exist
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - functions:delete
+      - ApiKeyAuth: []
+      summary: Delete MCP server
+      tags:
+      - Functions
+    get:
+      description: Returns detailed information about an MCP server function including its deployment status, available tools, transport configuration, and endpoint URL.
+      operationId: GetFunction
+      parameters:
+      - description: Show secret values (requires workspace admin role)
+        in: query
+        name: show_secrets
+        required: false
+        schema:
+          type: boolean
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Function'
+          description: successful operation
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Insufficient permissions to view this function
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found - Function does not exist
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - functions:get
+      - ApiKeyAuth: []
+      summary: Get MCP server
+      tags:
+      - Functions
+    put:
+      description: Updates an MCP server function's configuration and triggers a new deployment. Changes to runtime settings, integrations, or transport protocol will be applied on the next deployment.
+      operationId: UpdateFunction
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Function'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Function'
+          description: successful operation
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Bad request - Invalid function configuration
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Unauthorized - Invalid or missing authentication credentials
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Forbidden - Insufficient permissions to update this function
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Not found - Function does not exist
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: Internal server error
+      security:
+      - OAuth2:
+        - functions:update
+      - ApiKeyAuth: []
+      summary: Update MCP server
+      tags:
+      - Functions
+  /functions/{functionName}/revisions:
+    get:
+      description: Returns revisions for a function by name.
+      operationId: ListFunctionRevisions
+      parameters:
+      - description: Name of the function
+        in: path
+        name: functionName
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/RevisionMetadata'
+                type: array
+          description: successful operation
+      security:
+      - OAuth2:
+        - functions:get
+      - ApiKeyAuth: []
+      summary: List function revisions
+      tags:
+      - Functions
+components:
+  schemas:
+    FunctionRuntime:
+      type: object
+      description: Runtime configuration defining how the MCP server function is deployed and scaled
+      properties:
+        envs:
+          type: array
+          description: Environment variables injected into the function. Supports Kubernetes EnvVar format with valueFrom references.
+          items:
+            $ref: '#/components/schemas/Env'
+        generation:
+          type: string
+          description: 'Infrastructure generation: mk2 (containers, 2-10s cold starts, 15+ global regions) or mk3 (microVMs, sub-25ms cold starts)'
+          enum:
+          - mk2
+          - mk3
+          example: mk3
+        image:
+          type: string
+          description: Container image built by Blaxel when deploying with 'bl deploy'. This field is auto-populated during deployment.
+        maxScale:
+          type: integer
+          description: Maximum number of concurrent function instances for auto-scaling
+          example: 10
+        memory:
+          type: integer
+          description: Memory allocation in megabytes. Also determines CPU allocation (CPU cores = memory in MB / 2048, e.g., 4096MB = 2 CPUs).
+          example: 2048
+        minScale:
+          type: integer
+          description: Minimum instances to keep warm. Set to 1+ to eliminate cold starts, 0 for scale-to-zero.
+          example: 0
+        ports:
+          $ref: '#/components/schemas/Ports'
+        transport:
+          type: string
+          description: Transport compatibility for the MCP, can be "websocket" or "http-stream"
+          enum:
+          - websocket
+          - http-stream
+          example: http-stream
+    PaginationMeta:
+      type: object
+      description: Pagination metadata returned alongside a page of listing results. Always present on listing endpoints starting with API version 2026-04-28.
+      properties:
+        hasMore:
+          type: boolean
+          description: True when more pages are available beyond the current one.
+        nextCursor:
+          type: string
+          description: Opaque cursor to pass back as the `cursor` query param for the next page. Empty when there are no more pages.
+        total:
+          type: integer
+          description: Total number of items in the workspace, ignoring the current page's filters. Lets the UI render "page X of Y" without walking the cursor chain. Computed from the hash-only metadata.workspace GSI count, so search (`q`) does not narrow it.
+        totalIsPartial:
+          type: boolean
+          description: True when `total` is a lower bound rather than a complete count. Counting a very large workspace is bounded so the listing stays fast, and this flag says the real number is higher. Clients must not derive a page count from `total` when this is set — keep paging with `nextCursor` until `hasMore` is false.
+    RevisionMetadata:
+      type: object
+      description: Revision metadata
+      properties:
+        active:
+          type: boolean
+          description: Is the revision active
+        canary:
+          type: boolean
+          description: Is the revision canary
+        createdAt:
+          type: string
+          description: Revision created at
+          readOnly: true
+        createdBy:
+          type: string
+          description: Revision created by
+          readOnly: true
+        id:
+          type: string
+          description: Revision ID
+          readOnly: true
+        previousActive:
+          type: boolean
+          description: Is the revision previous active
+        status:
+          type: string
+          description: Status of the revision
+          readOnly: true
+        trafficPercent:
+          type: integer
+          description: Percent of traffic to the revision
+    Port:
+      type: object
+      description: A port for a resource
+      properties:
+        name:
+          type: string
+          description: The name of the port
+          example: http
+        protocol:
+          type: string
+          description: The protocol of the port
+          enum:
+          - HTTP
+          - TCP
+          - UDP
+          - TLS
+          example: HTTP
+        target:
+          type: integer
+          description: The target port of the port
+          example: 8080
+      required:
+      - target
+    Trigger:
+      type: object
+      description: Trigger configuration
+      properties:
+        configuration:
+          $ref: '#/components/schemas/TriggerConfiguration'
+        enabled:
+          type: boolean
+          description: 'Enable or disable the trigger (default: true)'
+          example: true
+        id:
+          type: string
+          description: Identifier of the trigger. Optional — the server auto-generates a unique id when one is not provided, and disambiguates duplicates within a resource.
+          example: trigger-1
+        type:
+          type: string
+          description: The type of trigger, can be http or http-async
+          enum:
+          - http
+          - http-async
+          - cron
+          example: http
+    Metadata:
+      type: object
+      description: Common metadata fields shared by all Blaxel resources including name, labels, timestamps, and ownership information
+      allOf:
+      - $ref: '#/components/schemas/TimeFields'
+      - $ref: '#/components/schemas/OwnerFields'
+      - properties:
+          displayName:
+            type: string
+            description: Human-readable name for display in the UI. Can contain spaces and special characters, max 63 characters.
+            example: My Resource
+          externalId:
+            type: string
+            description: Caller-owned identifier for external lookups. Max 64 chars, alphanumeric + dash.
+            example: my-session-123
+          labels:
+            $ref: '#/components/schemas/MetadataLabels'
+          name:
+            type: string
+            description: Unique identifier for the resource within the workspace. Must be lowercase alphanumeric with hyphens, max 49 characters. Immutable after creation.
+            example: my-resource
+          plan:
+            type: string
+            description: Billing plan tier applied to this resource (inherited from workspace account)
+            readOnly: true
+          url:
+            type: string
+            description: Auto-generated endpoint URL for accessing this resource (for agents, functions, models, sandboxes)
+            readOnly: true
+          workspace:
+            type: string
+            description: Name of the workspace this resource belongs to (read-only, set automatically)
+            readOnly: true
+        required:
+        - name
+    PoliciesList:
+      type: array
+      items:
+        type: string
+        description: Policy name
+    CoreEvents:
+      type: array
+      description: Events happening on a resource deployed on Blaxel
+      items:
+        $ref: '#/components/schemas/CoreEvent'
+      readOnly: true
+    OwnerFields:
+      type: object
+      description: Owner fields for Persistence
+      properties:
+        createdBy:
+          type: string
+          description: The user or service account who created the resource
+          readOnly: true
+        updatedBy:
+          type: string
+          description: The user or service account who updated the resource
+          readOnly: true
+    RevisionConfiguration:
+      type: object
+      description: Revision configuration
+      properties:
+        active:
+          type: string
+          description: Active revision id
+          example: rev-abc123
+        canary:
+          type: string
+          description: Canary revision id
+        canaryPercent:
+          type: integer
+          description: Canary revision percent
+          example: 10
+        stickySessionTtl:
+          type: integer
+          description: Sticky session TTL in seconds (0 = disabled)
+          example: 0
+        traffic:
+          type: integer
+          description: Traffic percentage
+          example: 100
+    CoreEvent:
+      type: object
+      description: Core event
+      properties:
+        canaryRevision:
+          type: string
+          description: Canary revisionID link to the event
+        message:
+          type: string
+          description: Event message
+          example: Deployment successful
+        revision:
+          type: string
+          description: RevisionID link to the event
+          example: rev-abc123
+        status:
+          type: string
+          description: Event status
+          example: DEPLOYED
+        time:
+          type: string
+          description: Event time
+          example: '2025-01-15T10:30:00Z'
+        type:
+          type: string
+          description: Event type
+          example: deployment
+      readOnly: true
+    Ports:
+      type: array
+      description: Set of ports for a resource
+      items:
+        $ref: '#/components/schemas/Port'
+    Triggers:
+      type: array
+      description: Triggers to use your agent
+      items:
+        $ref: '#/components/schemas/Trigger'
+    FunctionList:
+      type: object
+      description: Cursor-paginated list of MCP server functions. Returned starting with API version 2026-04-28; older API versions return a bare array.
+      properties:
+        data:
+          type: array
+          description: Page of functions.
+          items:
+            $ref: '#/components/schemas/Function'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+    Env:
+      type: object
+      description: Environment variable with name and value
+      properties:
+        name:
+          type: string
+          description: Name of the environment variable
+          example: MY_ENV_VAR
+        secret:
+          type: boolean
+          description: Whether the value is a secret
+          example: true
+        value:
+          type: string
+          description: Value of the environment variable
+          example: my-value
+    Status:
+      type: string
+      description: Deployment status of a resource deployed on Blaxel
+      enum:
+      - DELETING
+      - TERMINATED
+      - FAILED
+      - DEACTIVATED
+      - DEACTIVATING
+      - UPLOADING
+      - BUILDING
+      - DEPLOYING
+      - DEPLOYED
+      - BUILT
+      - ARCHIVING
+      - ARCHIVED
+      - UNARCHIVING
+      readOnly: true
+    MetadataLabels:
+      type: object
+      description: Key-value pairs for organizing and filtering resources. Labels can be used to categorize resources by environment, project, team, or any custom taxonomy.
+      additionalProperties:
+        type: string
+    Function:
+      type: object
+      description: MCP server deployment that exposes tools for AI agents via the Model Context Protocol (MCP). Deployed as a serverless auto-scaling endpoint using streamable HTTP transport.
+      properties:
+        events:
+          $ref: '#/components/schemas/CoreEvents'
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+        spec:
+          $ref: '#/components/schemas/FunctionSpec'
+        status:
+          $ref: '#/components/schemas/Status'
+      required:
+      - metadata
+      - spec
+    TriggerConfiguration:
+      type: object
+      description: Trigger configuration
+      properties:
+        authenticationType:
+          type: string
+          description: The authentication type of the trigger
+          example: blaxel
+        callbackSecret:
+          type: string
+          description: The callback secret for async triggers (auto-generated, encrypted)
+          readOnly: true
+        callbackUrl:
+          type: string
+          description: The callback URL for async triggers (optional)
+          example: https://myapp.com/webhook
+        path:
+          type: string
+          description: The path of the trigger
+          example: /invoke
+        retry:
+          type: integer
+          description: The retry of the trigger
+          example: 3
+        schedule:
+          type: string
+          description: The schedule of the trigger, cron expression * * * * *
+          example: 0 * * * *
+        tasks:
+          type: array
+          description: The tasks configuration of the cronjob
+          items:
+            $ref: '#/components/schemas/TriggerConfigurationTask'
+        tasksRef:
+          type: string
+          description: Where this trigger's task list is stored (server-managed)
+          readOnly: true
+        timeout:
+          type: integer
+          description: The timeout in seconds for async triggers (max 900s, MK3 only)
+          example: 300
+    FunctionSpec:
+      type: object
+      description: Configuration for an MCP server function including runtime settings, transport protocol, and connected integrations
+      properties:
+        enabled:
+          type: boolean
+          description: When false, the function is disabled and will not serve requests
+          example: true
+          default: true
+        integrationConnections:
+          $ref: '#/components/schemas/IntegrationConnectionsList'
+        policies:
+          $ref: '#/components/schemas/PoliciesList'
+        public:
+          type: boolean
+          description: When true, the function is publicly accessible without authentication. Only available for mk3 generation.
+          example: false
+          default: false
+        region:
+          type: string
+          description: Region where the function should be deployed (e.g. us-pdx-1, eu-lon-1). If not specified, the function is deployed based on policy locations.
+          example: us-pdx-1
+        revision:
+          $ref: '#/components/schemas/RevisionConfiguration'
+        runtime:
+          $ref: '#/components/schemas/FunctionRuntime'
+        triggers:
+          $ref: '#/components/schemas/Triggers'
+    TriggerConfigurationTask:
+      type: object
+      description: The tasks configuration of the cronjob
+    IntegrationConnectionsList:
+      type: array
+      items:
+        type: string
+        description: Deployment integration connection name
+    TimeFields:
+      type: object
+      description: Time fields for Persistence
+      properties:
+        createdAt:
+          type: string
+          description: The date and time when the resource was created
+          readOnly: true
+        updatedAt:
+          type: string
+          description: The date and time when the resource was updated
+          readOnly: true
+    Error:
+      type: object
+      description: Standard error response returned by the API when a request fails
+      properties:
+        code:
+          type: integer
+          description: HTTP status code of the error
+          example: 409
+        error:
+          type: string
+          description: Error type or code identifying the kind of error
+          example: Resource already exists
+        message:
+          type: string
+          description: Human-readable error message describing what went wrong
+          example: Invalid request body
+      required:
+      - error
+  parameters:
+    PaginationAnchor:
+      description: Start from a known pagination boundary. `end` is only supported for `createdAt` listings (asc or desc) and returns the tail page directly without walking every cursor from the first page.
+      in: query
+      name: anchor
+      required: false
+      schema:
+        enum:
+        - end
+        type: string
+    PaginationQuery:
+      description: Substring search across `metadata.name`, `metadata.displayName` and labels (keys + values). Trimmed and lowercased server-side; queries shorter than 2 characters fall back to the unfiltered listing. Bound into the cursor fingerprint so a cursor opened with one query cannot be reused with another. Only honoured starting on Blaxel-Version 2026-04-28.
+      in: query
+      name: q
+      required: false
+      schema:
+        maxLength: 200
+        type: string
+    ListingStatus:
+      description: Comma-separated list of statuses to filter on (e.g. `DEPLOYED,FAILED`). Values are case-insensitive; unknown values are rejected with a 400. Selecting every status is equivalent to omitting the parameter. Bound into the cursor fingerprint so a cursor opened with one selection cannot be reused with another. Filtering itself requires the 2026-04-28 Blaxel-Version (the paginated listing); on earlier versions the value is still validated but the listing is unfiltered, except for sandboxes where it is applied on every version.
+      example: DEPLOYED,FAILED
+      in: query
+      name: status
+      required: false
+      schema:
+        type: string
+    PaginationSort:
+      description: Sort spec, formatted as `<key>:<direction>`. Allowed values are `createdAt:desc` (default), `createdAt:asc`, `name:asc`, `name:desc`. The cursor fingerprint is bound to the sort, so a cursor opened with one value cannot be reused with another. Only honoured starting on Blaxel-Version 2026-04-28.
+      in: query
+      name: sort
+      required: false
+      schema:
+        enum:
+        - createdAt:desc
+        - createdAt:asc
+        - name:asc
+        - name:desc
+        type: string
+    PaginationLimit:
+      description: Maximum number of items to return per page. Defaults to 50, clamped to 200.
+      in: query
+      name: limit
+      required: false
+      schema:
+        default: 50
+        maximum: 200
+        minimum: 1
+        type: integer
+    ExternalIdFilter:
+      description: Filter resources by metadata.externalId. When set, only resources matching this caller-owned external ID are returned.
+      in: query
+      name: externalId
+      required: false
+      schema:
+        maxLength: 64
+        pattern: ^[a-zA-Z0-9-]*$
+        type: string
+    PaginationCursor:
+      description: Opaque cursor returned by a previous response's meta.nextCursor. Only valid for the same query (workspace + filters); the server rejects cursors bound to a different query or older than 24h. Omit on the first page.
+      in: query
+      name: cursor
+      required: false
+      schema:
+        type: string
+      x-stainless-pagination-property:
+        purpose: next_cursor_param
   securitySchemes:
-    apiKey:
-      type: apiKey
-      in: header
-      name: X-Blaxel-Authorization
-      description: API key supplied as "Bearer YOUR-API-KEY".
-    bearerAuth:
-      type: http
+    ApiKeyAuth:
+      bearerFormat: API Key
+      description: Long-lived API key for programmatic access
       scheme: bearer
-      bearerFormat: JWT
-      description: OAuth 2.0 short-lived JWT access token.
+      type: http
+    OAuth2:
+      description: OAuth2 authentication with JWT tokens
+      flows:
+        authorizationCode:
+          authorizationUrl: /oauth/authorize
+          scopes:
+            admin: Administrative access
+            agents:create: Create agents
+            agents:delete: Delete agents
+            agents:get: Get agent details
+            agents:list: List agents
+            agents:update: Update agents
+            apiKey:list: List API keys
+            apiKey:write: Create and delete API keys
+            applications:create: Create applications
+            applications:delete: Delete applications
+            applications:get: Get application details
+            applications:list: List applications
+            applications:update: Update applications
+            configurations:list: List configurations
+            customdomains:create: Create custom domains
+            customdomains:delete: Delete custom domains
+            customdomains:get: Get custom domain details
+            customdomains:list: List custom domains
+            customdomains:update: Update custom domains
+            functions:create: Create functions
+            functions:delete: Delete functions
+            functions:get: Get function details
+            functions:list: List functions
+            functions:update: Update functions
+            integrations:create: Create integrations
+            integrations:list: List integrations
+            invitations:list: List invitations
+            jobs:create: Create jobs
+            jobs:delete: Delete jobs
+            jobs:get: Get job details
+            jobs:list: List jobs
+            jobs:update: Update jobs
+            locations:list: List locations
+            mcphub:list: List MCP hub resources
+            models:create: Create models
+            models:delete: Delete models
+            models:get: Get model details
+            models:list: List models
+            models:update: Update models
+            policies:create: Create policies
+            policies:delete: Delete policies
+            policies:get: Get policy details
+            policies:list: List policies
+            policies:update: Update policies
+            sandboxes:control: Control sandbox operations
+            sandboxes:create: Create sandboxes
+            sandboxes:delete: Delete sandboxes
+            sandboxes:get: Get sandbox details
+            sandboxes:list: List sandboxes
+            sandboxes:update: Update sandboxes
+            sandboxhub:list: List sandbox hub resources
+            secrets:create: Create secrets
+            secrets:delete: Delete secrets
+            secrets:list: List secrets
+            templates:get: Get template details
+            templates:list: List templates
+            volumeTemplates:create: Create volume templates
+            volumeTemplates:delete: Delete volume templates
+            volumeTemplates:get: Get volume template details
+            volumeTemplates:list: List volume templates
+            volumeTemplates:upsert: Create or update volume templates
+            volumes:create: Create volumes
+            volumes:delete: Delete volumes
+            volumes:get: Get volume details
+            volumes:list: List volumes
+            workspaces:accept: Accept workspace invitation
+            workspaces:create: Create workspaces
+            workspaces:decline: Decline workspace invitation
+            workspaces:delete: Delete workspaces
+            workspaces:get: Get workspace details
+            workspaces:invite: Invite users to workspace
+            workspaces:leave: Leave workspace
+            workspaces:list: List workspaces
+            workspaces:remove: Remove users from workspace
+            workspaces:update: Update workspaces
+          tokenUrl: /oauth/token
+        clientCredentials:
+          scopes:
+            admin: Administrative access
+            agents:create: Create agents
+            agents:delete: Delete agents
+            agents:get: Get agent details
+            agents:list: List agents
+            agents:update: Update agents
+            apiKey:list: List API keys
+            apiKey:write: Create and delete API keys
+            applications:create: Create applications
+            applications:delete: Delete applications
+            applications:get: Get application details
+            applications:list: List applications
+            applications:update: Update applications
+            configurations:list: List configurations
+            customdomains:create: Create custom domains
+            customdomains:delete: Delete custom domains
+            customdomains:get: Get custom domain details
+            customdomains:list: List custom domains
+            customdomains:update: Update custom domains
+            functions:create: Create functions
+            functions:delete: Delete functions
+            functions:get: Get function details
+            functions:list: List functions
+            functions:update: Update functions
+            integrations:create: Create integrations
+            integrations:list: List integrations
+            invitations:list: List invitations
+            jobs:create: Create jobs
+            jobs:delete: Delete jobs
+            jobs:get: Get job details
+            jobs:list: List jobs
+            jobs:update: Update jobs
+            locations:list: List locations
+            mcphub:list: List MCP hub resources
+            models:create: Create models
+            models:delete: Delete models
+            models:get: Get model details
+            models:list: List models
+            models:update: Update models
+            policies:create: Create policies
+            policies:delete: Delete policies
+            policies:get: Get policy details
+            policies:list: List policies
+            policies:update: Update policies
+            sandboxes:control: Control sandbox operations
+            sandboxes:create: Create sandboxes
+            sandboxes:delete: Delete sandboxes
+            sandboxes:get: Get sandbox details
+            sandboxes:list: List sandboxes
+            sandboxes:update: Update sandboxes
+            sandboxhub:list: List sandbox hub resources
+            secrets:create: Create secrets
+            secrets:delete: Delete secrets
+            secrets:list: List secrets
+            templates:get: Get template details
+            templates:list: List templates
+            volumeTemplates:create: Create volume templates
+            volumeTemplates:delete: Delete volume templates
+            volumeTemplates:get: Get volume template details
+            volumeTemplates:list: List volume templates
+            volumeTemplates:upsert: Create or update volume templates
+            volumes:create: Create volumes
+            volumes:delete: Delete volumes
+            volumes:get: Get volume details
+            volumes:list: List volumes
+            workspaces:accept: Accept workspace invitation
+            workspaces:create: Create workspaces
+            workspaces:decline: Decline workspace invitation
+            workspaces:delete: Delete workspaces
+            workspaces:get: Get workspace details
+            workspaces:invite: Invite users to workspace
+            workspaces:leave: Leave workspace
+            workspaces:list: List workspaces
+            workspaces:remove: Remove users from workspace
+            workspaces:update: Update workspaces
+          tokenUrl: /oauth/token
+      type: oauth2

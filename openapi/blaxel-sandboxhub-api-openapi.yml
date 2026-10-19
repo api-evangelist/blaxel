@@ -1,0 +1,340 @@
+openapi: 3.2.0
+info:
+  title: Blaxel Control Plane Sandboxhub API
+  version: 0.0.1
+servers:
+- description: Blaxel Control Plane
+  url: https://api.blaxel.ai/v0
+- description: Blaxel Inference
+  url: https://run.blaxel.ai
+security:
+- OAuth2:
+  - admin
+- ApiKeyAuth: []
+tags:
+- name: sandboxhub
+paths:
+  /sandbox/hub:
+    get:
+      description: Returns all pre-built sandbox templates available in the Blaxel Hub. These include popular development environments with pre-installed tools and frameworks.
+      operationId: ListSandboxHubDefinitions
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/SandboxDefinition'
+                type: array
+          description: successful operation
+      security:
+      - OAuth2:
+        - sandboxhub:list
+      - ApiKeyAuth: []
+      summary: List Sandbox Hub templates
+      tags:
+      - sandboxhub
+components:
+  schemas:
+    Ports:
+      type: array
+      description: Set of ports for a resource
+      items:
+        $ref: '#/components/schemas/Port'
+    VolumeAttachment:
+      type: object
+      description: Configuration for attaching a volume to a sandbox at a specific filesystem path. Defaults to a persistent volume; set type to "ephemeral" for disk-backed scratch space created with the sandbox and destroyed when it stops.
+      properties:
+        mountPath:
+          type: string
+          description: Absolute filesystem path where the volume will be mounted inside the sandbox
+          example: /mnt/data
+        name:
+          type: string
+          description: For persistent volumes, the name of the volume resource to attach (must exist in the same workspace and region). For ephemeral volumes, an identifier used to reference the volume internally.
+          example: my-volume
+        readOnly:
+          type: boolean
+          description: If true, the volume is mounted read-only and cannot be modified by the sandbox
+          example: false
+        sizeMb:
+          type: integer
+          description: Storage capacity in megabytes. Required for ephemeral volumes, ignored for persistent volumes.
+          example: 102400
+        type:
+          type: string
+          description: Type of volume. Defaults to "persistent" (an existing volume resource). Use "ephemeral" for temporary disk-backed storage created with the sandbox.
+          enum:
+          - persistent
+          - ephemeral
+          example: persistent
+    Port:
+      type: object
+      description: A port for a resource
+      properties:
+        name:
+          type: string
+          description: The name of the port
+          example: http
+        protocol:
+          type: string
+          description: The protocol of the port
+          enum:
+          - HTTP
+          - TCP
+          - UDP
+          - TLS
+          example: HTTP
+        target:
+          type: integer
+          description: The target port of the port
+          example: 8080
+      required:
+      - target
+    SandboxDefinition:
+      type: object
+      description: Pre-configured sandbox template available in the Sandbox Hub for quick deployment with predefined tools and configurations
+      properties:
+        categories:
+          type: array
+          description: Categories of the definition
+          items:
+            type: object
+            additionalProperties: true
+        coming_soon:
+          type: boolean
+          description: If the definition is coming soon
+          example: false
+        creationOptions:
+          $ref: '#/components/schemas/SandboxCreationOptions'
+        description:
+          type: string
+          description: Description of the definition
+          example: Python environment with data science libraries pre-installed
+        displayName:
+          type: string
+          description: Display name of the definition
+          example: Python Data Science
+        enterprise:
+          type: boolean
+          description: If the definition is enterprise
+          example: false
+        hidden:
+          type: boolean
+          description: If the definition is hidden
+          example: false
+        icon:
+          type: string
+          description: Icon of the definition
+        iconDark:
+          type: string
+          description: Nonempty dark-mode icon URL in responses. Blank inputs use the resolved light-mode icon.
+        iconLight:
+          type: string
+          description: Nonempty light-mode icon URL in responses. Blank inputs use icon, iconDark, then the default Hub icon.
+        image:
+          type: string
+          description: Image of the Sandbox definition
+          example: blaxel/python-data-science:latest
+        longDescription:
+          type: string
+          description: Long description of the definition
+        memory:
+          type: integer
+          description: Memory of the Sandbox definition in MB
+          example: 2048
+        name:
+          type: string
+          description: Name of the artifact
+          example: python-data-science
+        ports:
+          $ref: '#/components/schemas/Ports'
+        tags:
+          type: string
+          description: Tags of the definition
+        url:
+          type: string
+          description: URL of the definition
+    SandboxCreationOptions:
+      type: object
+      description: Optional Hub template settings applied by the console without additional sandbox creation lookups.
+      properties:
+        extraArgs:
+          maxProperties: 8
+          type: object
+          description: Kernel selection arguments copied into runtime.extraArgs. At most 8 entries.
+          additionalProperties:
+            type: string
+        volumes:
+          maxItems: 5
+          type: array
+          description: Volume attachments included in the creation request. At most 5 attachments per template.
+          items:
+            $ref: '#/components/schemas/VolumeAttachment'
+  securitySchemes:
+    ApiKeyAuth:
+      bearerFormat: API Key
+      description: Long-lived API key for programmatic access
+      scheme: bearer
+      type: http
+    OAuth2:
+      description: OAuth2 authentication with JWT tokens
+      flows:
+        authorizationCode:
+          authorizationUrl: /oauth/authorize
+          scopes:
+            admin: Administrative access
+            agents:create: Create agents
+            agents:delete: Delete agents
+            agents:get: Get agent details
+            agents:list: List agents
+            agents:update: Update agents
+            apiKey:list: List API keys
+            apiKey:write: Create and delete API keys
+            applications:create: Create applications
+            applications:delete: Delete applications
+            applications:get: Get application details
+            applications:list: List applications
+            applications:update: Update applications
+            configurations:list: List configurations
+            customdomains:create: Create custom domains
+            customdomains:delete: Delete custom domains
+            customdomains:get: Get custom domain details
+            customdomains:list: List custom domains
+            customdomains:update: Update custom domains
+            functions:create: Create functions
+            functions:delete: Delete functions
+            functions:get: Get function details
+            functions:list: List functions
+            functions:update: Update functions
+            integrations:create: Create integrations
+            integrations:list: List integrations
+            invitations:list: List invitations
+            jobs:create: Create jobs
+            jobs:delete: Delete jobs
+            jobs:get: Get job details
+            jobs:list: List jobs
+            jobs:update: Update jobs
+            locations:list: List locations
+            mcphub:list: List MCP hub resources
+            models:create: Create models
+            models:delete: Delete models
+            models:get: Get model details
+            models:list: List models
+            models:update: Update models
+            policies:create: Create policies
+            policies:delete: Delete policies
+            policies:get: Get policy details
+            policies:list: List policies
+            policies:update: Update policies
+            sandboxes:control: Control sandbox operations
+            sandboxes:create: Create sandboxes
+            sandboxes:delete: Delete sandboxes
+            sandboxes:get: Get sandbox details
+            sandboxes:list: List sandboxes
+            sandboxes:update: Update sandboxes
+            sandboxhub:list: List sandbox hub resources
+            secrets:create: Create secrets
+            secrets:delete: Delete secrets
+            secrets:list: List secrets
+            templates:get: Get template details
+            templates:list: List templates
+            volumeTemplates:create: Create volume templates
+            volumeTemplates:delete: Delete volume templates
+            volumeTemplates:get: Get volume template details
+            volumeTemplates:list: List volume templates
+            volumeTemplates:upsert: Create or update volume templates
+            volumes:create: Create volumes
+            volumes:delete: Delete volumes
+            volumes:get: Get volume details
+            volumes:list: List volumes
+            workspaces:accept: Accept workspace invitation
+            workspaces:create: Create workspaces
+            workspaces:decline: Decline workspace invitation
+            workspaces:delete: Delete workspaces
+            workspaces:get: Get workspace details
+            workspaces:invite: Invite users to workspace
+            workspaces:leave: Leave workspace
+            workspaces:list: List workspaces
+            workspaces:remove: Remove users from workspace
+            workspaces:update: Update workspaces
+          tokenUrl: /oauth/token
+        clientCredentials:
+          scopes:
+            admin: Administrative access
+            agents:create: Create agents
+            agents:delete: Delete agents
+            agents:get: Get agent details
+            agents:list: List agents
+            agents:update: Update agents
+            apiKey:list: List API keys
+            apiKey:write: Create and delete API keys
+            applications:create: Create applications
+            applications:delete: Delete applications
+            applications:get: Get application details
+            applications:list: List applications
+            applications:update: Update applications
+            configurations:list: List configurations
+            customdomains:create: Create custom domains
+            customdomains:delete: Delete custom domains
+            customdomains:get: Get custom domain details
+            customdomains:list: List custom domains
+            customdomains:update: Update custom domains
+            functions:create: Create functions
+            functions:delete: Delete functions
+            functions:get: Get function details
+            functions:list: List functions
+            functions:update: Update functions
+            integrations:create: Create integrations
+            integrations:list: List integrations
+            invitations:list: List invitations
+            jobs:create: Create jobs
+            jobs:delete: Delete jobs
+            jobs:get: Get job details
+            jobs:list: List jobs
+            jobs:update: Update jobs
+            locations:list: List locations
+            mcphub:list: List MCP hub resources
+            models:create: Create models
+            models:delete: Delete models
+            models:get: Get model details
+            models:list: List models
+            models:update: Update models
+            policies:create: Create policies
+            policies:delete: Delete policies
+            policies:get: Get policy details
+            policies:list: List policies
+            policies:update: Update policies
+            sandboxes:control: Control sandbox operations
+            sandboxes:create: Create sandboxes
+            sandboxes:delete: Delete sandboxes
+            sandboxes:get: Get sandbox details
+            sandboxes:list: List sandboxes
+            sandboxes:update: Update sandboxes
+            sandboxhub:list: List sandbox hub resources
+            secrets:create: Create secrets
+            secrets:delete: Delete secrets
+            secrets:list: List secrets
+            templates:get: Get template details
+            templates:list: List templates
+            volumeTemplates:create: Create volume templates
+            volumeTemplates:delete: Delete volume templates
+            volumeTemplates:get: Get volume template details
+            volumeTemplates:list: List volume templates
+            volumeTemplates:upsert: Create or update volume templates
+            volumes:create: Create volumes
+            volumes:delete: Delete volumes
+            volumes:get: Get volume details
+            volumes:list: List volumes
+            workspaces:accept: Accept workspace invitation
+            workspaces:create: Create workspaces
+            workspaces:decline: Decline workspace invitation
+            workspaces:delete: Delete workspaces
+            workspaces:get: Get workspace details
+            workspaces:invite: Invite users to workspace
+            workspaces:leave: Leave workspace
+            workspaces:list: List workspaces
+            workspaces:remove: Remove users from workspace
+            workspaces:update: Update workspaces
+          tokenUrl: /oauth/token
+      type: oauth2

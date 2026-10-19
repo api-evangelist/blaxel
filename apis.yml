@@ -570,6 +570,146 @@ apis:
     url: https://docs.blaxel.ai/Security/Workspace-access-control
   - type: APIReference
     url: https://docs.blaxel.ai/api-reference/workspaces
+- aid: blaxel:blaxel-applications-api
+  name: Blaxel Applications API
+  description: The applications API from Blaxel — 3 operation(s) for applications.
+  humanURL: https://docs.blaxel.ai/Agents/Overview
+  baseURL: https://api.blaxel.ai/v0
+  tags:
+  - applications
+  properties:
+  - type: OpenAPI
+    url: openapi/blaxel-applications-api-openapi.yml
+- aid: blaxel:blaxel-changelog-api
+  name: Blaxel Changelog API
+  description: The changelog API from Blaxel — 1 operation(s) for changelog.
+  humanURL: https://docs.blaxel.ai/Agents/Overview
+  baseURL: https://api.blaxel.ai/v0
+  tags:
+  - changelog
+  properties:
+  - type: OpenAPI
+    url: openapi/blaxel-changelog-api-openapi.yml
+- aid: blaxel:blaxel-configurations-api
+  name: Blaxel Configurations API
+  description: The configurations API from Blaxel — 1 operation(s) for configurations.
+  humanURL: https://docs.blaxel.ai/Agents/Overview
+  baseURL: https://api.blaxel.ai/v0
+  tags:
+  - configurations
+  properties:
+  - type: OpenAPI
+    url: openapi/blaxel-configurations-api-openapi.yml
+- aid: blaxel:blaxel-customdomains-api
+  name: Blaxel Customdomains API
+  description: The customdomains API from Blaxel — 6 operation(s) for customdomains.
+  humanURL: https://docs.blaxel.ai/Agents/Overview
+  baseURL: https://api.blaxel.ai/v0
+  tags:
+  - customdomains
+  properties:
+  - type: OpenAPI
+    url: openapi/blaxel-customdomains-api-openapi.yml
+- aid: blaxel:blaxel-drives-api
+  name: Blaxel Drives API
+  description: The drives API from Blaxel — 6 operation(s) for drives.
+  humanURL: https://docs.blaxel.ai/Agents/Overview
+  baseURL: https://api.blaxel.ai/v0
+  tags:
+  - drives
+  properties:
+  - type: OpenAPI
+    url: openapi/blaxel-drives-api-openapi.yml
+- aid: blaxel:blaxel-featureflags-api
+  name: Blaxel Feature Flags API
+  description: The featureFlags API from Blaxel — 1 operation(s) for featureflags.
+  humanURL: https://docs.blaxel.ai/Agents/Overview
+  baseURL: https://api.blaxel.ai/v0
+  tags:
+  - featureFlags
+  properties:
+  - type: OpenAPI
+    url: openapi/blaxel-featureflags-api-openapi.yml
+- aid: blaxel:blaxel-images-api
+  name: Blaxel Images API
+  description: The images API from Blaxel — 9 operation(s) for images.
+  humanURL: https://docs.blaxel.ai/Agents/Overview
+  baseURL: https://api.blaxel.ai/v0
+  tags:
+  - images
+  properties:
+  - type: OpenAPI
+    url: openapi/blaxel-images-api-openapi.yml
+- aid: blaxel:blaxel-mcphub-api
+  name: Blaxel Mcphub API
+  description: The mcphub API from Blaxel — 1 operation(s) for mcphub.
+  humanURL: https://docs.blaxel.ai/Agents/Overview
+  baseURL: https://api.blaxel.ai/v0
+  tags:
+  - mcphub
+  properties:
+  - type: OpenAPI
+    url: openapi/blaxel-mcphub-api-openapi.yml
+- aid: blaxel:blaxel-publicips-list-api
+  name: Blaxel Public Ips:list API
+  description: The publicIps:list API from Blaxel — 1 operation(s) for publicips:list.
+  humanURL: https://docs.blaxel.ai/Agents/Overview
+  baseURL: https://api.blaxel.ai/v0
+  tags:
+  - publicIps:list
+  properties:
+  - type: OpenAPI
+    url: openapi/blaxel-publicips-list-api-openapi.yml
+- aid: blaxel:blaxel-sandboxhub-api
+  name: Blaxel Sandboxhub API
+  description: The sandboxhub API from Blaxel — 1 operation(s) for sandboxhub.
+  humanURL: https://docs.blaxel.ai/Agents/Overview
+  baseURL: https://api.blaxel.ai/v0
+  tags:
+  - sandboxhub
+  properties:
+  - type: OpenAPI
+    url: openapi/blaxel-sandboxhub-api-openapi.yml
+- aid: blaxel:blaxel-secrets-api
+  name: Blaxel Secrets API
+  description: The secrets API from Blaxel — 2 operation(s) for secrets.
+  humanURL: https://docs.blaxel.ai/Agents/Overview
+  baseURL: https://api.blaxel.ai/v0
+  tags:
+  - secrets
+  properties:
+  - type: OpenAPI
+    url: openapi/blaxel-secrets-api-openapi.yml
+- aid: blaxel:blaxel-templates-api
+  name: Blaxel Templates API
+  description: The templates API from Blaxel — 2 operation(s) for templates.
+  humanURL: https://docs.blaxel.ai/Agents/Overview
+  baseURL: https://api.blaxel.ai/v0
+  tags:
+  - templates
+  properties:
+  - type: OpenAPI
+    url: openapi/blaxel-templates-api-openapi.yml
+- aid: blaxel:blaxel-volumetemplates-api
+  name: Blaxel Volume Templates API
+  description: The volumeTemplates API from Blaxel — 3 operation(s) for volumetemplates.
+  humanURL: https://docs.blaxel.ai/Agents/Overview
+  baseURL: https://api.blaxel.ai/v0
+  tags:
+  - volumeTemplates
+  properties:
+  - type: OpenAPI
+    url: openapi/blaxel-volumetemplates-api-openapi.yml
+- aid: blaxel:blaxel-vpcs-api
+  name: Blaxel Vpcs API
+  description: The vpcs API from Blaxel — 9 operation(s) for vpcs.
+  humanURL: https://docs.blaxel.ai/Agents/Overview
+  baseURL: https://api.blaxel.ai/v0
+  tags:
+  - vpcs
+  properties:
+  - type: OpenAPI
+    url: openapi/blaxel-vpcs-api-openapi.yml
 common:
 - type: Pricing
   url: https://blaxel.ai/pricing

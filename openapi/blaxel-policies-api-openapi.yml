@@ -1,131 +1,645 @@
 openapi: 3.2.0
 info:
   title: Blaxel Control Plane Policies API
-  description: Representative specification of the Blaxel (formerly Beamlit) control plane REST API. The control plane manages agents, MCP/function servers, models, sandboxes, jobs, policies, integrations, and workspaces. Authenticate with a Bearer API key (Authorization or X-Blaxel-Authorization header) or an OAuth 2.0 short-lived JWT. Requests may include a Blaxel-Version header (YYYY-MM-DD) and, for multi-workspace accounts, an X-Blaxel-Workspace header.
-  termsOfService: https://blaxel.ai/terms-of-service
-  contact:
-    name: Blaxel Support
-    email: support@blaxel.ai
-  version: v0
+  version: 0.0.1
 servers:
-- url: https://api.blaxel.ai/v0
+- description: Blaxel Control Plane
+  url: https://api.blaxel.ai/v0
+- description: Blaxel Inference
+  url: https://run.blaxel.ai
 security:
-- apiKey: []
-- bearerAuth: []
+- OAuth2:
+  - admin
+- ApiKeyAuth: []
 tags:
 - name: Policies
 paths:
   /policies:
     get:
-      operationId: listPolicies
-      tags:
-      - Policies
-      summary: List all policies in the workspace
+      description: Returns governance policies in the workspace. Policies control deployment locations, hardware flavors, and token limits for agents, functions, and models. Starting with API version 2026-04-28 the response is wrapped in `{data, meta}` and supports cursor pagination via the `cursor` and `limit` query parameters; older versions keep returning a bare array with all policies.
+      operationId: ListPolicies
+      parameters:
+      - $ref: '#/components/parameters/PaginationCursor'
+      - $ref: '#/components/parameters/PaginationLimit'
+      - $ref: '#/components/parameters/PaginationSort'
+      - $ref: '#/components/parameters/PaginationQuery'
+      - $ref: '#/components/parameters/PaginationAnchor'
+      - $ref: '#/components/parameters/ExternalIdFilter'
       responses:
         '200':
-          description: A list of policies.
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Policy'
-    post:
-      operationId: createPolicy
+                $ref: '#/components/schemas/PolicyList'
+          description: successful operation
+      security:
+      - OAuth2:
+        - policies:list
+      - ApiKeyAuth: []
+      summary: List governance policies
       tags:
       - Policies
-      summary: Create a new policy
+    post:
+      description: Creates a new governance policy to control where and how resources are deployed. Policies can restrict deployment to specific regions, countries, or continents for compliance.
+      operationId: CreatePolicy
       requestBody:
-        required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/Policy'
+        required: true
       responses:
         '200':
-          description: The created policy.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Policy'
-  /policies/{policy_name}:
+          description: successful operation
+      security:
+      - OAuth2:
+        - policies:create
+      - ApiKeyAuth: []
+      summary: Create governance policy
+      tags:
+      - Policies
+  /policies/{policyName}:
     parameters:
-    - name: policy_name
+    - description: Unique name identifier of the policy
       in: path
+      name: policyName
       required: true
       schema:
         type: string
-    get:
-      operationId: getPolicy
-      tags:
-      - Policies
-      summary: Get a policy by name
-      responses:
-        '200':
-          description: The requested policy.
-    put:
-      operationId: updatePolicy
-      tags:
-      - Policies
-      summary: Update a policy by name
-      responses:
-        '200':
-          description: The updated policy.
     delete:
-      operationId: deletePolicy
-      tags:
-      - Policies
-      summary: Delete a policy by name
+      description: Permanently deletes a governance policy. Resources using this policy will need to be updated to use a different policy.
+      operationId: DeletePolicy
       responses:
         '200':
-          description: The deleted policy.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Policy'
+          description: successful operation
+      security:
+      - OAuth2:
+        - policies:delete
+      - ApiKeyAuth: []
+      summary: Delete governance policy
+      tags:
+      - Policies
+    get:
+      description: Returns detailed information about a governance policy including its type (location, flavor, or maxToken), restrictions, and which resource types it applies to.
+      operationId: GetPolicy
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Policy'
+          description: successful operation
+      security:
+      - OAuth2:
+        - policies:get
+      - ApiKeyAuth: []
+      summary: Get governance policy
+      tags:
+      - Policies
+    put:
+      description: Updates a governance policy's restrictions. Changes take effect on the next deployment of resources using this policy.
+      operationId: UpdatePolicy
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Policy'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Policy'
+          description: successful operation
+      security:
+      - OAuth2:
+        - policies:update
+      - ApiKeyAuth: []
+      summary: Update governance policy
+      tags:
+      - Policies
+  /policies/{policyName}/usages:
+    get:
+      description: Returns the names of every resource (agent, function, model, sandbox, job) currently referencing the given policy. Replaces the client-side fan-out the policies UI used to do over the listings.
+      operationId: GetPolicyUsages
+      parameters:
+      - description: Unique name identifier of the policy
+        in: path
+        name: policyName
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyUsages'
+          description: successful operation
+      security:
+      - OAuth2:
+        - policies:get
+        - agents:list
+        - functions:list
+        - models:list
+        - sandboxes:list
+        - jobs:list
+      - ApiKeyAuth: []
+      summary: List resources using a policy
+      tags:
+      - Policies
 components:
   schemas:
-    Metadata:
+    PolicyLocations:
+      type: array
+      description: PolicyLocations is a local type that wraps a slice of Location
+      items:
+        $ref: '#/components/schemas/PolicyLocation'
+    PaginationMeta:
       type: object
+      description: Pagination metadata returned alongside a page of listing results. Always present on listing endpoints starting with API version 2026-04-28.
       properties:
-        name:
+        hasMore:
+          type: boolean
+          description: True when more pages are available beyond the current one.
+        nextCursor:
           type: string
-        displayName:
-          type: string
-        workspace:
-          type: string
-        createdAt:
-          type: string
-          format: date-time
-        updatedAt:
-          type: string
-          format: date-time
-        labels:
-          type: object
-          additionalProperties:
-            type: string
+          description: Opaque cursor to pass back as the `cursor` query param for the next page. Empty when there are no more pages.
+        total:
+          type: integer
+          description: Total number of items in the workspace, ignoring the current page's filters. Lets the UI render "page X of Y" without walking the cursor chain. Computed from the hash-only metadata.workspace GSI count, so search (`q`) does not narrow it.
+        totalIsPartial:
+          type: boolean
+          description: True when `total` is a lower bound rather than a complete count. Counting a very large workspace is bounded so the listing stays fast, and this flag says the real number is higher. Clients must not derive a page count from `total` when this is set — keep paging with `nextCursor` until `hasMore` is false.
+    PolicyResourceType:
+      type: string
+      description: PolicyResourceType is a type of resource, e.g. model, function, etc.
+      enum:
+      - model
+      - function
+      - agent
+      - sandbox
+      - application
     Policy:
       type: object
+      description: Rule that controls how a deployment is made and served (e.g. location restrictions)
       properties:
         metadata:
           $ref: '#/components/schemas/Metadata'
         spec:
-          type: object
-          properties:
-            type:
-              type: string
-            locations:
-              type: array
-              items:
-                type: object
-            flavors:
-              type: array
-              items:
-                type: object
+          $ref: '#/components/schemas/PolicySpec'
+        usage:
+          $ref: '#/components/schemas/PolicyUsageCounts'
+      required:
+      - metadata
+      - spec
+    Metadata:
+      type: object
+      description: Common metadata fields shared by all Blaxel resources including name, labels, timestamps, and ownership information
+      allOf:
+      - $ref: '#/components/schemas/TimeFields'
+      - $ref: '#/components/schemas/OwnerFields'
+      - properties:
+          displayName:
+            type: string
+            description: Human-readable name for display in the UI. Can contain spaces and special characters, max 63 characters.
+            example: My Resource
+          externalId:
+            type: string
+            description: Caller-owned identifier for external lookups. Max 64 chars, alphanumeric + dash.
+            example: my-session-123
+          labels:
+            $ref: '#/components/schemas/MetadataLabels'
+          name:
+            type: string
+            description: Unique identifier for the resource within the workspace. Must be lowercase alphanumeric with hyphens, max 49 characters. Immutable after creation.
+            example: my-resource
+          plan:
+            type: string
+            description: Billing plan tier applied to this resource (inherited from workspace account)
+            readOnly: true
+          url:
+            type: string
+            description: Auto-generated endpoint URL for accessing this resource (for agents, functions, models, sandboxes)
+            readOnly: true
+          workspace:
+            type: string
+            description: Name of the workspace this resource belongs to (read-only, set automatically)
+            readOnly: true
+        required:
+        - name
+    PolicyResourceTypes:
+      type: array
+      description: PolicyResourceTypes is a local type that wraps a slice of PolicyResourceType
+      items:
+        $ref: '#/components/schemas/PolicyResourceType'
+    PolicyMaxTokens:
+      type: object
+      description: PolicyMaxTokens is a local type that wraps a slice of PolicyMaxTokens
+      properties:
+        granularity:
+          type: string
+          description: Granularity
+          example: minute
+        input:
+          type: integer
+          description: Input
+          example: 10000
+        output:
+          type: integer
+          description: Output
+          example: 5000
+        ratioInputOverOutput:
+          type: integer
+          description: RatioInputOverOutput
+          example: 2
+        step:
+          type: integer
+          description: Step
+          example: 1
+        total:
+          type: integer
+          description: Total
+          example: 15000
+    PolicyList:
+      type: object
+      description: Cursor-paginated list of policies. Returned starting with API version 2026-04-28; older API versions return a bare array.
+      properties:
+        data:
+          type: array
+          description: Page of policies.
+          items:
+            $ref: '#/components/schemas/Policy'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+    OwnerFields:
+      type: object
+      description: Owner fields for Persistence
+      properties:
+        createdBy:
+          type: string
+          description: The user or service account who created the resource
+          readOnly: true
+        updatedBy:
+          type: string
+          description: The user or service account who updated the resource
+          readOnly: true
+    Flavors:
+      type: array
+      description: Types of hardware available for deployments
+      items:
+        $ref: '#/components/schemas/Flavor'
+    PolicyUsageCounts:
+      type: object
+      description: Per-resource counts of how many resources reference a policy. Computed by the policies listing endpoint to avoid client-side fan-out across the agents/models/functions/sandboxes/jobs listings.
+      properties:
+        agents:
+          type: integer
+        functions:
+          type: integer
+        jobs:
+          type: integer
+        models:
+          type: integer
+        sandboxes:
+          type: integer
+    PolicyUsages:
+      type: object
+      description: Resources currently referencing a policy. Returned by GET /policies/{name}/usages so the policies UI can render attachments without fetching the agents/models/functions listings full.
+      properties:
+        agents:
+          type: array
+          description: Names of agents whose spec.policies contains this policy.
+          items:
+            type: object
+            additionalProperties: true
+        functions:
+          type: array
+          description: Names of functions whose spec.policies contains this policy.
+          items:
+            type: object
+            additionalProperties: true
+        jobs:
+          type: array
+          description: Names of jobs whose spec.policies contains this policy.
+          items:
+            type: object
+            additionalProperties: true
+        models:
+          type: array
+          description: Names of models whose spec.policies contains this policy.
+          items:
+            type: object
+            additionalProperties: true
+        sandboxes:
+          type: array
+          description: Names of sandboxes whose spec.policies contains this policy.
+          items:
+            type: object
+            additionalProperties: true
+    PolicyLocation:
+      type: object
+      description: Policy location
+      properties:
+        name:
+          type: string
+          description: Policy location name
+          example: EU
+        type:
+          type: string
+          description: Policy location type
+          enum:
+          - location
+          - country
+          - continent
+          example: continent
+    MetadataLabels:
+      type: object
+      description: Key-value pairs for organizing and filtering resources. Labels can be used to categorize resources by environment, project, team, or any custom taxonomy.
+      additionalProperties:
+        type: string
+    Flavor:
+      type: object
+      description: A type of hardware available for deployments
+      properties:
+        name:
+          type: string
+          description: Flavor name (e.g. t4)
+          example: t4
+        type:
+          type: string
+          description: Flavor type (e.g. cpu, gpu)
+          enum:
+          - cpu
+          - gpu
+          example: cpu
+    TimeFields:
+      type: object
+      description: Time fields for Persistence
+      properties:
+        createdAt:
+          type: string
+          description: The date and time when the resource was created
+          readOnly: true
+        updatedAt:
+          type: string
+          description: The date and time when the resource was updated
+          readOnly: true
+    PolicySpec:
+      type: object
+      description: Policy specification
+      properties:
+        flavors:
+          $ref: '#/components/schemas/Flavors'
+        locations:
+          $ref: '#/components/schemas/PolicyLocations'
+        maxTokens:
+          $ref: '#/components/schemas/PolicyMaxTokens'
+        resourceTypes:
+          $ref: '#/components/schemas/PolicyResourceTypes'
+        sandbox:
+          type: boolean
+          description: Sandbox mode
+          example: false
+        type:
+          type: string
+          description: Policy type, can be location or flavor
+          enum:
+          - location
+          - flavor
+          - maxToken
+          example: location
+  parameters:
+    PaginationAnchor:
+      description: Start from a known pagination boundary. `end` is only supported for `createdAt` listings (asc or desc) and returns the tail page directly without walking every cursor from the first page.
+      in: query
+      name: anchor
+      required: false
+      schema:
+        enum:
+        - end
+        type: string
+    PaginationQuery:
+      description: Substring search across `metadata.name`, `metadata.displayName` and labels (keys + values). Trimmed and lowercased server-side; queries shorter than 2 characters fall back to the unfiltered listing. Bound into the cursor fingerprint so a cursor opened with one query cannot be reused with another. Only honoured starting on Blaxel-Version 2026-04-28.
+      in: query
+      name: q
+      required: false
+      schema:
+        maxLength: 200
+        type: string
+    PaginationSort:
+      description: Sort spec, formatted as `<key>:<direction>`. Allowed values are `createdAt:desc` (default), `createdAt:asc`, `name:asc`, `name:desc`. The cursor fingerprint is bound to the sort, so a cursor opened with one value cannot be reused with another. Only honoured starting on Blaxel-Version 2026-04-28.
+      in: query
+      name: sort
+      required: false
+      schema:
+        enum:
+        - createdAt:desc
+        - createdAt:asc
+        - name:asc
+        - name:desc
+        type: string
+    PaginationLimit:
+      description: Maximum number of items to return per page. Defaults to 50, clamped to 200.
+      in: query
+      name: limit
+      required: false
+      schema:
+        default: 50
+        maximum: 200
+        minimum: 1
+        type: integer
+    ExternalIdFilter:
+      description: Filter resources by metadata.externalId. When set, only resources matching this caller-owned external ID are returned.
+      in: query
+      name: externalId
+      required: false
+      schema:
+        maxLength: 64
+        pattern: ^[a-zA-Z0-9-]*$
+        type: string
+    PaginationCursor:
+      description: Opaque cursor returned by a previous response's meta.nextCursor. Only valid for the same query (workspace + filters); the server rejects cursors bound to a different query or older than 24h. Omit on the first page.
+      in: query
+      name: cursor
+      required: false
+      schema:
+        type: string
+      x-stainless-pagination-property:
+        purpose: next_cursor_param
   securitySchemes:
-    apiKey:
-      type: apiKey
-      in: header
-      name: X-Blaxel-Authorization
-      description: API key supplied as "Bearer YOUR-API-KEY".
-    bearerAuth:
-      type: http
+    ApiKeyAuth:
+      bearerFormat: API Key
+      description: Long-lived API key for programmatic access
       scheme: bearer
-      bearerFormat: JWT
-      description: OAuth 2.0 short-lived JWT access token.
+      type: http
+    OAuth2:
+      description: OAuth2 authentication with JWT tokens
+      flows:
+        authorizationCode:
+          authorizationUrl: /oauth/authorize
+          scopes:
+            admin: Administrative access
+            agents:create: Create agents
+            agents:delete: Delete agents
+            agents:get: Get agent details
+            agents:list: List agents
+            agents:update: Update agents
+            apiKey:list: List API keys
+            apiKey:write: Create and delete API keys
+            applications:create: Create applications
+            applications:delete: Delete applications
+            applications:get: Get application details
+            applications:list: List applications
+            applications:update: Update applications
+            configurations:list: List configurations
+            customdomains:create: Create custom domains
+            customdomains:delete: Delete custom domains
+            customdomains:get: Get custom domain details
+            customdomains:list: List custom domains
+            customdomains:update: Update custom domains
+            functions:create: Create functions
+            functions:delete: Delete functions
+            functions:get: Get function details
+            functions:list: List functions
+            functions:update: Update functions
+            integrations:create: Create integrations
+            integrations:list: List integrations
+            invitations:list: List invitations
+            jobs:create: Create jobs
+            jobs:delete: Delete jobs
+            jobs:get: Get job details
+            jobs:list: List jobs
+            jobs:update: Update jobs
+            locations:list: List locations
+            mcphub:list: List MCP hub resources
+            models:create: Create models
+            models:delete: Delete models
+            models:get: Get model details
+            models:list: List models
+            models:update: Update models
+            policies:create: Create policies
+            policies:delete: Delete policies
+            policies:get: Get policy details
+            policies:list: List policies
+            policies:update: Update policies
+            sandboxes:control: Control sandbox operations
+            sandboxes:create: Create sandboxes
+            sandboxes:delete: Delete sandboxes
+            sandboxes:get: Get sandbox details
+            sandboxes:list: List sandboxes
+            sandboxes:update: Update sandboxes
+            sandboxhub:list: List sandbox hub resources
+            secrets:create: Create secrets
+            secrets:delete: Delete secrets
+            secrets:list: List secrets
+            templates:get: Get template details
+            templates:list: List templates
+            volumeTemplates:create: Create volume templates
+            volumeTemplates:delete: Delete volume templates
+            volumeTemplates:get: Get volume template details
+            volumeTemplates:list: List volume templates
+            volumeTemplates:upsert: Create or update volume templates
+            volumes:create: Create volumes
+            volumes:delete: Delete volumes
+            volumes:get: Get volume details
+            volumes:list: List volumes
+            workspaces:accept: Accept workspace invitation
+            workspaces:create: Create workspaces
+            workspaces:decline: Decline workspace invitation
+            workspaces:delete: Delete workspaces
+            workspaces:get: Get workspace details
+            workspaces:invite: Invite users to workspace
+            workspaces:leave: Leave workspace
+            workspaces:list: List workspaces
+            workspaces:remove: Remove users from workspace
+            workspaces:update: Update workspaces
+          tokenUrl: /oauth/token
+        clientCredentials:
+          scopes:
+            admin: Administrative access
+            agents:create: Create agents
+            agents:delete: Delete agents
+            agents:get: Get agent details
+            agents:list: List agents
+            agents:update: Update agents
+            apiKey:list: List API keys
+            apiKey:write: Create and delete API keys
+            applications:create: Create applications
+            applications:delete: Delete applications
+            applications:get: Get application details
+            applications:list: List applications
+            applications:update: Update applications
+            configurations:list: List configurations
+            customdomains:create: Create custom domains
+            customdomains:delete: Delete custom domains
+            customdomains:get: Get custom domain details
+            customdomains:list: List custom domains
+            customdomains:update: Update custom domains
+            functions:create: Create functions
+            functions:delete: Delete functions
+            functions:get: Get function details
+            functions:list: List functions
+            functions:update: Update functions
+            integrations:create: Create integrations
+            integrations:list: List integrations
+            invitations:list: List invitations
+            jobs:create: Create jobs
+            jobs:delete: Delete jobs
+            jobs:get: Get job details
+            jobs:list: List jobs
+            jobs:update: Update jobs
+            locations:list: List locations
+            mcphub:list: List MCP hub resources
+            models:create: Create models
+            models:delete: Delete models
+            models:get: Get model details
+            models:list: List models
+            models:update: Update models
+            policies:create: Create policies
+            policies:delete: Delete policies
+            policies:get: Get policy details
+            policies:list: List policies
+            policies:update: Update policies
+            sandboxes:control: Control sandbox operations
+            sandboxes:create: Create sandboxes
+            sandboxes:delete: Delete sandboxes
+            sandboxes:get: Get sandbox details
+            sandboxes:list: List sandboxes
+            sandboxes:update: Update sandboxes
+            sandboxhub:list: List sandbox hub resources
+            secrets:create: Create secrets
+            secrets:delete: Delete secrets
+            secrets:list: List secrets
+            templates:get: Get template details
+            templates:list: List templates
+            volumeTemplates:create: Create volume templates
+            volumeTemplates:delete: Delete volume templates
+            volumeTemplates:get: Get volume template details
+            volumeTemplates:list: List volume templates
+            volumeTemplates:upsert: Create or update volume templates
+            volumes:create: Create volumes
+            volumes:delete: Delete volumes
+            volumes:get: Get volume details
+            volumes:list: List volumes
+            workspaces:accept: Accept workspace invitation
+            workspaces:create: Create workspaces
+            workspaces:decline: Decline workspace invitation
+            workspaces:delete: Delete workspaces
+            workspaces:get: Get workspace details
+            workspaces:invite: Invite users to workspace
+            workspaces:leave: Leave workspace
+            workspaces:list: List workspaces
+            workspaces:remove: Remove users from workspace
+            workspaces:update: Update workspaces
+          tokenUrl: /oauth/token
+      type: oauth2
