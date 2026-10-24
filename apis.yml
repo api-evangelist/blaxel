@@ -576,6 +576,8 @@ apis:
   humanURL: https://docs.blaxel.ai/Agents/Overview
   baseURL: https://api.blaxel.ai/v0
   tags:
+  - Application
+  tags_raw:
   - applications
   properties:
   - type: OpenAPI
@@ -586,6 +588,8 @@ apis:
   humanURL: https://docs.blaxel.ai/Agents/Overview
   baseURL: https://api.blaxel.ai/v0
   tags:
+  - Changelog
+  tags_raw:
   - changelog
   properties:
   - type: OpenAPI
@@ -596,6 +600,8 @@ apis:
   humanURL: https://docs.blaxel.ai/Agents/Overview
   baseURL: https://api.blaxel.ai/v0
   tags:
+  - Configurations
+  tags_raw:
   - configurations
   properties:
   - type: OpenAPI
@@ -606,6 +612,8 @@ apis:
   humanURL: https://docs.blaxel.ai/Agents/Overview
   baseURL: https://api.blaxel.ai/v0
   tags:
+  - Custom Domains
+  tags_raw:
   - customdomains
   properties:
   - type: OpenAPI
@@ -616,6 +624,8 @@ apis:
   humanURL: https://docs.blaxel.ai/Agents/Overview
   baseURL: https://api.blaxel.ai/v0
   tags:
+  - Drives
+  tags_raw:
   - drives
   properties:
   - type: OpenAPI
@@ -626,6 +636,8 @@ apis:
   humanURL: https://docs.blaxel.ai/Agents/Overview
   baseURL: https://api.blaxel.ai/v0
   tags:
+  - Feature Flags
+  tags_raw:
   - featureFlags
   properties:
   - type: OpenAPI
@@ -636,6 +648,8 @@ apis:
   humanURL: https://docs.blaxel.ai/Agents/Overview
   baseURL: https://api.blaxel.ai/v0
   tags:
+  - Image
+  tags_raw:
   - images
   properties:
   - type: OpenAPI
@@ -676,6 +690,8 @@ apis:
   humanURL: https://docs.blaxel.ai/Agents/Overview
   baseURL: https://api.blaxel.ai/v0
   tags:
+  - Secrets
+  tags_raw:
   - secrets
   properties:
   - type: OpenAPI
@@ -686,6 +702,8 @@ apis:
   humanURL: https://docs.blaxel.ai/Agents/Overview
   baseURL: https://api.blaxel.ai/v0
   tags:
+  - Templates
+  tags_raw:
   - templates
   properties:
   - type: OpenAPI
@@ -695,7 +713,8 @@ apis:
   description: The volumeTemplates API from Blaxel — 3 operation(s) for volumetemplates.
   humanURL: https://docs.blaxel.ai/Agents/Overview
   baseURL: https://api.blaxel.ai/v0
-  tags:
+  tags: []
+  tags_raw:
   - volumeTemplates
   properties:
   - type: OpenAPI
@@ -706,6 +725,8 @@ apis:
   humanURL: https://docs.blaxel.ai/Agents/Overview
   baseURL: https://api.blaxel.ai/v0
   tags:
+  - VPC
+  tags_raw:
   - vpcs
   properties:
   - type: OpenAPI
