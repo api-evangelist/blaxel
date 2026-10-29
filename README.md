@@ -1,4 +1,4 @@
-# Blaxel (blaxel)
+# Blaxel
 
 <!-- API-EVANGELIST-PROVENANCE:BEGIN -->
 > ### About this repository
@@ -66,209 +66,145 @@
 
 Blaxel (formerly Beamlit) is an infrastructure and compute platform built for AI agents. Its control plane API deploys and manages agents, MCP/function servers, serverless code sandboxes, batch jobs, a multi-provider model gateway, deployment policies, integrations, and multi-tenant workspaces. The REST control plane lives at api.blaxel.ai/v0 and authenticates with a Bearer API key or OAuth 2.0.
 
-**APIs.json:** [https://raw.githubusercontent.com/api-evangelist/blaxel/refs/heads/main/apis.yml](https://raw.githubusercontent.com/api-evangelist/blaxel/refs/heads/main/apis.yml)
+**Areas:** Artificial Intelligence · Agents · Infrastructure · Sandbox · MCP · Compute · Serverless
 
-> **State note:** Blaxel was formerly named **Beamlit** and rebranded to Blaxel. Residual "Beamlit" naming still appears in some GitHub repositories. The active brand and surfaces are Blaxel — blaxel.ai, docs.blaxel.ai, api.blaxel.ai, and the [blaxel-ai](https://github.com/blaxel-ai) GitHub organization.
+## Blaxel on APIs.io
 
-## Tags
+Everything profiled for Blaxel is published on APIs.io rather than in this repository. Start at the provider page — **[apis.io/providers/blaxel/](https://apis.io/providers/blaxel/)** — or go straight to one of the APIs or properties below.
 
-- AI
-- Agents
-- Infrastructure
-- Sandboxes
-- MCP
-- Compute
-- Serverless
+### APIs (11)
 
-## Timestamps
+- [Blaxel Agents API](https://apis.io/apis/blaxel/blaxel-agents-api/) — The Agents API from Blaxel — 3 operation(s) for agents.
+- [Blaxel Compute API](https://apis.io/apis/blaxel/blaxel-compute-api/) — The Compute API from Blaxel — 6 operation(s) for compute.
+- [Blaxel Functions API](https://apis.io/apis/blaxel/blaxel-functions-api/) — The Functions API from Blaxel — 3 operation(s) for functions.
+- [Blaxel Integrations API](https://apis.io/apis/blaxel/blaxel-integrations-api/) — The Integrations API from Blaxel — 5 operation(s) for integrations.
+- [Blaxel Jobs API](https://apis.io/apis/blaxel/blaxel-jobs-api/) — The Jobs API from Blaxel — 4 operation(s) for jobs.
+- [Blaxel Locations API](https://apis.io/apis/blaxel/blaxel-locations-api/) — The Locations API from Blaxel — 1 operation(s) for locations.
+- [Blaxel Models API](https://apis.io/apis/blaxel/blaxel-models-api/) — The Models API from Blaxel — 3 operation(s) for models.
+- [Blaxel Policies API](https://apis.io/apis/blaxel/blaxel-policies-api/) — The Policies API from Blaxel — 2 operation(s) for policies.
+- [Blaxel Service Accounts API](https://apis.io/apis/blaxel/blaxel-service-accounts-api/) — The Service Accounts API from Blaxel — 2 operation(s) for service accounts.
+- [Blaxel Volumes API](https://apis.io/apis/blaxel/blaxel-volumes-api/) — The Volumes API from Blaxel — 1 operation(s) for volumes.
+- [Blaxel Workspaces API](https://apis.io/apis/blaxel/blaxel-workspaces-api/) — The Workspaces API from Blaxel — 3 operation(s) for workspaces.
 
-- **Created:** 2026-07-01
-- **Modified:** 2026-07-01
+### Published properties
 
-## APIs
+Each property below is a page on APIs.io carrying the machine-readable artifact and what it says.
 
-### Blaxel Agents API
+#### MCP servers (1)
 
-Deploy, list, update, and delete AI agents as serverless auto-scaling HTTP endpoints, with revision history. Framework-agnostic - bring your own code (LangChain, CrewAI, Claude Agent SDK) and Blaxel builds and runs it.
+Model Context Protocol servers that expose the API to agents.
 
-- **Human URL:** [https://docs.blaxel.ai/Agents/Overview](https://docs.blaxel.ai/Agents/Overview)
-- **Base URL:** `https://api.blaxel.ai/v0`
+- [blaxel](https://apis.io/servers/blaxel/blaxel/)
 
-#### Tags
+#### Agentic access (1)
 
-- Agents
-- Deployments
-- Serverless
+Which operations an agent can call, which act, and which need a human in the loop.
 
-#### Properties
+- [Blaxel Agentic Access](https://apis.io/agentic-access/blaxel/blaxel-agentic-access/)
 
-- [Documentation](https://docs.blaxel.ai/Agents/Overview)
-- [API Reference](https://docs.blaxel.ai/api-reference/agents)
-- [OpenAPI](openapi/blaxel-openapi.yml) — [OpenAPI Specification](https://spec.openapis.org/oas/latest.html)
-- [Postman Collection](collections/blaxel.postman_collection.json) — [Postman Collection 2.1](https://schema.getpostman.com/json/collection/v2.1.0/collection.json)
-- [Open Collection](collections/blaxel.opencollection.json) — [Open Collection 1.0](https://schema.opencollection.com/opencollection/v1.0.0.json)
+#### Collections (12)
 
-### Blaxel Functions / MCP Servers API
+Postman and Open Collection request collections.
 
-Deploy custom MCP (Model Context Protocol) tool servers as fast-starting serverless endpoints that extend agents' capabilities, with built-in authentication, rate limiting, and observability. Managed as functions with revision history.
+- [Blaxel Control Plane API](https://apis.io/collections/blaxel/open-blaxel/)
+- [Blaxel Control Plane Agents API](https://apis.io/collections/blaxel/open-blaxel-agents-api/)
+- [Blaxel Control Plane Agents Compute API](https://apis.io/collections/blaxel/open-blaxel-compute-api/)
+- [Blaxel Control Plane Agents Functions API](https://apis.io/collections/blaxel/open-blaxel-functions-api/)
+- [Blaxel Control Plane Agents Integrations API](https://apis.io/collections/blaxel/open-blaxel-integrations-api/)
+- [Blaxel Control Plane Agents Jobs API](https://apis.io/collections/blaxel/open-blaxel-jobs-api/)
+- [Blaxel Control Plane Agents Locations API](https://apis.io/collections/blaxel/open-blaxel-locations-api/)
+- [Blaxel Control Plane Agents Models API](https://apis.io/collections/blaxel/open-blaxel-models-api/)
+- [Blaxel Control Plane Agents Policies API](https://apis.io/collections/blaxel/open-blaxel-policies-api/)
+- [Blaxel Control Plane Agents Service Accounts API](https://apis.io/collections/blaxel/open-blaxel-service-accounts-api/)
+- [Blaxel Control Plane Agents Volumes API](https://apis.io/collections/blaxel/open-blaxel-volumes-api/)
+- [Blaxel Control Plane Agents Workspaces API](https://apis.io/collections/blaxel/open-blaxel-workspaces-api/)
 
-- **Human URL:** [https://docs.blaxel.ai/Functions/Overview](https://docs.blaxel.ai/Functions/Overview)
-- **Base URL:** `https://api.blaxel.ai/v0`
+#### Security (2)
 
-#### Tags
+Authentication, trust centre, and vulnerability disclosure.
 
-- Functions
-- MCP
-- Tools
+- [Blaxel Authentication](https://apis.io/security/blaxel/blaxel-authentication/)
+- [Blaxel Domain Security](https://apis.io/security/blaxel/blaxel-domain-security/)
 
-#### Properties
+#### Plans and pricing (1)
 
-- [Documentation](https://docs.blaxel.ai/Functions/Overview)
-- [API Reference](https://docs.blaxel.ai/api-reference/functions)
-- [OpenAPI](openapi/blaxel-openapi.yml) — [OpenAPI Specification](https://spec.openapis.org/oas/latest.html)
-- [Postman Collection](collections/blaxel.postman_collection.json) — [Postman Collection 2.1](https://schema.getpostman.com/json/collection/v2.1.0/collection.json)
-- [Open Collection](collections/blaxel.opencollection.json) — [Open Collection 1.0](https://schema.opencollection.com/opencollection/v1.0.0.json)
+Published plans, tiers and prices.
 
-### Blaxel Models Gateway API
+- [Blaxel Plans Pricing](https://apis.io/plans/blaxel/blaxel-plans-pricing/)
 
-Register and manage model deployments that front an intelligent routing layer to LLM providers, with built-in telemetry, token cost control, and fallback. A single gateway endpoint proxies inference to the configured upstream provider.
+#### Rate limits (1)
 
-- **Human URL:** [https://docs.blaxel.ai/Models/Overview](https://docs.blaxel.ai/Models/Overview)
-- **Base URL:** `https://api.blaxel.ai/v0`
+Published request limits.
 
-#### Tags
+- [Blaxel Rate Limits](https://apis.io/rate-limits/blaxel/blaxel-rate-limits/)
 
-- Models
-- Model Gateway
-- Inference
-- Routing
+#### FinOps (1)
 
-#### Properties
+What the API costs to run, by operation.
 
-- [Documentation](https://docs.blaxel.ai/Models/Overview)
-- [API Reference](https://docs.blaxel.ai/api-reference/models)
-- [OpenAPI](openapi/blaxel-openapi.yml) — [OpenAPI Specification](https://spec.openapis.org/oas/latest.html)
-- [Postman Collection](collections/blaxel.postman_collection.json) — [Postman Collection 2.1](https://schema.getpostman.com/json/collection/v2.1.0/collection.json)
-- [Open Collection](collections/blaxel.opencollection.json) — [Open Collection 1.0](https://schema.opencollection.com/opencollection/v1.0.0.json)
+- [Blaxel Finops](https://apis.io/finops/blaxel/blaxel-finops/)
 
-### Blaxel Sandboxes API
+## Where to find this API
 
-Create, start, stop, and delete secure microVM sandboxes that boot from standby in under 25ms, exposing filesystem, process, and code execution for agent runtimes. Includes sandbox previews and scoped preview tokens for shareable URLs.
+Links to the company's own pages. This repository publishes no copy of their specifications — the canonical document is theirs and lives at the URLs below.
 
-- **Human URL:** [https://docs.blaxel.ai/Sandboxes/Overview](https://docs.blaxel.ai/Sandboxes/Overview)
-- **Base URL:** `https://api.blaxel.ai/v0`
-
-#### Tags
-
-- Sandboxes
-- Compute
-- Code Execution
-- MicroVM
-
-#### Properties
-
-- [Documentation](https://docs.blaxel.ai/Sandboxes/Overview)
-- [API Reference](https://docs.blaxel.ai/api-reference/compute)
-- [OpenAPI](openapi/blaxel-openapi.yml) — [OpenAPI Specification](https://spec.openapis.org/oas/latest.html)
-- [Postman Collection](collections/blaxel.postman_collection.json) — [Postman Collection 2.1](https://schema.getpostman.com/json/collection/v2.1.0/collection.json)
-- [Open Collection](collections/blaxel.opencollection.json) — [Open Collection 1.0](https://schema.opencollection.com/opencollection/v1.0.0.json)
-
-### Blaxel Jobs API
-
-Define and run asynchronous batch jobs for extended workloads (up to 24 hours) of background processing at scale, and manage their executions and revisions.
-
-- **Human URL:** [https://docs.blaxel.ai/Jobs/Overview](https://docs.blaxel.ai/Jobs/Overview)
-- **Base URL:** `https://api.blaxel.ai/v0`
-
-#### Tags
-
-- Jobs
-- Batch
-- Async
-
-#### Properties
-
-- [Documentation](https://docs.blaxel.ai/Jobs/Overview)
-- [API Reference](https://docs.blaxel.ai/api-reference/jobs)
-- [OpenAPI](openapi/blaxel-openapi.yml) — [OpenAPI Specification](https://spec.openapis.org/oas/latest.html)
-- [Postman Collection](collections/blaxel.postman_collection.json) — [Postman Collection 2.1](https://schema.getpostman.com/json/collection/v2.1.0/collection.json)
-- [Open Collection](collections/blaxel.opencollection.json) — [Open Collection 1.0](https://schema.opencollection.com/opencollection/v1.0.0.json)
-
-### Blaxel Policies API
-
-Create and manage deployment policies that constrain where and how workloads run - governing regions, flavors, and provider routing across environments.
-
-- **Human URL:** [https://docs.blaxel.ai/Model-Governance/Policies](https://docs.blaxel.ai/Model-Governance/Policies)
-- **Base URL:** `https://api.blaxel.ai/v0`
-
-#### Tags
-
-- Policies
-- Governance
-- Deployment
-
-#### Properties
-
-- [Documentation](https://docs.blaxel.ai/Model-Governance/Policies)
-- [API Reference](https://docs.blaxel.ai/api-reference/policies)
-- [OpenAPI](openapi/blaxel-openapi.yml) — [OpenAPI Specification](https://spec.openapis.org/oas/latest.html)
-- [Postman Collection](collections/blaxel.postman_collection.json) — [Postman Collection 2.1](https://schema.getpostman.com/json/collection/v2.1.0/collection.json)
-- [Open Collection](collections/blaxel.opencollection.json) — [Open Collection 1.0](https://schema.opencollection.com/opencollection/v1.0.0.json)
-
-### Blaxel Integrations API
-
-Manage integration connections to external providers (model providers, tool sources, code repositories), list connection-backed models, and read endpoint configurations that agents and the model gateway consume.
-
-- **Human URL:** [https://docs.blaxel.ai/Integrations/Overview](https://docs.blaxel.ai/Integrations/Overview)
-- **Base URL:** `https://api.blaxel.ai/v0`
-
-#### Tags
-
-- Integrations
-- Connections
-- Providers
-
-#### Properties
-
-- [Documentation](https://docs.blaxel.ai/Integrations/Overview)
-- [API Reference](https://docs.blaxel.ai/api-reference/integrations)
-- [OpenAPI](openapi/blaxel-openapi.yml) — [OpenAPI Specification](https://spec.openapis.org/oas/latest.html)
-- [Postman Collection](collections/blaxel.postman_collection.json) — [Postman Collection 2.1](https://schema.getpostman.com/json/collection/v2.1.0/collection.json)
-- [Open Collection](collections/blaxel.opencollection.json) — [Open Collection 1.0](https://schema.opencollection.com/opencollection/v1.0.0.json)
-
-### Blaxel Workspaces API
-
-Create and manage multi-tenant workspaces, invite and manage users and roles, and administer service accounts and their API keys for programmatic access and IAM.
-
-- **Human URL:** [https://docs.blaxel.ai/Security/Workspace-access-control](https://docs.blaxel.ai/Security/Workspace-access-control)
-- **Base URL:** `https://api.blaxel.ai/v0`
-
-#### Tags
-
-- Workspaces
-- IAM
-- Multi-Tenant
-- Service Accounts
-
-#### Properties
-
-- [Documentation](https://docs.blaxel.ai/Security/Workspace-access-control)
-- [API Reference](https://docs.blaxel.ai/api-reference/workspaces)
-- [OpenAPI](openapi/blaxel-openapi.yml) — [OpenAPI Specification](https://spec.openapis.org/oas/latest.html)
-- [Postman Collection](collections/blaxel.postman_collection.json) — [Postman Collection 2.1](https://schema.getpostman.com/json/collection/v2.1.0/collection.json)
-- [Open Collection](collections/blaxel.opencollection.json) — [Open Collection 1.0](https://schema.opencollection.com/opencollection/v1.0.0.json)
-
-## Common Properties
-
-- [GitHub Organization](https://github.com/blaxel-ai)
-- [LinkedIn](https://www.linkedin.com/company/blaxel)
 - [Website](https://blaxel.ai/)
 - [Documentation](https://docs.blaxel.ai/)
-- [Plans](plans/blaxel-plans-pricing.yml)
-- [Rate Limits](rate-limits/blaxel-rate-limits.yml)
-- [Fin Ops](finops/blaxel-finops.yml)
+- [Pricing](https://blaxel.ai/pricing)
+- [Blog](https://blaxel.ai/rss.xml)
+- [GitHub](https://github.com/blaxel-ai)
 
-## Maintainers
+## API Evangelist rating
 
-**FN:** Kin Lane
-**Email:** kin@apievangelist.com
+**Kin Score 33.7** — thin · rubric 0.25.0 · scored 2026-10-23
+
+| Facet | Score |
+|---|---|
+| Discoverability | 68.3 |
+| Contract quality | 52.1 |
+| Contract governance | 0.0 |
+| Operational transparency | 2.6 |
+| Developer ergonomics | 32.1 |
+| Access clarity | 42.1 |
+
+**Agent readiness 52.0** — agent-ready (gated down from agent-native)
+
+| Agent-readiness dimension | Result |
+|---|---|
+| Spec Presence | yes |
+| Agentic Access | derived (partial credit) |
+| Reversibility Documented | — |
+| MCP Server | verified |
+| Auth Clarity | served (partial credit) |
+| Idempotency | — |
+| Error Semantics | verified |
+| OpenAPI Examples | partial |
+| Rate Limit Signal | documented (partial credit) |
+| Event Surface Described | — |
+| Agent Skills | — |
+| Well Known Catalog | — |
+| Consent Identity | — |
+| Agent Card | — |
+| Dry Run Mode | — |
+| Delegated Identity | served (partial credit) |
+| Protected Resource Metadata | verified |
+| Dynamic Client Registration | yes |
+| Agentic Commerce | — |
+| Pagination Ratio | — |
+| Operation Distinctiveness | distinct |
+
+**Regulatory alignment 10.9** — Horizontal (data, software, accessibility, platform)
+
+The rubric is published at [github.com/api-evangelist/kin-score](https://github.com/api-evangelist/kin-score). The per-check breakdown behind these numbers — which checks were earned, partial or missed — along with score history and how this provider compares to its peers, is available at [apis.io/providers/blaxel/](https://apis.io/providers/blaxel/).
+
+## How this profile is made
+
+API Evangelist profiles a company's public API surface the way a developer would find it: the website, developer portal and documentation, the specifications it publishes, its public repositories, and its pricing, status and changelog pages. From that it derives the properties above — contracts split per API, workflows, schemas, collections, governance rules, plans and rate limits — and scores them against the published [Kin Score rubric](https://github.com/api-evangelist/kin-score).
+
+The artifacts are published on [APIs.io](https://apis.io), not in this repository. This repository is the public record for Blaxel: the place to say something is wrong, missing or out of date, and to ask for a re-score or a removal.
+
+## Open an issue
+
+- **Something about this listing** — a wrong description, a missing API, a stale artifact or a question about the rating: [open an issue on this repository](https://github.com/api-evangelist/blaxel/issues/new).
+- **A new API, or one that is not in the catalog yet** — [submit it on APIs.io](https://apis.io/add/).
+- **Anything else** — [the APIs.io inbox](https://github.com/api-search/inbox/issues/new) or [info@apievangelist.com](mailto:info@apievangelist.com).
